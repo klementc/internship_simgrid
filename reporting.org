@@ -16,11 +16,14 @@
 ** Week 1 <2016-05-17 Tue>--<2016-05-20 Fri>
 *** Things Done
 *** Blocking Points
-*** TODO Planned Work
+*** Planned Work
 - [ ] Install SimGrid from source
 - [X] Autoconnect #simgrid on irc.oftc.net
 - [ ] Read tutorial [[http://simgrid.gforge.inria.fr/documentation.php]]
 - [ ] Go through tutorial [[http://simgrid.gforge.inria.fr/simgrid/3.13/doc/tutorial.html]]
 - [ ] See concurrent tools like DCsim and GridSim. Pay attention to VM charges.
+
+* Global Goals
+** TODO Report 1.0 <2016-07-15 Fri>
 
 * Conclusion
