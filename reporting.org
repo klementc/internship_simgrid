@@ -1,5 +1,5 @@
 #+TITLE: Internship on SimGrid with Martin Quinson
-#+DATE: [2016]
+#+DATE: [2016-05-17 Mon]--[2016-05-15 Fri]
 #+AUTHOR: Simon Bihel
 #+EMAIL: [[mailto:simon.bihel@ens-rennes.fr]]
 #+WEBSITE: [[simonbihel.me]]
@@ -8,7 +8,9 @@
 
 * Introduction
 
-* Bibliography/Findings
+* Findings
+** Bibliography
+** Contribution
 
 * Development
 
@@ -16,9 +18,12 @@
 ** Week 1 <2016-05-17 Tue>--<2016-05-20 Fri>
 *** Things Done
 *** Blocking Points
+- Can't connect on irc through Inria's network ??
 - "lua5.2 found when lua5.3 is required" for -Denable_lua. Library for 5.3 not
   installed.
 - libdw not found for -Denable_model-checking.
+- Should I focus on VM deployment (allocation, provisioning) or VM usage
+  (management) ? ("les charges")
 *** Planned Work
 - [X] Install SimGrid from source
 - [X] Autoconnect #simgrid on irc.oftc.net
