@@ -1,4 +1,4 @@
-#+TITLE: Internship on SimGrid with Martin Quinson
+#+TITLE: Internship on SimGrid with Martin Quinson and Anne-Cécile Orgerie.
 #+DATE: [2016-05-17 Mon]--[2016-05-15 Fri]
 #+AUTHOR: Simon Bihel
 #+EMAIL: [[mailto:simon.bihel@ens-rennes.fr]]
@@ -7,10 +7,13 @@
 #+LANGUAGE: en
 
 * Introduction
+  Propose ways to formulate, on the user's side of SimGrid, elastic tasks (tasks
+  with fluctuating usage/size).
 
 * Findings
 ** Bibliography
-- [[http://www.buyya.com/papers/CloudSim2010.pdf][CloudSim]]
+- <<CS_p>>[[http://www.buyya.com/papers/CloudSim2010.pdf][CloudSim]]
+- <<DCs>> DCsim's [[https://github.com/digs-uwo/dcsim][repo]], [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6380046][paper1]], [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6727859][paper2]] and [[https://www.dmtf.org/sites/default/files/svm2012_presentation1.pdf][slides]].
 ** Contribution
 
 * Development
@@ -18,23 +21,87 @@
 * Journal
 ** Week 1 <2016-05-17 Tue>--<2016-05-20 Fri>
 *** Things Done
+- Read Introduction, Background and Architecture parts of the CloudSim's paper
+  [[CS_p]]. Gave better understanding of cloud's layers and the difficulties
+  added to grids.
+- Opened the [[http://www.buyya.com/papers/gridsim.pdf][GridSim paper]], looked at some figures and closed it upon
+  encountering pages of uml class diagram and code samples.
+- Meet-up with Anne-Cécile and Martin. Better understanding of my role (how to
+  express elastic tasks) and the context (other simulators, the point of this
+  work, ...).
+- Tweaked/Fixed vim/tmux/orgmode config stuff, [[https://github.com/sbihel/dotfiles][my dotfiles]].
+- Looked resources on DCsim <<DCs>>. Said in 2012 that CloudSim is missing VM
+  replication, VM dependences, work conserving cpu... Talks about reallocating
+  resources to VM (not wasting cpu's unused shares/resources) and managing
+  resources following fluctuating usage in general, but not elastic tasks. In
+  the few examples, there is one about StaticPeak as a SimulationTask but all
+  examples look the same, I must have missed something.
 *** Blocking Points
 - +Can't connect on irc through Inria's network ??+ Currently using a ssh
   tunnel.
 - "lua5.2 found when lua5.3 is required" for -Denable_lua. Library for 5.3 not
   installed. /on OS X/
 - libdw not found for -Denable_model-checking. /on OS X/
-- Should I focus on VM deployment (allocation, provisioning) or VM usage
-  (management) ? ("les charges")
+- +Should I focus on VM deployment (allocation, provisioning) or VM usage
+  (management) ? ("les charges")+ VM usage. -> User is using the simulator to
+  test it's allocator of VMs.
 *** Planned Work
 - [X] Install SimGrid from source
 - [X] Autoconnect #simgrid on irc.oftc.net
-- [ ] Read tutorial [[http://simgrid.gforge.inria.fr/documentation.php]]
-- [ ] Go through tutorial [[http://simgrid.gforge.inria.fr/simgrid/3.13/doc/tutorial.html]]
+- [X] Read tutorial [[http://simgrid.gforge.inria.fr/documentation.php]]
+- [X] Go through tutorial [[http://simgrid.gforge.inria.fr/simgrid/3.13/doc/tutorial.html]]
+- [X] See concurrent tools like DCsim and GridSim. Pay attention to VM charges.
+
+** Week 2 <2016-05-23 Mon>--<2016-05-27 Fri>
+*** Things Done
+*** Blocking Points
+*** Planned Work
 - [ ] See concurrent tools like DCsim and GridSim. Pay attention to VM charges.
+- [ ] Connect to iwifi-interne.
+
+** Week 3 <2016-06-06 Mon>--<2016-06-03 Fri>
+*** Things Done
+*** Blocking Points
+*** Planned Work
+
+** Week 4 <2016-06-06 Mon>--<2016-06-10 Fri>
+*** Things Done
+*** Blocking Points
+*** Planned Work
+
+** Week 5 <2016-06-13 Mon>--<2016-06-17 Fri>
+*** Things Done
+*** Blocking Points
+*** Planned Work
+
+** Week 6 <2016-06-20 Mon>--<2016-06-24 Fri>
+*** Things Done
+*** Blocking Points
+*** Planned Work
+
+** Week 7 <2016-06-27 Mon>--<2016-07-01 Fri>
+*** Things Done
+*** Blocking Points
+*** Planned Work
+
+** Week 8 <2016-07-04 Mon>--<2016-07-08 Fri>
+*** Things Done
+*** Blocking Points
+*** Planned Work
+
+** Week 9 <2016-07-11 Mon>--<2016-07-15 Fri>
+*** Things Done
+*** Blocking Points
+*** Planned Work
+
 
 * Global Goals
 ** TODO Internship subject <2016-05-30 Mon>
+** TODO Bibliography <2016-05-17 Tue>--<2016-05-27 Fri>
+** TODO Contribution <2016-05-30 Mon>--<2016-06-17 Fri>
+** TODO App + study <2016-06-20 Mon>--<2016-06-27 Mon>
+** TODO Experiments <2016-06-28 Tue>--<2016-07-05 Tue>
+** TODO Report writing <2016-07-06 Wed>--<2016-07-13 Wed>
 ** TODO Report 1.0 <2016-07-15 Fri>
 
 * Conclusion
