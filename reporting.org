@@ -14,9 +14,19 @@
 ** Bibliography
 - <<CS_p>>[[http://www.buyya.com/papers/CloudSim2010.pdf][CloudSim]]
 - <<DCs>> DCsim's [[https://github.com/digs-uwo/dcsim][repo]], [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6380046][paper1]], [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6727859][paper2]] and [[https://www.dmtf.org/sites/default/files/svm2012_presentation1.pdf][slides]].
+- <<IS_p>>[[http://download.springer.com/static/pdf/46/chp%253A10.1007%252F978-3-642-31552-7_39.pdf?originUrl=http%3A%2F%2Flink.springer.com%2Fchapter%2F10.1007%2F978-3-642-31552-7_39&token2=exp=1463995249~acl=%2Fstatic%2Fpdf%2F46%2Fchp%25253A10.1007%25252F978-3-642-31552-7_39.pdf%3ForiginUrl%3Dhttp%253A%252F%252Flink.springer.com%252Fchapter%252F10.1007%252F978-3-642-31552-7_39*~hmac=81aa15290d88a2cbd2017547f69672bbe5f6ce338b05eba1489ca37d2cfb1fa2][ISim]].
 ** Contribution
 
 * Development
+
+* Global Goals
+** TODO Internship subject <2016-05-30 Mon>
+** TODO Bibliography <2016-05-17 Tue>--<2016-05-27 Fri>
+** TODO Contribution <2016-05-30 Mon>--<2016-06-17 Fri>
+** TODO App + study <2016-06-20 Mon>--<2016-06-27 Mon>
+** TODO Experiments <2016-06-28 Tue>--<2016-07-05 Tue>
+** TODO Report writing <2016-07-06 Wed>--<2016-07-13 Wed>
+** TODO Report 1.0 <2016-07-15 Fri>
 
 * Journal
 ** Week 1 <2016-05-17 Tue>--<2016-05-20 Fri>
@@ -54,9 +64,32 @@
 
 ** Week 2 <2016-05-23 Mon>--<2016-05-27 Fri>
 *** Things Done
+- DCsim's code. There is InteractiveTasks which might correspond to elastic
+  tasks. It consists of default and max number of instances, resource size,
+  normal service time, and visit ratio. I guess if the ratio changes over time
+  the task become elastic.
+- CloudSim's code. There is HostDynamicWorkload which might correspond to
+  elastic taks. List of processing elements,
+- Took a look at [[IS_p][ISim's paper]] but because it was speaking of dynamic
+  workload. But it is a meta-scheduler and it performs workload consolidation
+  for power management. In the end I think it has nothing to do with what I
+  looking for.
+- Contribution proposal 1. Elastic task is like a server's requests log. The
+  parts that aren't over 100% of usage are reduced as one task. And we deal with
+  the other parts. Cons: long non excessive part translated into one task can
+  lose a lot information (lot of usage on a short time can have effect on
+  bandwidth usage for example?); if there is lot of peaks over the limit then
+  there is a lot to deal with if it goes down between each peak. Maybe maths
+  could help having a smarter decomposition.
 *** Blocking Points
+- [[https://books.google.fr/books?id=io6aBQAAQBAJ&pg=PA92&lpg=PA92&dq=cloud+simulation+dynamic+workload&source=bl&ots=HkoqPCSnzM&sig=Ko-BHh-jMjx_6IDhE67RnTHW3h4&hl=en&sa=X&ved=0ahUKEwih0d65lPDMAhVrB8AKHW0EBVwQ6AEIMjAC#v=onepage&q=cloud%20simulation%20dynamic%20workload&f=false][This paper]] says that [[http://www.ijsr.net/archive/v2i8/MTIwMTMxMjA=.pdf][this paper]] presents an approach at modeling dynamic
+  workloads in CloudSim but I didn't understand why.
+- Can't seem to find stuff about dynamic tasks/workload, only stuff like dynamic
+  resource allocation.
 *** Planned Work
-- [ ] See concurrent tools like DCsim and GridSim. Pay attention to VM charges.
+- [X] Find other simulators. (e.g. survey cloud simulators).
+- [ ] See concurrent tools like DCsim and GridSim. Pay attention to varying
+      workload. Read doc and source. When reading articles, summarize it.
 - [ ] Connect to iwifi-interne.
 
 ** Week 3 <2016-06-06 Mon>--<2016-06-03 Fri>
@@ -93,15 +126,5 @@
 *** Things Done
 *** Blocking Points
 *** Planned Work
-
-
-* Global Goals
-** TODO Internship subject <2016-05-30 Mon>
-** TODO Bibliography <2016-05-17 Tue>--<2016-05-27 Fri>
-** TODO Contribution <2016-05-30 Mon>--<2016-06-17 Fri>
-** TODO App + study <2016-06-20 Mon>--<2016-06-27 Mon>
-** TODO Experiments <2016-06-28 Tue>--<2016-07-05 Tue>
-** TODO Report writing <2016-07-06 Wed>--<2016-07-13 Wed>
-** TODO Report 1.0 <2016-07-15 Fri>
 
 * Conclusion
