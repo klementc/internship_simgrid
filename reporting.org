@@ -69,11 +69,11 @@
   normal service time, and visit ratio. I guess if the ratio changes over time
   the task become elastic.
 - CloudSim's code. There is HostDynamicWorkload which might correspond to
-  elastic taks. List of processing elements,
-- Took a look at [[IS_p][ISim's paper]] but because it was speaking of dynamic
-  workload. But it is a meta-scheduler and it performs workload consolidation
-  for power management. In the end I think it has nothing to do with what I
-  looking for.
+  elastic taks. List of processing elements... Meh, looks like it's just for
+  keeping up to date with perfomance degradation of the VM.
+- Took a look at [[IS_p][ISim's paper]] because it was speaking of dynamic workload. But
+  it is a meta-scheduler and it performs workload consolidation for power
+  management. In the end I think it has nothing to do with what I looking for.
 - Contribution proposal 1. Elastic task is like a server's requests log. The
   parts that aren't over 100% of usage are reduced as one task. And we deal with
   the other parts. Cons: long non excessive part translated into one task can
@@ -81,6 +81,17 @@
   bandwidth usage for example?); if there is lot of peaks over the limit then
   there is a lot to deal with if it goes down between each peak. Maybe maths
   could help having a smarter decomposition.
+- Contribution proposal 2. Like in DCsim a task is triggerred/visited regularly
+  and to simulate the elasticity the ratio of visit has to be changed. Pros: the
+  precision of the simulation depends on the precision of ratio changes given by
+  the user, thus performances depend on the user (avoiding responsibilities
+  ¯\_(ツ)_/¯); convenient for the user.
+- Contribution proposal 3. If we consider that elastic tasks never really end,
+  we could play with the resources of the VMs on which it is executed and the
+  task would use it fully. I guess that would be a way of doing proposal 2.
+  Cons: playing with resources induce not simulating the real world and make
+  falsifying the results because resources management has a huge impact on other
+  stuff.
 *** Blocking Points
 - [[https://books.google.fr/books?id=io6aBQAAQBAJ&pg=PA92&lpg=PA92&dq=cloud+simulation+dynamic+workload&source=bl&ots=HkoqPCSnzM&sig=Ko-BHh-jMjx_6IDhE67RnTHW3h4&hl=en&sa=X&ved=0ahUKEwih0d65lPDMAhVrB8AKHW0EBVwQ6AEIMjAC#v=onepage&q=cloud%20simulation%20dynamic%20workload&f=false][This paper]] says that [[http://www.ijsr.net/archive/v2i8/MTIwMTMxMjA=.pdf][this paper]] presents an approach at modeling dynamic
   workloads in CloudSim but I didn't understand why.
