@@ -86,12 +86,19 @@
   precision of the simulation depends on the precision of ratio changes given by
   the user, thus performances depend on the user (avoiding responsibilities
   ¯\_(ツ)_/¯); convenient for the user.
-- Contribution proposal 3. If we consider that elastic tasks never really end,
+- Contribution proposal 3~. If we consider that elastic tasks never really end,
   we could play with the resources of the VMs on which it is executed and the
   task would use it fully. I guess that would be a way of doing proposal 2.
   Cons: playing with resources induce not simulating the real world and make
   falsifying the results because resources management has a huge impact on other
   stuff.
+- Contribution proposal 4~. Generating function or history {date; value}*.
+- Read DCworms' paper. Simulation to study the energy-consumption of
+  datacenters. Part of CoolEmAll project. Broad range of tools. What's
+  interesting for me is that it uses workflows to model workloads. But I think
+  it's focusing on a model that allow better energy consumption analyzing.
+  Globally it is very focused on having control on everything to get a precise
+  evaluation of the energy consumption.
 *** Blocking Points
 - [[https://books.google.fr/books?id=io6aBQAAQBAJ&pg=PA92&lpg=PA92&dq=cloud+simulation+dynamic+workload&source=bl&ots=HkoqPCSnzM&sig=Ko-BHh-jMjx_6IDhE67RnTHW3h4&hl=en&sa=X&ved=0ahUKEwih0d65lPDMAhVrB8AKHW0EBVwQ6AEIMjAC#v=onepage&q=cloud%20simulation%20dynamic%20workload&f=false][This paper]] says that [[http://www.ijsr.net/archive/v2i8/MTIwMTMxMjA=.pdf][this paper]] presents an approach at modeling dynamic
   workloads in CloudSim but I didn't understand why.
@@ -99,9 +106,23 @@
   resource allocation.
 *** Planned Work
 - [X] Find other simulators. (e.g. survey cloud simulators).
-- [ ] See concurrent tools like DCsim and GridSim. Pay attention to varying
+- [X] See concurrent tools like DCsim and GridSim. Pay attention to varying
       workload. Read doc and source. When reading articles, summarize it.
 - [ ] Connect to iwifi-interne.
+- [ ] Write introduction.
+- [ ] Explain why DCworms isn't that useful.
+- [ ] Discover [[http://www.wikibench.eu/]]. What is it ? Who's using it ?
+- [ ] Write a formal scenario file that uses the proposals.
+- [ ] Find criterion to quantify the quality of the proposals. (e.g. complexity
+      for the user; size on disc/in memory; computing speed; expressiveness;
+      implementable in SimGrid)
+- [ ] Bibliography, which tools use DCsim, CloudSim...
+- [ ] Bibliography, find some papers of (potential) users that describe their
+      setup.
+- [ ] See workload injection (injecteurs de charge) in NS-3. Should be similar
+      to what we're trying to do.
+- [ ] Think about application workflows and interactions between interdependent
+      (micro)(elastic)tasks.
 
 ** Week 3 <2016-06-06 Mon>--<2016-06-03 Fri>
 *** Things Done
