@@ -9,12 +9,15 @@
 * Introduction
   Propose ways to formulate, on the user's side of SimGrid, elastic tasks (tasks
   with fluctuating usage/size).
+  Why are simulators needed: easier/affordable/..., perfect knowledge of usage.
 
 * Findings
 ** Bibliography
-- <<CS_p>>[[http://www.buyya.com/papers/CloudSim2010.pdf][CloudSim]]
+- <<CS_p>>[[http://www.buyya.com/papers/CloudSim2010.pdf][CloudSim]], [[https://github.com/Cloudslab/cloudsim][repo]].
 - <<DCs>> DCsim's [[https://github.com/digs-uwo/dcsim][repo]], [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6380046][paper1]], [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6727859][paper2]] and [[https://www.dmtf.org/sites/default/files/svm2012_presentation1.pdf][slides]].
 - <<IS_p>>[[http://download.springer.com/static/pdf/46/chp%253A10.1007%252F978-3-642-31552-7_39.pdf?originUrl=http%3A%2F%2Flink.springer.com%2Fchapter%2F10.1007%2F978-3-642-31552-7_39&token2=exp=1463995249~acl=%2Fstatic%2Fpdf%2F46%2Fchp%25253A10.1007%25252F978-3-642-31552-7_39.pdf%3ForiginUrl%3Dhttp%253A%252F%252Flink.springer.com%252Fchapter%252F10.1007%252F978-3-642-31552-7_39*~hmac=81aa15290d88a2cbd2017547f69672bbe5f6ce338b05eba1489ca37d2cfb1fa2][ISim]].
+- [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6779436&tag=1][Survey]].
+- [[http://ieeexplore.ieee.org/ielx7/7092813/7092808/07092927.pdf?tp=&arnumber=7092927&isnumber=7092808][Complement to simulations]].
 ** Contribution
 
 * Development
@@ -93,12 +96,40 @@
   falsifying the results because resources management has a huge impact on other
   stuff.
 - Contribution proposal 4~. Generating function or history {date; value}*.
-- Read DCworms' paper. Simulation to study the energy-consumption of
+- Read [[http://ac.els-cdn.com/S1569190X1300124X/1-s2.0-S1569190X1300124X-main.pdf?_tid=0ede5a0c-2351-11e6-826f-00000aacb362&acdnat=1464274353_4043525da0d2e6c2cb9432f0a6955443][DCworms' paper]]. Simulation to study the energy-consumption of
   datacenters. Part of CoolEmAll project. Broad range of tools. What's
   interesting for me is that it uses workflows to model workloads. But I think
   it's focusing on a model that allow better energy consumption analyzing.
   Globally it is very focused on having control on everything to get a precise
   evaluation of the energy consumption.
+- Explored wikibench.eu. Master thesis for large scale benchmark. Real traces
+  from wikipedia with tools to reduce the intensity for example whilst keeping
+  interesting properties. People like Guillaume Pierre are using it to evaluate
+  autoscaling. More generally all work on cloud and application management can
+  be evaluated with it.
+- Wrote some sort of scenario file for proposal 1 and 2. Needs more work to have
+  correct C code. There is no task duration because I don't feel it's natural
+  for a dynamic task to have a predetermined duration. I guess the user will
+  have to kill it or reduce the visit ratio to 0. Still need some work to have
+  satisfying description of the visits ratio fluctuations for proposal 2. And
+  the base example chosen (cloud-two-tasks) might not be the best because the
+  two tasks aren't concurrents and have to be killed before starting another
+  one.
+- Criterion of quality for proposals.
+  + Complexity for the user: describing elastic tasks just be at least familiar
+    to normal tasks.
+  + Size on disc/in memory: real traces take a lot of space so the description
+    of fluctuations for an elastic task just be lighter.
+  + Computing speed: elastic tasks should be able to be precise enough to avoid
+    wrong simulations but without taking too much longer than current
+    perfomances.
+  + Expressiveness: expressing elastic tasks should be natural and close to
+    setting up real dynamic cloud tasks.
+  + Implementable in SimGrid: avoiding massive refactoring and using current
+    code would be appreciated.
+- Searched who cited DCsim. [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6380049][One]] paper was about comparing algorithms, [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6572981][another]]
+  about switching strategies at runtime. They both seem to give details even if
+  the code isn't available /I haven't read them yet/.
 *** Blocking Points
 - [[https://books.google.fr/books?id=io6aBQAAQBAJ&pg=PA92&lpg=PA92&dq=cloud+simulation+dynamic+workload&source=bl&ots=HkoqPCSnzM&sig=Ko-BHh-jMjx_6IDhE67RnTHW3h4&hl=en&sa=X&ved=0ahUKEwih0d65lPDMAhVrB8AKHW0EBVwQ6AEIMjAC#v=onepage&q=cloud%20simulation%20dynamic%20workload&f=false][This paper]] says that [[http://www.ijsr.net/archive/v2i8/MTIwMTMxMjA=.pdf][this paper]] presents an approach at modeling dynamic
   workloads in CloudSim but I didn't understand why.
@@ -110,14 +141,14 @@
       workload. Read doc and source. When reading articles, summarize it.
 - [ ] Connect to iwifi-interne.
 - [ ] Write introduction.
-- [ ] Explain why DCworms isn't that useful.
-- [ ] Discover [[http://www.wikibench.eu/]]. What is it ? Who's using it ?
-- [ ] Write a formal scenario file that uses the proposals.
-- [ ] Find criterion to quantify the quality of the proposals. (e.g. complexity
+- [X] Explain why DCworms isn't that useful.
+- [X] Discover [[http://www.wikibench.eu/]]. What is it ? Who's using it ?
+- [X] Write a formal scenario file that uses the proposals.
+- [X] Find criterion to quantify the quality of the proposals. (e.g. complexity
       for the user; size on disc/in memory; computing speed; expressiveness;
       implementable in SimGrid)
-- [ ] Bibliography, which tools use DCsim, CloudSim...
-- [ ] Bibliography, find some papers of (potential) users that describe their
+- [ ] Bibliography, which paper use DCsim, CloudSim, SimWare...
+      Bibliography, find some papers of (potential) users that describe their
       setup.
 - [ ] See workload injection (injecteurs de charge) in NS-3. Should be similar
       to what we're trying to do.
