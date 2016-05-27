@@ -7,12 +7,27 @@
 #+LANGUAGE: en
 
 * Introduction
-  Propose ways to formulate, on the user's side of SimGrid, elastic tasks (tasks
-  with fluctuating usage/size).
-  Why are simulators needed: easier/affordable/..., perfect knowledge of usage.
+  Distributed systems have grown to be immensely complex. To help study and
+  improve these systems simulators have been developed. Along with the ease of
+  access they allow testing new pieces of software while having the exact same
+  environment each time. Extracting results from experiments is also easier as a
+  simulator can have perfect knowledge of all simulated component. The matter of
+  study can be the energy consumption, computing time, bandwidth usage... There
+  has been a lot of simulators but few have been able to keep up with the
+  evolution of distributed systems and be able to simulate grids alike clouds
+  for example. [[SG_p][SimGrid]] is one of them and the one I have worked on during my
+  internship. My work was focused on the simulation of clouds with
+  elastic/dynamic tasks. These kind of tasks can be used for website requests
+  like rendering markdown on a wikipedia page where the task is
+  triggered/run/activated for each request. Depending of the usage the resources
+  needed will fluctuate and compared to a normal task there isn't one
+  computation duration as requests are made during a certain time, not all at
+  once.  I proposed a way to formulate these task for the users of SimGrid and
+  implemented it. Experiments have shown the validity~ of the contribution.
 
 * Findings
 ** Bibliography
+- <<SG_p>>[[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=1199362][SimGrid]].
 - <<CS_p>>[[http://www.buyya.com/papers/CloudSim2010.pdf][CloudSim]], [[https://github.com/Cloudslab/cloudsim][repo]].
 - <<DCs>> DCsim's [[https://github.com/digs-uwo/dcsim][repo]], [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6380046][paper1]], [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6727859][paper2]] and [[https://www.dmtf.org/sites/default/files/svm2012_presentation1.pdf][slides]].
 - <<IS_p>>[[http://download.springer.com/static/pdf/46/chp%253A10.1007%252F978-3-642-31552-7_39.pdf?originUrl=http%3A%2F%2Flink.springer.com%2Fchapter%2F10.1007%2F978-3-642-31552-7_39&token2=exp=1463995249~acl=%2Fstatic%2Fpdf%2F46%2Fchp%25253A10.1007%25252F978-3-642-31552-7_39.pdf%3ForiginUrl%3Dhttp%253A%252F%252Flink.springer.com%252Fchapter%252F10.1007%252F978-3-642-31552-7_39*~hmac=81aa15290d88a2cbd2017547f69672bbe5f6ce338b05eba1489ca37d2cfb1fa2][ISim]].
@@ -129,12 +144,19 @@
     code would be appreciated.
 - Searched who cited DCsim. [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6380049][One]] paper was about comparing algorithms, [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6572981][another]]
   about switching strategies at runtime. They both seem to give details even if
-  the code isn't available /I haven't read them yet/.
+  the code isn't available. Well I have no idea how this could by useful as they
+  are describing experiments that have nothing to do with elastic tasks.
+- While trying to write an introduction I think I wrote some sort of abstract.
+  Well I guess I'll just have to fill-in to get a proper introduction.
 *** Blocking Points
 - [[https://books.google.fr/books?id=io6aBQAAQBAJ&pg=PA92&lpg=PA92&dq=cloud+simulation+dynamic+workload&source=bl&ots=HkoqPCSnzM&sig=Ko-BHh-jMjx_6IDhE67RnTHW3h4&hl=en&sa=X&ved=0ahUKEwih0d65lPDMAhVrB8AKHW0EBVwQ6AEIMjAC#v=onepage&q=cloud%20simulation%20dynamic%20workload&f=false][This paper]] says that [[http://www.ijsr.net/archive/v2i8/MTIwMTMxMjA=.pdf][this paper]] presents an approach at modeling dynamic
   workloads in CloudSim but I didn't understand why.
 - Can't seem to find stuff about dynamic tasks/workload, only stuff like dynamic
   resource allocation.
+- Haven't really found what injection is in NS-3.
+- People have dealt without elastic tasks just fine. Is it really useful ? Can't
+  find stuff about it so I guess it's hard to find potential users and their
+  needs.
 *** Planned Work
 - [X] Find other simulators. (e.g. survey cloud simulators).
 - [X] See concurrent tools like DCsim and GridSim. Pay attention to varying
@@ -147,7 +169,7 @@
 - [X] Find criterion to quantify the quality of the proposals. (e.g. complexity
       for the user; size on disc/in memory; computing speed; expressiveness;
       implementable in SimGrid)
-- [ ] Bibliography, which paper use DCsim, CloudSim, SimWare...
+- [X] Bibliography, which paper use DCsim, CloudSim, SimWare...
       Bibliography, find some papers of (potential) users that describe their
       setup.
 - [ ] See workload injection (injecteurs de charge) in NS-3. Should be similar
