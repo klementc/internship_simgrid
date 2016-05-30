@@ -166,7 +166,7 @@
 - [X] Explain why DCworms isn't that useful.
 - [X] Discover [[http://www.wikibench.eu/]]. What is it ? Who's using it ?
 - [X] Write a formal scenario file that uses the proposals.
-- [X] Find criterion to quantify the quality of the proposals. (e.g. complexity
+- [X] Find criteria to quantify the quality of the proposals. (e.g. complexity
       for the user; size on disc/in memory; computing speed; expressiveness;
       implementable in SimGrid)
 - [X] Bibliography, which paper use DCsim, CloudSim, SimWare...
@@ -181,6 +181,15 @@
 *** Things Done
 *** Blocking Points
 *** Planned Work
+- [ ] More detailed entries for papers read. Abstract (1 sentence, objectives),
+      link with my work, pros (what I'd like to reuse and what's worrying), cons
+      (what I should say in my article). For the papers' names use the writers'
+      names fist letters or the name of the conference.
+- [ ] Put the papers descriptions in the bibliography section (write it like a
+      related work section).
+- [ ] Write a scenario file (needs description). Put it in the contribution
+      section.
+- [ ] Search for potential users through workbench citations.
 
 ** Week 4 <2016-06-06 Mon>--<2016-06-10 Fri>
 *** Things Done
