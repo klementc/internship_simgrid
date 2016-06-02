@@ -27,37 +27,54 @@
 
 * Findings
 ** Bibliography
-- <<LMC03>>[[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=1199362][SimGrid]].
-- <<CRBRB10>>[[http://www.buyya.com/papers/CloudSim2010.pdf][CloudSim]], [[https://github.com/Cloudslab/cloudsim][repo]]. It's a simulator of clouds. Quite famous but
-  nothing on elastic tasks (HostDynamicWorkload in the code). Good background
-  section, speciallly built for clouds. No elastic task and is apparently
-  missing VM related stuff (see [[TKBL12]]).
-- <<TKBL12>>DCsim's [[https://github.com/digs-uwo/dcsim][repo]], [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6380046][paper1]], [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6727859][paper2]] and [[https://www.dmtf.org/sites/default/files/svm2012_presentation1.pdf][slides]]. Simulator for data centres
-  to evaluate resource management. Potential users of SimGrid among its users,
-  InteractiveTasks in the code.
-- [[http://ac.els-cdn.com/S1569190X1300124X/1-s2.0-S1569190X1300124X-main.pdf?_tid=0ede5a0c-2351-11e6-826f-00000aacb362&acdnat=1464274353_4043525da0d2e6c2cb9432f0a6955443][DCworms' paper]]. Simulation to study the energy-consumption of datacenters,
-  part of CoolEmAll project. What's interesting for me is that it uses workflows
-  to model workloads. Broad range of tools. But I think it's focusing on a model
-  that allow better energy consumption analyzing.  Globally it is very focused
-  on having control on everything to get a precise evaluation of the energy
-  consumption.
-- <<JNSI13>>[[http://download.springer.com/static/pdf/46/chp%253A10.1007%252F978-3-642-31552-7_39.pdf?originUrl=http%3A%2F%2Flink.springer.com%2Fchapter%2F10.1007%2F978-3-642-31552-7_39&token2=exp=1463995249~acl=%2Fstatic%2Fpdf%2F46%2Fchp%25253A10.1007%25252F978-3-642-31552-7_39.pdf%3ForiginUrl%3Dhttp%253A%252F%252Flink.springer.com%252Fchapter%252F10.1007%252F978-3-642-31552-7_39*~hmac=81aa15290d88a2cbd2017547f69672bbe5f6ce338b05eba1489ca37d2cfb1fa2][ISim]]. Took a look because it was speaking of dynamic workload.
-  But it is a meta-scheduler and it performs workload consolidation for power
-  management. In the end I think it has nothing to do with what I looking for.
-- Searched who cited DCsim. [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6380049][One]] paper was about comparing algorithms, [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6572981][another]]
-  about switching strategies at runtime. They both seem to give details even if
-  the code isn't available. Well I have no idea how this could by useful as they
-  are describing experiments that have nothing to do with elastic tasks.
-- <<AS14>>[[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6779436&tag=1][Survey]].
-- <<PGWK15>>[[http://ieeexplore.ieee.org/ielx7/7092813/7092808/07092927.pdf?tp=&arnumber=7092927&isnumber=7092808][Complement to simulations]].
-- <<FPK14>>[[http://ieeexplore.ieee.org/ielx7/6902666/6903436/06903474.pdf?tp=&arnumber=6903474&isnumber=6903436][Autoscaling]]. Autoscaling on heterogeneous resources and multiple
-  levels of QoS requirements. It uses wikibench for the evaluation and runs it
-  on real infrastructures...
-- <<HW13>>[[http://faculty.cs.gwu.edu/~timwood/papers/icac13_final.pdf][Memory caching]]. Adaptative distributed (autoscaling, evenly
-  distributed load) memory caching. It uses wikibench for the evaluation but
-  runs it on real infrastructures...
-- <<MVD12>>[[http://ieeexplore.ieee.org/ielx5/6297612/6298144/06298161.pdf?tp=&arnumber=6298161&isnumber=6298144][Profit-Maximizing Resource Allocation]]. Again doing experiments for
-  real.
++ Clouds
+  - <<NGS15>>[[http://link.springer.com/chapter/10.1007/978-3-319-29919-8_12][Cloud Elasticity Survey]]. Survey on research work on cloud
+    elasticity. Good overview of all research done on cloud elasticity. It gives
+    hint at what people might want in SimGrid. Tons of references to papers that
+    gives better understanding on the way of formulating workload and other
+    stuff.
+  - <<ASPLOS12>>[[http://www.cs.rutgers.edu/~ricardob/papers/asplos12.pdf][DejaVu]]. Framework that enhance and accelerate resource
+    allocation with e.g. caching. Used real traces for evaluation. Explains how
+    to deal with dynamic workload. For their Hotmail traces they reference [[http://research.microsoft.com/pubs/144957/euro040-thereska.pdf][this]]
+    article which acknoledge some people for it at the end.
++ Simulation
+  - <<CGLQS14>>[[https://hal.inria.fr/hal-01017319/PDF/simgrid3-journal.pdf][SimGrid]].
++ Concurrent tools
+  - <<CRBRB10>>[[http://www.buyya.com/papers/CloudSim2010.pdf][CloudSim]], [[https://github.com/Cloudslab/cloudsim][repo]]. It's a simulator of clouds. Quite famous but
+    nothing on elastic tasks (HostDynamicWorkload in the code). Good background
+    section, speciallly built for clouds. No elastic task and is apparently
+    missing VM related stuff (see [[TKBL12]]).
+  - <<TKBL12>>DCsim's [[https://github.com/digs-uwo/dcsim][repo]], [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6380046][paper1]], [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6727859][paper2]] and [[https://www.dmtf.org/sites/default/files/svm2012_presentation1.pdf][slides]]. Simulator for data centres
+    to evaluate resource management. Potential users of SimGrid among its users,
+    InteractiveTasks in the code.
+  - Searched who cited DCsim. [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6380049][One]] paper was about comparing algorithms, [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6572981][another]]
+    about switching strategies at runtime. They both seem to give details even
+    if the code isn't available. Well I have no idea how this could by useful as
+    they are describing experiments that have nothing to do with elastic tasks.
++ Not relevant
+  - [[http://ac.els-cdn.com/S1569190X1300124X/1-s2.0-S1569190X1300124X-main.pdf?_tid=0ede5a0c-2351-11e6-826f-00000aacb362&acdnat=1464274353_4043525da0d2e6c2cb9432f0a6955443][DCworms' paper]]. Simulation to study the energy-consumption of datacenters,
+    part of CoolEmAll project. What's interesting for me is that it uses
+    workflows to model workloads. Broad range of tools. But I think it's
+    focusing on a model that allow better energy consumption analyzing.
+    Globally it is very focused on having control on everything to get a precise
+    evaluation of the energy consumption.
+  - <<JNSI13>>[[http://download.springer.com/static/pdf/46/chp%253A10.1007%252F978-3-642-31552-7_39.pdf?originUrl=http%3A%2F%2Flink.springer.com%2Fchapter%2F10.1007%2F978-3-642-31552-7_39&token2=exp=1463995249~acl=%2Fstatic%2Fpdf%2F46%2Fchp%25253A10.1007%25252F978-3-642-31552-7_39.pdf%3ForiginUrl%3Dhttp%253A%252F%252Flink.springer.com%252Fchapter%252F10.1007%252F978-3-642-31552-7_39*~hmac=81aa15290d88a2cbd2017547f69672bbe5f6ce338b05eba1489ca37d2cfb1fa2][ISim]]. Took a look because it was speaking of dynamic workload.
+    But it is a meta-scheduler and it performs workload consolidation for power
+    management. In the end I think it has nothing to do with what I looking for.
++ Misc.
+  - <<AS14>>[[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6779436&tag=1][Survey]].
+  - <<PGWK15>>[[http://ieeexplore.ieee.org/ielx7/7092813/7092808/07092927.pdf?tp=&arnumber=7092927&isnumber=7092808][Complement to simulations]].
++ Not categorized yet / Not read yet
+  - <<FPK14>>[[http://ieeexplore.ieee.org/ielx7/6902666/6903436/06903474.pdf?tp=&arnumber=6903474&isnumber=6903436][Autoscaling]]. Autoscaling on heterogeneous resources and multiple
+    levels of QoS requirements. It uses wikibench for the evaluation and runs it
+    on real infrastructures...
+  - <<HW13>>[[http://faculty.cs.gwu.edu/~timwood/papers/icac13_final.pdf][Memory caching]]. Adaptative distributed (autoscaling, evenly
+    distributed load) memory caching. It uses wikibench for the evaluation but
+    runs it on real infrastructures...
+  - <<MVD12>>[[http://ieeexplore.ieee.org/ielx5/6297612/6298144/06298161.pdf?tp=&arnumber=6298161&isnumber=6298144][Profit-Maximizing Resource Allocation]]. Again doing experiments for
+    real.
+  - <<MDCSIM>>[[http://www.cse.psu.edu/~bus145/MDCSIM.pdf][MDCSim]]. Simulation platform for in-depth analysis of multi-tier
+    data centers.
 ** Contribution
 - Proposals.
   1. Real traces.
@@ -230,7 +247,12 @@
 - Copied papers description in bibliography section.
 - Took a look at [[FPK14]] and it does its evaluation on real infrastructures
   with wikibench. Lame? Same for [[HW13]] and [[MVD12]].
+- Partly read [[NGS15]] and [[ASPLOS12]]. As DejaVu clusters workloads into
+  classes, the proposal 2 (visit ratio) might be more convenient to study its
+  reaction/adaptation (I'm assuming that the clustering doesn't have problems).
 *** Blocking Points
+- Still have a hard time figuring out what potential users would prefer for the
+  API.
 *** Planned Work
 - [X] More detailed entries for papers read. Abstract (1 sentence, objectives),
       link with my work, pros (what I'd like to reuse and what's worrying), cons
@@ -243,6 +265,9 @@
 - [X] Search for potential users through wikibench citations.
 - [ ] See load injectors of NS-3 because it's similar to what we're trying to
       do.
+- [ ] See papers "multi-tiers applications" in [[<<NGS15>>][this.]]
+- [X] Organize bibliography with categories.
+- [ ] Propose clearer formulation of the elastic tasks API.
 
 ** Week 4 <2016-06-06 Mon>--<2016-06-10 Fri>
 *** Things Done
