@@ -99,6 +99,11 @@
     setting up real dynamic cloud tasks.
   + Implementable in SimGrid: avoiding massive refactoring and using current
     code would be appreciated.
+- e = new ElasticTask(comp_size);
+  e.setTriggerRatioVariation(vector<date, ratio>);
+  OR e.setTriggerTrace(FILE*);
+  e2 = new ElasticTask(comp_size);
+  e.addOutputStream(e2);
 
 * Development
 
@@ -253,6 +258,7 @@
 *** Blocking Points
 - Still have a hard time figuring out what potential users would prefer for the
   API.
+- Can a task know by itself when to update its visit ratio ?
 *** Planned Work
 - [X] More detailed entries for papers read. Abstract (1 sentence, objectives),
       link with my work, pros (what I'd like to reuse and what's worrying), cons
