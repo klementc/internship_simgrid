@@ -113,6 +113,13 @@
   + (Application) Live migration where only specific DBs are migrated instead of
     full VMs.
   + Application reconfiguration (i.e. application architectural change).
+- Develop on S4U
+- See maxmin code to find out why it's difficult to write a callback for VMs
+- Processus Alice et Eve S4U
+  2 .hpp for deployment and execution
+  doc S4U 3.14
+  Eve's a user that's gonne verify that the contribution's working
+  See energy.cpp as an example of plugin
 
 * Development
 
@@ -286,6 +293,8 @@
 
 ** Week 4 <2016-06-06 Mon>--<2016-06-10 Fri>
 *** Things Done
+- Worked on writing ElasticTask.hpp with the declaration of the class
+  ElasticTask and an example of its use.
 *** Blocking Points
 *** Planned Work
 - [ ] .hpp of elastic task (API proposition).
