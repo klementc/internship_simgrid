@@ -65,8 +65,8 @@ class Eve {
     public:
         void operator()() {
             ratioChange ratioFluctuation2[2] = {rC(0.0, 5), rC(40.0, 4)};
-            vector<ratioChange> ratioFluctuation(2);
-            ratioFluctuation.assign(&ratioFluctuation2[0], *ratioFluctuation2[0]+2);
+            std::vector<ratioChange> ratioFluctuation(2);
+            ratioFluctuation.assign(&ratioFluctuation2[0], &ratioFluctuation2[0]+2);
             this_task.setRatioVariation(ratioFluctuation);
             sleep(99999999);
             this_task.kill();
