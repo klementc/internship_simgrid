@@ -61,14 +61,22 @@ namespace this_task {
 
 #endif
 
-void test_eve() {
-    myHost = new Host("myHost");
-    e1 = new ElasticTask("e1", &myHost, eeerrhhh);
+class Eve {
+    public:
+        void operator()() {
+            ratioChange ratioFluctuation2[2] = {rC(0.0, 5), rC(40.0, 4)};
+            vector<ratioChange> ratioFluctuation(2);
+            ratioFluctuation.assign(&ratioFluctuation2[0], *ratioFluctuation2[0]+2);
+            this_task.setRatioVariation(ratioFluctuation);
+            sleep(99999999);
+            this_task.kill();
+        }
+};
 
-    return;
-}
-
-int main() {
-    test_eve();
-    return 1;
+int main(int argc, char **argv) {
+    Engine *e = new Engine(&argc, argv);
+    e->loadPlatform("../../platforms/two_hosts.xml");
+    new ElasticTask("eve", Host::by_name("Tremblay"), Eve());
+    e->run();
+    return 0;
 }
