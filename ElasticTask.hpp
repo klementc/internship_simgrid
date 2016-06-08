@@ -1,7 +1,7 @@
 #ifndef ELASTICTASK_HPP
 #define ELASTICTASK_HPP
 
-#include <simgrid/s4u/actor.hpp>
+#include <../simgrid/include/simgrid/s4u/actor.hpp>
 
 typedef struct ratioChange {
     double time;

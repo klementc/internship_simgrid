@@ -295,6 +295,8 @@
 *** Things Done
 - Worked on writing ElasticTask.hpp with the declaration of the class
   ElasticTask and an example of its use.
+- [[https://github.com/sbihel/simgrid-1][Forked SimGrid.]] Started integrating Elastictask in s4u but that might change
+  later to become a plugin.
 *** Blocking Points
 *** Planned Work
 - [ ] .hpp of elastic task (API proposition).
