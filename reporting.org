@@ -297,17 +297,30 @@
   ElasticTask and an example of its use.
 - [[https://github.com/sbihel/simgrid-1][Forked SimGrid.]] Started integrating Elastictask in s4u but that might change
   later to become a plugin.
+- Examples of internship reports (bests from last year at ENS Rennes):
+  [[http://perso.eleves.ens-rennes.fr/people/Timothee.Haudebourg/public/work/ecofen.pdf]],
+  [[http://perso.eleves.ens-rennes.fr/people/Alexandre.Debant/work/rapport_stage_l3.pdf]],
+  [[http://perso.eleves.ens-rennes.fr/people/Dominique.Barbe/derivationAI_long.pdf]],
+  [[http://perso.eleves.ens-rennes.fr/people/Raphael.Berthon/docs/Berthon_Internship_2015.pdf]].
+- What work is left to do compared to others? A friendly approach to the
+  problem. A more developed analysis of the state of the art. More meaningful
+  purpose of the work.
 *** Blocking Points
 *** Planned Work
-- [ ] .hpp of elastic task (API proposition).
+- [X] .hpp of elastic task (API proposition).
 - [ ] Read the survey in detail to avoid missing uses/POVs of clouds.
 - [ ] Develop the idea of resizing VMs for another POV of clouds (where you
       search to lower price of overcost of what you make available to users)
+- [ ] Compared to good interns reports say what's left to do.
 
 ** Week 5 <2016-06-13 Mon>--<2016-06-17 Fri>
 *** Things Done
 *** Blocking Points
 *** Planned Work
+- [ ] <2016-06-13 Mon 17:00> Compared to good interns reports say what's left to do.
+- [ ] <2016-06-14 Tue 11:00> BRUZ. Test on the comprehension of the survey.
+      Explain what information there is in it, how the studies are classified.
+      The good ideas of the paper, its limits...
 
 ** Week 6 <2016-06-20 Mon>--<2016-06-24 Fri>
 *** Things Done
