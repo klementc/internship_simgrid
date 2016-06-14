@@ -27,6 +27,42 @@
 
 * Findings
 ** Bibliography
+   *Background*
+     Cloud computing is a model that makes available infrastructures, platforms
+     and software with a pay-as-you-go subscription. It aims to reduce the cost
+     with a layer of virtualisation that allows virtual resources to be
+     dynamically adjusted and occupied on-demand. The problem of using the
+     minimal resources for the current demand/usage is still a research
+     challenge that spans all layers and applications. This dynamic management
+     of clouds is called cloud elasticity.
+
+     <<NGS15>> has categorized works on cloud elasticity and allows to see which
+     elements of a cloud infrastructure, platform or application/software are
+     impacted. As it is for now most research works are evaluated on real clouds
+     It is interesting for a distributed systems simulator to search what is
+     needed for simulating cloud elasticity. If it is shown that research works
+     on cloud elasticity can be evaluated on a simulator they would benefit from
+     cost reduction, re-runable experiments, trust in results...
+
+     As the works are on reacting to variating usage, simulators need a way to
+     express this fluctuating workload. We worked on elastic tasks that model
+     tasks that are triggered regularly and with a usage that fluctuates over
+     time.
+
+   *State of the art* (Needs for elastic tasks and concurrent tools)
+     Based on the classification of the survey, a simulator should allow the
+     manipulation of scopes, the evaluation of the different purposes, make
+     possible the elastic actions and allow multiple providers.
+
+     // Tell that simgrid doesn't all last 3 ?
+
+     At the moment no simulator article talks about dynamic workload. On the
+     other hand in the code of DCsim there was an interactive task and in the
+     code of CloudSim there was an host with dynamic workload.
+
+     // Go to contribution and go through each scope ?
+
+*** References
 + Clouds
   - <<NGS15>>[[http://link.springer.com/chapter/10.1007/978-3-319-29919-8_12][Cloud Elasticity Survey]]. Survey on research work on cloud
     elasticity. Good overview of all research done on cloud elasticity. It gives
@@ -45,9 +81,9 @@
     nothing on elastic tasks (HostDynamicWorkload in the code). Good background
     section, speciallly built for clouds. No elastic task and is apparently
     missing VM related stuff (see [[TKBL12]]).
-  - <<TKBL12>>DCsim's [[https://github.com/digs-uwo/dcsim][repo]], [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6380046][paper1]], [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6727859][paper2]] and [[https://www.dmtf.org/sites/default/files/svm2012_presentation1.pdf][slides]]. Simulator for data centres
-    to evaluate resource management. Potential users of SimGrid among its users,
-    InteractiveTasks in the code.
+  - <<TKBL12>>DCsim's [[https://github.com/digs-uwo/dcsim][repo]], [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6380046][paper1]], [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6727859][paper2]] and [[https://www.dmtf.org/sites/default/files/svm2012_presentation1.pdf][slides]]. Simulator for data
+    centres to evaluate resource management. Potential users of SimGrid among
+    its users, InteractiveTasks in the code.
   - Searched who cited DCsim. [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6380049][One]] paper was about comparing algorithms, [[http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6572981][another]]
     about switching strategies at runtime. They both seem to give details even
     if the code isn't available. Well I have no idea how this could by useful as
@@ -308,19 +344,23 @@
 *** Blocking Points
 *** Planned Work
 - [X] .hpp of elastic task (API proposition).
-- [ ] Read the survey in detail to avoid missing uses/POVs of clouds.
+- [X] Read the survey in detail to avoid missing uses/POVs of clouds.
 - [ ] Develop the idea of resizing VMs for another POV of clouds (where you
       search to lower price of overcost of what you make available to users)
-- [ ] Compared to good interns reports say what's left to do.
+- [X] Compared to good interns reports say what's left to do.
 
 ** Week 5 <2016-06-13 Mon>--<2016-06-17 Fri>
 *** Things Done
+- Filled the holes in the code.
+- Worked on background and state of the art.
 *** Blocking Points
 *** Planned Work
-- [ ] <2016-06-13 Mon 17:00> Compared to good interns reports say what's left to do.
-- [ ] <2016-06-14 Tue 11:00> BRUZ. Test on the comprehension of the survey.
-      Explain what information there is in it, how the studies are classified.
-      The good ideas of the paper, its limits...
+- [X] <2016-06-13 Mon 17:00> Compared to good interns reports say what's left to
+      do.
+- [X] Setup your own project ; don't touch pimpl_ just use regular msg tasks
+- [ ] <2016-06-15 Wed 09:00> Write background and state of the art using the
+      survey. (Explain what information there is in it, how the studies are
+      classified, the good ideas, its limits...)
 
 ** Week 6 <2016-06-20 Mon>--<2016-06-24 Fri>
 *** Things Done
