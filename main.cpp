@@ -17,9 +17,9 @@ public:
 
 int main(int argc, char **argv) {
     simgrid::s4u::Engine *e = new simgrid::s4u::Engine(&argc, argv);
-    e->loadPlatform("../../platforms/two_hosts.xml");
+    e->loadPlatform("../simgrid/examples/platforms/two_hosts.xml");
     msg_task_t task = MSG_task_create("Task", 2.0, 0.0, NULL);
-    simgrid::s4u::ElasticTask *eT = new simgrid::s4u::ElasticTask("eve", simgrid::s4u::Host::by_name("Tremblay"),
+    simgrid::s4u::ElasticTaskManager *eT = new simgrid::s4u::ElasticTaskManager("eve", simgrid::s4u::Host::by_name("Tremblay"),
                                                                  Eve(), task);
     ratioChange ratioFluctuation2[3] = {rC(0.0, 5), rC(40.0, 4), rC(50, 0)};
     std::vector <ratioChange> ratioFluctuation(3);

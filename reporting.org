@@ -106,6 +106,8 @@
     article which acknoledge some people for it at the end.
 + Simulation
   - <<CGLQS14>>[[https://hal.inria.fr/hal-01017319/PDF/simgrid3-journal.pdf][SimGrid]].
+  - <<SOCC10>>[[http://research.microsoft.com/pubs/143358/socc10-spikes.pdf][Modeling workload spikes]]. Proposal for generating
+    significant/realistic workload spike.
 + Concurrent tools
   - <<CRBRB10>>[[http://www.buyya.com/papers/CloudSim2010.pdf][CloudSim]], [[https://github.com/Cloudslab/cloudsim][repo]]. It's a simulator of clouds. Quite famous but
     nothing on elastic tasks (HostDynamicWorkload in the code). Good background
@@ -383,6 +385,15 @@
 *** Things Done
 - Filled the holes in the code.
 - Worked on background and state of the art.
+- Meeting notes
+  State of the art is about models used
+  Don't write sentences, use itemize
+  The contribution is a model
+  See the article modeling workload spikes cause they do what we want
+  Use set/getData(), attach data to actor (data examples: )
+  ElasticTask should be call ElasticTaskManager
+  MSG_task can't be create once and executed multiple times -> give what's
+  needed to create the tasks
 *** Blocking Points
 *** Planned Work
 - [X] <2016-06-13 Mon 17:00> Compared to good interns reports say what's left to
@@ -391,6 +402,8 @@
 - [ ] <2016-06-15 Wed 09:00> Write background and state of the art using the
       survey. (Explain what information there is in it, how the studies are
       classified, the good ideas, its limits...)
+- [ ] Read the paper on modeling workload spikes.
+- [ ] Work on the code
 
 ** Week 6 <2016-06-20 Mon>--<2016-06-24 Fri>
 *** Things Done
