@@ -34,7 +34,7 @@ ElasticTask::~ElasticTask() {
         }
     }
 
-    void ElasticTask::addOutputStream(ElasticTask e2) {
+    void ElasticTask::addOutputStream(ElasticTask e2) {  // TODO, currently it's 1:1 ratio for executions
         outputStreams.push_back(e2);
     }
 

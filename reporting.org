@@ -44,8 +44,28 @@
      on cloud elasticity can be evaluated on a simulator they would benefit from
      cost reduction, re-runable experiments, trust in results...
 
-     As the works are on reacting to variating usage, simulators need a way to
-     express this fluctuating workload. We worked on elastic tasks that model
+     In this survey proposals are categorized as follows. The scope is about
+     what elements of a cloud the proposals work on. It can be the management of
+     VMs, allocation of resources... Then there is the purpose of the proposal.
+     Enhancing the /perfomances/ (to meet the SLA), reducing the /energy/
+     consumption/footprint, being /available/ when needed and reducing the
+     overall /cost/. Another dimension is the decision making. This is what a
+     proposal add to an existing cloud to pursue its purpose. In addition to the
+     scope there is the elastic actions performed by the proposals. As the scope
+     is about what elements of a cloud are concerned, the elastic action is
+     about what is done to them. Then there is the provider dimension that tells
+     if there is only one provider or multiple ones. At last there is the method
+     used by the proposal to evaluate itself, through real cloud, simulation or
+     emulation.
+
+     The survey gives a good overview on what elements of a cloud are
+     manipulated to achieve cloud elasticity.
+
+     But in the end..
+     // How can I be sure that it has covered all cases?
+
+     As the proposals are on reacting to variating usage, simulators need a way
+     to express this fluctuating workload. We worked on elastic tasks that model
      tasks that are triggered regularly and with a usage that fluctuates over
      time.
 
@@ -54,13 +74,23 @@
      manipulation of scopes, the evaluation of the different purposes, make
      possible the elastic actions and allow multiple providers.
 
-     // Tell that simgrid doesn't all last 3 ?
+     // Tell that simgrid does all last 3 ?
 
      At the moment no simulator article talks about dynamic workload. On the
      other hand in the code of DCsim there was an interactive task and in the
      code of CloudSim there was an host with dynamic workload.
 
      // Go to contribution and go through each scope ?
+
+     For en-actor scopes, the point of elastic tasks is just to generate usage
+     so they can chose an application type depending on what kind of usage they
+     want (cpu, disk...). For the different kinds of application type, elastic
+     tasks have the same mechanism it is just the inherent micro-task that is
+     repeated that changes. An elastic task will repeatedly execute an MSG task.
+     Currently an MSG task can only simulate computing and message passing so
+     only Multi-tier Applications can be simulated at the moment. Simulating
+     disk and RAM usage would allow the simulation of databases, storage and
+     thus generic application.
 
 *** References
 + Clouds
