@@ -394,6 +394,15 @@
   ElasticTask should be call ElasticTaskManager
   MSG_task can't be create once and executed multiple times -> give what's
   needed to create the tasks
+- The ETM is global and ET changes the datas of the ETM and when it wakes up it
+  look what it has to do.
+- Meeting notes
+  Wake up using samephor
+  timeandwait
+  execute(flops) for each micro task
+  no tasks just nextEventQueue
+  when a microtask is executed and you add another
+  execute_init() execute_start()
 *** Blocking Points
 *** Planned Work
 - [X] <2016-06-13 Mon 17:00> Compared to good interns reports say what's left to

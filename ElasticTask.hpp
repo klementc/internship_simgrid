@@ -2,6 +2,8 @@
 #define ELASTICTASK_HPP
 
 #include <vector>
+#include <queue>
+#include <string>
 
 #include <xbt/base.h>
 #include <xbt/string.hpp>
@@ -17,85 +19,69 @@
 #include <simgrid/s4u/actor.hpp>
 
 typedef struct ratioChange {
-    double time;
+    size_t id;
+    double date;
     double visitsPerSec;
 } ratioChange;
 
-ratioChange rC(double time, double visitsPerSec);
+ratioChange rC(size_t id, double visitsPerSec);
+
+typedef struct taskDescription {
+    size_t id;
+    double flops;
+    double interSpawnDelay;
+    simgrid::s4u::Host *host;
+} taskDescription;
+
+typedef struct evntQ {
+    double date;
+    enum { ratioChange_type, taskDescription_type } eventEnum;
+    union {
+        ratioChange params_rC;
+        taskDescription params_tD;
+    } instruction;
+} evntQ;
+
+bool operator<(const evntQ& lhs, const evntQ& rhs);
 
 namespace simgrid {
 namespace s4u {
 
-/** @brief Elastic task.
- */
 XBT_PUBLIC_CLASS ElasticTaskManager : public Actor {
-//explicit ElasticTaskManager(smx_process_t smx_proc);
 private:
-    std::vector<ratioChange> ratioFluctuations;
-    double currentRatio;
-    long currentIndex;
-    double flopsTask;
-    double bytesTask;
-    void *dataTask;
-    std::vector<ElasticTaskManager> outputStreams;
+    std::vector<taskDescription> tasks;
+    std::priority_queue<evntQ, std::vector<evntQ>, std::less<evntQ> > nextEvtQueue;
 public:
-    ElasticTaskManager(const char *name, s4u::Host *host, std::function<void()> code, double _flopsTask,
-            double _bytesTask, void *_dataTask);  // no killTime
+    ElasticTaskManager(const char *name, s4u::Host *host, std::function<void()> code);
     template<class C>
-    ElasticTaskManager(const char *name, s4u::Host *host, C code, double _flopsTask, double _bytesTask, void *_dataTask)
-        : ElasticTaskManager(name, host, std::function<void()>(std::move(code)), _flopsTask, _bytesTask, _dataTask) { }
-
+    ElasticTaskManager(const char *name, s4u::Host *host, C code) :
+        ElasticTaskManager(name, host, std::function<void()>(std::move(code))) {}
     ~ElasticTaskManager();
-//        };
 
-//    namespace this_task {
-/** Set the variation of visits/triggers per seconds over the time. */
-    void setTriggerRatioVariation(std::vector<ratioChange> fluctuations);
-//void setTriggerTrace(string fileName);
-/** Add a link like in a workflow of tasks. */
-    void addOutputStream(ElasticTaskManager e2);
+    size_t addElasticTask(s4u::Host *host, double flopsTask, double interSpawnDelay);
 
-/** Modify the normal task that is triggered.
-*
-* You can use it to reduce the computational size for example.
-*/
-    void modifyTask(double _flopsTask, double _bytesTask, void *_dataTask);
+    void addRatioChange(size_t id, double flops, double visitsPerSec);
+    void changeRatio(size_t id, double visitsPerSec);
+    void removeTask(size_t id);
+    void removeRatioChanges(size_t id);
 
-    /** Change the host
-     */
-//        void modifyHost(s4u::Host *host, std::function<void()> code);
-/** Update on the fly the fluctuation of visit/trigger ratio
-*
-* Keep the same time
-*/
-    void updateTriggerRatioVariation(std::vector<ratioChange> fluctuations);
-
-/** Update on the fly the current visit/trigger ratio and delete the old vector of fluctuation. */
-    void setTriggerRatio(double ratio);
-
-/** Trigger the inherent task one time.
-*
-* Could be used for the output stream. */
-    void triggerOneTime();
-/** Execute the elastic task until death.
-*
-* It will find itself the resources (e.g. flops) available.
-*/
     void execute();
-//void sleep(double duration);  // We probably should just change the visits ratio to 0.
-//void recv(Mailbox &chan);  // Is it useful ? Maybe for workflow
-//void send(Mailbox &chan, void*payload, size_t simulatedSize);  // Is it useful ? Maybe for workflow
-    void kill();
 };
 
-//XBT_PUBLIC_CLASS ElasticTask {
-//private:
-//    ElasticTaskManager etm;
-//public:
-//    ElasticTask(s4u::Host *host, double _flopsTask);
+XBT_PUBLIC_CLASS ElasticTask {
+private:
+    size_t id;
+    ElasticTaskManager *etm;
+public:
+    ElasticTask(s4u::Host *host, double flopsTask, double interSpawnDelay, ElasticTaskManager *etm_);
+    ElasticTask(Host *host, double flopsTask, ElasticTaskManager *etm_);
+    ElasticTask(Host *host, double flopsTask, std::vector<ratioChange> fluctuations, ElasticTaskManager *etm_);
+    ~ElasticTask();
 
-//    void execute();
-//};
+    void setTriggerRatioVariation(std::vector<ratioChange> fluctuations);
+    void setRatioVariation(double interSpawnDelay);
+};
+
 }}
 
 #endif //ELASTICTASK_HPP
