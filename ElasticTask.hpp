@@ -18,10 +18,27 @@
 
 #include <simgrid/s4u/actor.hpp>
 
+typedef struct streamET {
+    size_t destET;
+    double ratioLoad;
+
+    streamET() = default;
+    streamET(size_t destET_, double ratioLoad_)
+    : destET(destET_), ratioLoad(ratioLoad_) {}
+} streamET;
+
 typedef struct ratioChange {
     size_t id;
     double date;
     double visitsPerSec;
+
+    ratioChange() = default;
+    ratioChange(size_t id_, double date_, double visitsPerSec_)
+    : id(id_), date(date_), visitsPerSec(visitsPerSec_) {}
+    ratioChange(size_t id_, double visitsPerSec_)  // for the event queue as the date is already known
+    : id(id_), date(0.0), visitsPerSec(visitsPerSec_) {}
+    ratioChange(double date_, double visitsPerSec_)  // for the user that doesn't know the ID of the ET
+    : date(date_), visitsPerSec(visitsPerSec_) {}
 } ratioChange;
 
 ratioChange rC(size_t id, double visitsPerSec);
@@ -33,6 +50,10 @@ typedef struct taskDescription {
     simgrid::s4u::Host *host;
     bool repeat = true;
     std::vector<streamET> outputStreams;
+
+    taskDescription() = default;
+    taskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_)
+    : flops(flops_), interSpawnDelay(interSpawnDelay_), host(host_) {}
 } taskDescription;
 
 typedef struct evntQ {
@@ -42,14 +63,15 @@ typedef struct evntQ {
         ratioChange params_rC;
         taskDescription params_tD;
     } instruction;
+
+    evntQ() = default;
+    evntQ(double date_, ratioChange params)
+    : date(date_), eventEnum(ratioChange_type) { instruction.params_rC = params; }
+    evntQ(double date_, taskDescription params)
+    : date(date_), eventEnum(taskDescription_type) { instruction.params_tD = params; }
 } evntQ;
 
 bool operator<(const evntQ& lhs, const evntQ& rhs);
-
-typedef struct streamET {
-    size_t destET;
-    double ratioLoad;
-}
 
 namespace simgrid {
 namespace s4u {
@@ -67,7 +89,7 @@ public:
 
     size_t addElasticTask(s4u::Host *host, double flopsTask, double interSpawnDelay);
 
-    void addRatioChange(size_t id, double flops, double visitsPerSec);
+    void addRatioChange(size_t id, double date, double visitsPerSec);
     void changeRatio(size_t id, double visitsPerSec);
     void changeTask(size_t id, double flops);
     void simpleChangeTask(size_t id);
@@ -99,7 +121,7 @@ public:
     void triggerOneTime();
     void triggerOneTime(double ratioLoad);
     void addOutputStream(size_t idOutput, double ratioLoad);
-    void addOutputStreams(std::vector<streamET> streams);
+    //void addOutputStreams(std::vector<streamET> streams);
     void removeOutputStream(size_t idOutput);
 };
 

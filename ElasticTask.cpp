@@ -22,54 +22,8 @@ std::vector<std::string> split(const std::string &s, char delim) {
     return elems;
 }
 
-ratioChange rC(size_t id, double visitsPerSec) {
-    ratioChange res;
-    res.id = id;
-    res.visitsPerSec = visitsPerSec;
-    return res;
-}
-
-ratioChange rC(size_t id, double date, double visitsPerSec) {
-    ratioChange res;
-    res.id = id;
-    res.date = date;
-    res.visitsPerSec = visitsPerSec;
-    return res;
-}
-
-taskDescription tD(double flops, double interSpawnDelay, simgrid::s4u::Host *host) {
-    taskDescription res;
-    res.flops = flops;
-    res.interSpawnDelay = interSpawnDelay;
-    res.host = host;
-    return res;
-}
-
-evntQ eQ(double date, ratioChange params) {
-    evntQ res;
-    res.date = date;
-    res.eventEnum = evntQ::ratioChange_type;
-    res.instruction.params_rC = params;
-    return res;
-}
-
-evntQ eQ(double date, taskDescription params) {
-    evntQ res;
-    res.date = date;
-    res.eventEnum = evntQ::taskDescription_type;
-    res.instruction.params_tD = params;
-    return res;
-}
-
 bool operator<(const evntQ& lhs, const evntQ& rhs) {
   return lhs.date < rhs.date;
-}
-
-streamET sET(size_t idOutput, double ratioLoad) {
-    streamET res;
-    res.destET = idOutput;
-    res.ratioLoad = ratioLoad;
-    return res;
 }
 
 using namespace simgrid;
@@ -81,10 +35,10 @@ ElasticTaskManager::ElasticTaskManager(const char *name, Host *host, std::functi
     Actor(name, host, code) {}
 
 size_t ElasticTaskManager::addElasticTask(Host *host, double flopsTask, double interSpawnDelay) {
-    tasks.push_back(tD(flopsTask, interSpawnDelay, host));
+    tasks.push_back(taskDescription(flopsTask, interSpawnDelay, host));
     tasks.at(tasks.size() - 1).id = tasks.size() - 1;
     if (interSpawnDelay > 0.0) {
-        nextEvtQueue.push(eQ(Engine::instance()->getClock(), tasks.at(tasks.size() - 1)));
+        nextEvtQueue.push(evntQ(Engine::instance()->getClock(), tasks.at(tasks.size() - 1)));
     }
     return tasks.size() - 1;
 }
@@ -93,7 +47,7 @@ void ElasticTaskManager::changeRatio(size_t id, double visitsPerSec) {
     removeTask(id);
     tasks.at(id).interSpawnDelay = visitsPerSec;
     if(visitsPerSec > 0.0) {
-        nextEvtQueue.push(eQ(Engine::instance()->getClock(), tasks.at(id)));
+        nextEvtQueue.push(evntQ(Engine::instance()->getClock(), tasks.at(id)));
     }
 }
 
@@ -101,7 +55,7 @@ void ElasticTaskManager::changeTask(size_t id, double flops) {
     removeTask(id);
     tasks.at(id).flops = flops;
     if(tasks.at(id).interSpawnDelay > 0.0) {
-        nextEvtQueue.push(eQ(Engine::instance()->getClock(), tasks.at(id)));
+        nextEvtQueue.push(evntQ(Engine::instance()->getClock(), tasks.at(id)));
     }
 }
 
@@ -114,7 +68,7 @@ void ElasticTaskManager::simpleChangeTask(size_t id) {
             newNextEvtQueue.push(nextEvtQueue.top());
         } else {
             if(newNextEvtQueue.top().instruction.params_tD.repeat) {
-                newNextEvtQueue.push(eQ(newNextEvtQueue.top().date, newTask));
+                newNextEvtQueue.push(evntQ(newNextEvtQueue.top().date, newTask));
             }
         }
         nextEvtQueue.pop();
@@ -123,7 +77,7 @@ void ElasticTaskManager::simpleChangeTask(size_t id) {
 }
 
 void ElasticTaskManager::addRatioChange(size_t id, double date, double visitsPerSec) {
-    nextEvtQueue.push(eQ(date, rC(id, visitsPerSec)));
+    nextEvtQueue.push(evntQ(date, ratioChange(id, visitsPerSec)));
 }
 
 void ElasticTaskManager::removeTask(size_t id) {
@@ -153,18 +107,18 @@ void ElasticTaskManager::removeRatioChanges(size_t id) {
 void ElasticTaskManager::triggerOneTimeTask(size_t id) {
     taskDescription newTask = tasks.at(id);
     newTask.repeat = false;
-    nextEvtQueue.push(eQ(0.0, newTask));
+    nextEvtQueue.push(evntQ(0.0, newTask));
 }
 
 void ElasticTaskManager::triggerOneTimeTask(size_t id, double ratioLoad) {
     taskDescription newTask = tasks.at(id);
     newTask.repeat = false;
     newTask.flops = newTask.flops * ratioLoad;
-    nextEvtQueue.push(eQ(0.0, newTask));
+    nextEvtQueue.push(evntQ(0.0, newTask));
 }
 
 void ElasticTaskManager::addOutputStream(size_t sourceET, size_t destET, double ratioLoad) {
-    tasks.at(sourceET).outputStreams.push_back(sET(destET, ratioLoad));
+    tasks.at(sourceET).outputStreams.push_back(streamET(destET, ratioLoad));
     simpleChangeTask(sourceET);
 }
 
@@ -193,7 +147,7 @@ void ElasticTaskManager::execute() {
             case evntQ::taskDescription_type:
                 this_actor::execute(currentEvent.instruction.params_tD.flops);
                 if (currentEvent.instruction.params_tD.repeat) {
-                    nextEvtQueue.push(eQ(Engine::instance()->getClock() + (1 /
+                    nextEvtQueue.push(evntQ(Engine::instance()->getClock() + (1 /
                                           currentEvent.instruction.params_tD.interSpawnDelay),
                                          currentEvent.instruction.params_tD));
                 }

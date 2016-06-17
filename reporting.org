@@ -28,6 +28,15 @@
 * Findings
 ** Bibliography
    *Background*
+     + What's a cloud
+     + Minimising the cost (in all forms) is a research challenge, particularly
+       for fluctuating usage
+     + Present the survey that has categorized these works
+     + Simulation isn't used that much and it would give a lot
+     + How are they categorized
+     + Say that it gives good overview of what is needed to simulate
+     + Say that it covered everything
+
      Cloud computing is a model that makes available infrastructures, platforms
      and software with a pay-as-you-go subscription. It aims to reduce the cost
      with a layer of virtualisation that allows virtual resources to be
@@ -70,6 +79,10 @@
      time.
 
    *State of the art* (Needs for elastic tasks and concurrent tools)
+     + Which elements have to be simulated and how do they work ?
+     + How workloads are generaly modelized
+     + What others simulators have done
+
      Based on the classification of the survey, a simulator should allow the
      manipulation of scopes, the evaluation of the different purposes, make
      possible the elastic actions and allow multiple providers.
@@ -107,7 +120,11 @@
 + Simulation
   - <<CGLQS14>>[[https://hal.inria.fr/hal-01017319/PDF/simgrid3-journal.pdf][SimGrid]].
   - <<SOCC10>>[[http://research.microsoft.com/pubs/143358/socc10-spikes.pdf][Modeling workload spikes]]. Proposal for generating
-    significant/realistic workload spike.
+    significant/realistic workload spike. "In the rest of the paper, workload
+    volume represents the total workload rate during a five-minute interval."
+    What differenciates them from some reated work is that they are interested
+    in a minute scale. The use a normal workload and from it they multiply it to
+    get spikes. Based on their generator they would only use triggerOnce for ET.
 + Concurrent tools
   - <<CRBRB10>>[[http://www.buyya.com/papers/CloudSim2010.pdf][CloudSim]], [[https://github.com/Cloudslab/cloudsim][repo]]. It's a simulator of clouds. Quite famous but
     nothing on elastic tasks (HostDynamicWorkload in the code). Good background
