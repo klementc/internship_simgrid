@@ -61,9 +61,15 @@ evntQ eQ(double date, taskDescription params) {
     return res;
 }
 
-bool operator<(const evntQ& lhs, const evntQ& rhs)
-{
+bool operator<(const evntQ& lhs, const evntQ& rhs) {
   return lhs.date < rhs.date;
+}
+
+streamET sET(size_t idOutput, double ratioLoad) {
+    streamET res;
+    res.destET = idOutput;
+    res.ratioLoad = ratioLoad;
+    return res;
 }
 
 using namespace simgrid;
@@ -89,6 +95,31 @@ void ElasticTaskManager::changeRatio(size_t id, double visitsPerSec) {
     if(visitsPerSec > 0.0) {
         nextEvtQueue.push(eQ(Engine::instance()->getClock(), tasks.at(id)));
     }
+}
+
+void ElasticTaskManager::changeTask(size_t id, double flops) {
+    removeTask(id);
+    tasks.at(id).flops = flops;
+    if(tasks.at(id).interSpawnDelay > 0.0) {
+        nextEvtQueue.push(eQ(Engine::instance()->getClock(), tasks.at(id)));
+    }
+}
+
+void ElasticTaskManager::simpleChangeTask(size_t id) {
+    taskDescription newTask = tasks.at(id);
+    std::priority_queue<evntQ, std::vector<evntQ>, std::less<evntQ> > newNextEvtQueue;
+    while(!nextEvtQueue.empty()) {
+        if(nextEvtQueue.top().eventEnum != evntQ::taskDescription_type ||
+                nextEvtQueue.top().instruction.params_tD.id != id) {
+            newNextEvtQueue.push(nextEvtQueue.top());
+        } else {
+            if(newNextEvtQueue.top().instruction.params_tD.repeat) {
+                newNextEvtQueue.push(eQ(newNextEvtQueue.top().date, newTask));
+            }
+        }
+        nextEvtQueue.pop();
+    }
+    nextEvtQueue = newNextEvtQueue;
 }
 
 void ElasticTaskManager::addRatioChange(size_t id, double date, double visitsPerSec) {
@@ -119,6 +150,34 @@ void ElasticTaskManager::removeRatioChanges(size_t id) {
     nextEvtQueue = newNextEvtQueue;
 }
 
+void ElasticTaskManager::triggerOneTimeTask(size_t id) {
+    taskDescription newTask = tasks.at(id);
+    newTask.repeat = false;
+    nextEvtQueue.push(eQ(0.0, newTask));
+}
+
+void ElasticTaskManager::triggerOneTimeTask(size_t id, double ratioLoad) {
+    taskDescription newTask = tasks.at(id);
+    newTask.repeat = false;
+    newTask.flops = newTask.flops * ratioLoad;
+    nextEvtQueue.push(eQ(0.0, newTask));
+}
+
+void ElasticTaskManager::addOutputStream(size_t sourceET, size_t destET, double ratioLoad) {
+    tasks.at(sourceET).outputStreams.push_back(sET(destET, ratioLoad));
+    simpleChangeTask(sourceET);
+}
+
+void ElasticTaskManager::removeOutputStream(size_t sourceET, size_t destET) {
+    for(std::vector<streamET>::iterator it = tasks.at(sourceET).outputStreams.begin();
+            it != tasks.at(sourceET).outputStreams.end(); ++it) {
+        if((*it).destET == destET) {
+            tasks.at(sourceET).outputStreams.erase(it - tasks.at(sourceET).outputStreams.begin());
+        }
+    }
+    simpleChangeTask(sourceET);
+}
+
 void ElasticTaskManager::execute() {
     while(nextEvtQueue.top().date <= Engine::instance()->getClock()) {
         //std::string evnt = nextEvtQueue.top().instruction;
@@ -133,9 +192,15 @@ void ElasticTaskManager::execute() {
                 break;
             case evntQ::taskDescription_type:
                 this_actor::execute(currentEvent.instruction.params_tD.flops);
-                nextEvtQueue.push(eQ(Engine::instance()->getClock() + (1 /
-                                      currentEvent.instruction.params_tD.interSpawnDelay),
-                                     currentEvent.instruction.params_tD));
+                if (currentEvent.instruction.params_tD.repeat) {
+                    nextEvtQueue.push(eQ(Engine::instance()->getClock() + (1 /
+                                          currentEvent.instruction.params_tD.interSpawnDelay),
+                                         currentEvent.instruction.params_tD));
+                }
+                for(std::vector<streamET>::iterator it = currentEvent.instruction.params_tD.outputStreams.begin();
+                        it != currentEvent.instruction.params_tD.outputStreams.end(); ++it) {
+                    triggerOneTimeTask((*it).destET, (*it).ratioLoad);
+                }
                 break;
         }
         nextEvtQueue.pop();
@@ -177,3 +242,27 @@ void ElasticTask::setRatioVariation(double interSpawnDelay) {
     etm->removeRatioChanges(id);
     etm->changeRatio(id, interSpawnDelay);
 }
+
+void ElasticTask::modifyTask(double flops) {
+    etm->changeTask(id, flops);
+}
+
+void ElasticTask::triggerOneTime() {
+    etm->triggerOneTimeTask(id);
+}
+
+void ElasticTask::triggerOneTime(double ratioLoad) {
+    etm->triggerOneTimeTask(id, ratioLoad);
+}
+
+void ElasticTask::addOutputStream(size_t idOutput, double ratioLoad) {
+    etm->addOutputStream(id, idOutput, ratioLoad);
+}
+
+void ElasticTask::removeOutputStream(size_t idOutput) {
+    etm->removeOutputStream(id, idOutput);
+}
+
+//void ElasticTask::addOutputStreams(std::vector<size_t> streams) {
+
+//}

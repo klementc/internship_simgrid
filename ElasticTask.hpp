@@ -31,6 +31,8 @@ typedef struct taskDescription {
     double flops;
     double interSpawnDelay;
     simgrid::s4u::Host *host;
+    bool repeat = true;
+    std::vector<streamET> outputStreams;
 } taskDescription;
 
 typedef struct evntQ {
@@ -43,6 +45,11 @@ typedef struct evntQ {
 } evntQ;
 
 bool operator<(const evntQ& lhs, const evntQ& rhs);
+
+typedef struct streamET {
+    size_t destET;
+    double ratioLoad;
+}
 
 namespace simgrid {
 namespace s4u {
@@ -62,8 +69,16 @@ public:
 
     void addRatioChange(size_t id, double flops, double visitsPerSec);
     void changeRatio(size_t id, double visitsPerSec);
+    void changeTask(size_t id, double flops);
+    void simpleChangeTask(size_t id);
     void removeTask(size_t id);
     void removeRatioChanges(size_t id);
+
+    void triggerOneTimeTask(size_t id);
+    void triggerOneTimeTask(size_t id, double ratioLoad);
+
+    void addOutputStream(size_t sourceET, size_t destET, double ratioLoad);
+    void removeOutputStream(size_t sourceET, size_t destET);
 
     void execute();
 };
@@ -80,6 +95,12 @@ public:
 
     void setTriggerRatioVariation(std::vector<ratioChange> fluctuations);
     void setRatioVariation(double interSpawnDelay);
+    void modifyTask(double flops);
+    void triggerOneTime();
+    void triggerOneTime(double ratioLoad);
+    void addOutputStream(size_t idOutput, double ratioLoad);
+    void addOutputStreams(std::vector<streamET> streams);
+    void removeOutputStream(size_t idOutput);
 };
 
 }}
