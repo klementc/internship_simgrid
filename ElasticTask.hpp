@@ -18,32 +18,38 @@
 
 #include <simgrid/s4u/actor.hpp>
 
+class EvntQ {
+public:
+    double date;
+
+    EvntQ(double date_) : date(date_) {}
+};
+
 typedef struct streamET {
     size_t destET;
     double ratioLoad;
 
-    streamET() = default;
+    //streamET() = default;
     streamET(size_t destET_, double ratioLoad_)
     : destET(destET_), ratioLoad(ratioLoad_) {}
 } streamET;
 
-typedef struct ratioChange {
+class RatioChange : public EvntQ {
+public:
     size_t id;
-    double date;
     double visitsPerSec;
 
-    ratioChange() = default;
-    ratioChange(size_t id_, double date_, double visitsPerSec_)
-    : id(id_), date(date_), visitsPerSec(visitsPerSec_) {}
-    ratioChange(size_t id_, double visitsPerSec_)  // for the event queue as the date is already known
-    : id(id_), date(0.0), visitsPerSec(visitsPerSec_) {}
-    ratioChange(double date_, double visitsPerSec_)  // for the user that doesn't know the ID of the ET
-    : date(date_), visitsPerSec(visitsPerSec_) {}
-} ratioChange;
+    //RatioChange() = default;
+    RatioChange(size_t id_, double date_, double visitsPerSec_)
+    : EvntQ(date_), id(id_), visitsPerSec(visitsPerSec_) {}
+    RatioChange(size_t id_, double visitsPerSec_)  // for the event queue as the date is already known
+    : EvntQ(0.0), id(id_), visitsPerSec(visitsPerSec_) {}
+    RatioChange(double date_, double visitsPerSec_)  // for the user that doesn't know the ID of the ET
+    : EvntQ(date_), visitsPerSec(visitsPerSec_) {}
+};
 
-ratioChange rC(size_t id, double visitsPerSec);
-
-typedef struct taskDescription {
+class TaskDescription : public EvntQ {
+public:
     size_t id;
     double flops;
     double interSpawnDelay;
@@ -51,35 +57,22 @@ typedef struct taskDescription {
     bool repeat = true;
     std::vector<streamET> outputStreams;
 
-    taskDescription() = default;
-    taskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_)
-    : flops(flops_), interSpawnDelay(interSpawnDelay_), host(host_) {}
-} taskDescription;
+    //TaskDescription() = default;
+    TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_)
+    : EvntQ(0.0), flops(flops_), interSpawnDelay(interSpawnDelay_), host(host_) {}
+    TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_, double date_)
+    : EvntQ(date_), flops(flops_), interSpawnDelay(interSpawnDelay_), host(host_) {}
+};
 
-typedef struct evntQ {
-    double date;
-    enum { ratioChange_type, taskDescription_type } eventEnum;
-    union {
-        ratioChange params_rC;
-        taskDescription params_tD;
-    } instruction;
-
-    evntQ() = default;
-    evntQ(double date_, ratioChange params)
-    : date(date_), eventEnum(ratioChange_type) { instruction.params_rC = params; }
-    evntQ(double date_, taskDescription params)
-    : date(date_), eventEnum(taskDescription_type) { instruction.params_tD = params; }
-} evntQ;
-
-bool operator<(const evntQ& lhs, const evntQ& rhs);
+bool operator<(const EvntQ& lhs, const EvntQ& rhs);
 
 namespace simgrid {
 namespace s4u {
 
 XBT_PUBLIC_CLASS ElasticTaskManager : public Actor {
 private:
-    std::vector<taskDescription> tasks;
-    std::priority_queue<evntQ, std::vector<evntQ>, std::less<evntQ> > nextEvtQueue;
+    std::vector<TaskDescription> tasks;
+    std::priority_queue<EvntQ, std::vector<EvntQ>, std::less<EvntQ> > nextEvtQueue;
 public:
     ElasticTaskManager(const char *name, s4u::Host *host, std::function<void()> code);
     template<class C>
@@ -112,10 +105,10 @@ private:
 public:
     ElasticTask(s4u::Host *host, double flopsTask, double interSpawnDelay, ElasticTaskManager *etm_);
     ElasticTask(Host *host, double flopsTask, ElasticTaskManager *etm_);
-    ElasticTask(Host *host, double flopsTask, std::vector<ratioChange> fluctuations, ElasticTaskManager *etm_);
+    ElasticTask(Host *host, double flopsTask, std::vector<RatioChange> fluctuations, ElasticTaskManager *etm_);
     ~ElasticTask();
 
-    void setTriggerRatioVariation(std::vector<ratioChange> fluctuations);
+    void setTriggerRatioVariation(std::vector<RatioChange> fluctuations);
     void setRatioVariation(double interSpawnDelay);
     void modifyTask(double flops);
     void triggerOneTime();

@@ -420,6 +420,11 @@
   no tasks just nextEventQueue
   when a microtask is executed and you add another
   execute_init() execute_start()
+- Meeting notes
+  write what I understood of the modeling spikes paper, look what proba law they
+  use
+  use class instead structs
+  which parts of the API that answers to applications of the survey
 *** Blocking Points
 *** Planned Work
 - [X] <2016-06-13 Mon 17:00> Compared to good interns reports say what's left to
@@ -430,6 +435,8 @@
       classified, the good ideas, its limits...)
 - [ ] Read the paper on modeling workload spikes.
 - [ ] Work on the code
+- [ ] Which part of the survey is covered by the API, which might in the future
+      and which won't.
 
 ** Week 6 <2016-06-20 Mon>--<2016-06-24 Fri>
 *** Things Done
