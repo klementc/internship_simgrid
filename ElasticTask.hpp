@@ -23,6 +23,7 @@ public:
     double date;
 
     EvntQ(double date_) : date(date_) {}
+    virtual ~EvntQ() {}
 };
 
 typedef struct streamET {

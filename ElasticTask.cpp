@@ -54,7 +54,7 @@ void ElasticTaskManager::simpleChangeTask(size_t id) {  // A change has been don
     while(!nextEvtQueue.empty()) {
         if(strcmp(typeid(nextEvtQueue.top()).name(), "TaskDescription")) {
             newNextEvtQueue.push(nextEvtQueue.top());
-        } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(&nextEvtQueue.top())) {
+        } else if (const TaskDescription* t = dynamic_cast<const TaskDescription*>(&nextEvtQueue.top())) {
             if (t->id != id) {
                 newNextEvtQueue.push(nextEvtQueue.top());
             } else if (t->repeat) {
@@ -76,7 +76,7 @@ void ElasticTaskManager::removeTask(size_t id) {  // remove all even non repeat
     while(!nextEvtQueue.empty()) {
         if(strcmp(typeid(nextEvtQueue.top()).name(), "TaskDescription")) {
             newNextEvtQueue.push(nextEvtQueue.top());
-        } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(&nextEvtQueue.top())) {
+        } else if (const TaskDescription* t = dynamic_cast<const TaskDescription*>(&nextEvtQueue.top())) {
             if (t->id != id) {
                 newNextEvtQueue.push(nextEvtQueue.top());
             }
@@ -91,7 +91,7 @@ void ElasticTaskManager::removeRatioChanges(size_t id) {
     while(!nextEvtQueue.empty()) {
         if(strcmp(typeid(nextEvtQueue.top()).name(), "RatioChange")) {
             newNextEvtQueue.push(nextEvtQueue.top());
-        } else if (RatioChange* t = dynamic_cast<RatioChange*>(&nextEvtQueue.top())) {
+        } else if (const RatioChange* t = dynamic_cast<const RatioChange*>(&nextEvtQueue.top())) {
             if (t->id != id) {
                 newNextEvtQueue.push(nextEvtQueue.top());
             }
@@ -125,7 +125,7 @@ void ElasticTaskManager::removeOutputStream(size_t sourceET, size_t destET) {
     for(std::vector<streamET>::iterator it = tasks.at(sourceET).outputStreams.begin();
             it != tasks.at(sourceET).outputStreams.end(); ++it) {
         if((*it).destET == destET) {
-            tasks.at(sourceET).outputStreams.erase(it - tasks.at(sourceET).outputStreams.begin());
+            tasks.at(sourceET).outputStreams.erase(it);
         }
     }
     simpleChangeTask(sourceET);
