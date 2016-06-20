@@ -105,6 +105,16 @@
      disk and RAM usage would allow the simulation of databases, storage and
      thus generic application.
 
+   *Contribution*
+     What can my contribution do that is in the survey?
+     + Only computational tasks for now, might be able to do storage/DBs tasks
+       in the future. Generic ones won't be possible unless you can pass a task
+       directly to an ET.
+     + Need to use the host of a task when executing to allow vertical scaling
+       and need to manage multiple hosts to allow horizontal scaling.
+     + Multiple provider is possible but has to be coded.
+     + Purpose?
+
 *** References
 + Clouds
   - <<NGS15>>[[http://link.springer.com/chapter/10.1007/978-3-319-29919-8_12][Cloud Elasticity Survey]]. Survey on research work on cloud
@@ -125,6 +135,7 @@
     What differenciates them from some reated work is that they are interested
     in a minute scale. The use a normal workload and from it they multiply it to
     get spikes. Based on their generator they would only use triggerOnce for ET.
+    They use Zipf's law.
 + Concurrent tools
   - <<CRBRB10>>[[http://www.buyya.com/papers/CloudSim2010.pdf][CloudSim]], [[https://github.com/Cloudslab/cloudsim][repo]]. It's a simulator of clouds. Quite famous but
     nothing on elastic tasks (HostDynamicWorkload in the code). Good background
@@ -411,7 +422,8 @@
   ElasticTask should be call ElasticTaskManager
   MSG_task can't be create once and executed multiple times -> give what's
   needed to create the tasks
-- The ETM is global and ET changes the datas of the ETM and when it wakes up it
+- Meeting notes
+  The ETM is global and ET changes the datas of the ETM and when it wakes up it
   look what it has to do.
 - Meeting notes
   Wake up using samephor
@@ -425,23 +437,33 @@
   use
   use class instead structs
   which parts of the API that answers to applications of the survey
+  think of examples
 *** Blocking Points
 *** Planned Work
 - [X] <2016-06-13 Mon 17:00> Compared to good interns reports say what's left to
       do.
 - [X] Setup your own project ; don't touch pimpl_ just use regular msg tasks
-- [ ] <2016-06-15 Wed 09:00> Write background and state of the art using the
+- [X] <2016-06-15 Wed 09:00> Write background and state of the art using the
       survey. (Explain what information there is in it, how the studies are
       classified, the good ideas, its limits...)
-- [ ] Read the paper on modeling workload spikes.
-- [ ] Work on the code
+- [X] Read the paper on modeling workload spikes.
+- [X] Work on the code
 - [ ] Which part of the survey is covered by the API, which might in the future
       and which won't.
 
 ** Week 6 <2016-06-20 Mon>--<2016-06-24 Fri>
 *** Things Done
+- If we try to simulate the workload generator of <<socc10>>. Normally we have
+  each client thread that execute a request in a loop. Each thread selects a
+  requests type, selects parameters, sends the requests, waits for a response
+  and repeats. If we had to translate it we'd need to create a task that trigger
+  one time the ET when it is finished. As request have parameters I guess we
+  would need one ET for each request and parameters, then clients trigger one of
+  them. We don't use the repeating triggering (ratio stuff) here.
 *** Blocking Points
 *** Planned Work
+- [ ] Write examples.
+- [ ] Write correct execute code for ETM.
 
 ** Week 7 <2016-06-27 Mon>--<2016-07-01 Fri>
 *** Things Done
