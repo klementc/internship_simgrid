@@ -29,6 +29,10 @@ size_t ElasticTaskManager::addElasticTask(Host *host, double flopsTask, double i
     return tasks.size() - 1;
 }
 
+void ElasticTaskManager::addHost(size_t id, Host *host) {
+  tasks.at(id).hosts.push_back(host);
+}
+
 void ElasticTaskManager::changeRatio(size_t id, double visitsPerSec) {
     removeTask(id);
     tasks.at(id).interSpawnDelay = visitsPerSec;
@@ -196,6 +200,10 @@ void ElasticTask::triggerOneTime() {
 
 void ElasticTask::triggerOneTime(double ratioLoad) {
     etm->triggerOneTimeTask(id, ratioLoad);
+}
+
+void ElasticTask::addHost(Host *host) {
+  etm->addHost(id, host);
 }
 
 void ElasticTask::addOutputStream(size_t idOutput, double ratioLoad) {

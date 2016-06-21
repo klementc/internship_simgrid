@@ -27,6 +27,7 @@
 
 * Findings
 ** Bibliography
+*** Writing
    *Background*
      + What's a cloud
      + Minimising the cost (in all forms) is a research challenge, particularly
@@ -453,13 +454,20 @@
 
 ** Week 6 <2016-06-20 Mon>--<2016-06-24 Fri>
 *** Things Done
-- If we try to simulate the workload generator of <<socc10>>. Normally we have
+- If we try to simulate the workload generator of <<SOCC10>>. Normally we have
   each client thread that execute a request in a loop. Each thread selects a
   requests type, selects parameters, sends the requests, waits for a response
   and repeats. If we had to translate it we'd need to create a task that trigger
   one time the ET when it is finished. As request have parameters I guess we
   would need one ET for each request and parameters, then clients trigger one of
   them. We don't use the repeating triggering (ratio stuff) here.
+- If we try to simulate DejaVu <<ASPLOS12>>. "Both traces contain measurements
+  at 1-hour increments during one week, aggregated over thousands of servers.".
+  For each kind of request there would be an ET and we would put a constant
+  triggering over 1 hour and change the ratio each hour.
+- Attended "Journées scientifiques". "Vérfier et corriger les logiciels",
+  "Modélisation pour la biologie et la médcine" and "Vers une informatique
+  ouverte et reproductible".
 *** Blocking Points
 *** Planned Work
 - [ ] Write examples.

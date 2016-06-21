@@ -54,15 +54,19 @@ public:
     size_t id;
     double flops;
     double interSpawnDelay;
-    simgrid::s4u::Host *host;
+    simgrid::s4u::Host *lastUsedHost;
+    std::vector<simgrid::s4u::Host*> hosts;
     bool repeat = true;
     std::vector<streamET> outputStreams;
 
     //TaskDescription() = default;
-    TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_)
-    : EvntQ(0.0), flops(flops_), interSpawnDelay(interSpawnDelay_), host(host_) {}
     TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_, double date_)
-    : EvntQ(date_), flops(flops_), interSpawnDelay(interSpawnDelay_), host(host_) {}
+    : EvntQ(date_), flops(flops_), interSpawnDelay(interSpawnDelay_) {
+        hosts.push_back(host_);
+        lastUsedHost = hosts.at(0);
+    }
+    TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_)
+    : TaskDescription(flops_, interSpawnDelay_, host_, 0.0) {}
 };
 
 bool operator<(const EvntQ& lhs, const EvntQ& rhs);
@@ -79,11 +83,13 @@ public:
     template<class C>
     ElasticTaskManager(const char *name, s4u::Host *host, C code) :
         ElasticTaskManager(name, host, std::function<void()>(std::move(code))) {}
+    ElasticTaskManager(const char *name, s4u::Host *host) : ElasticTaskManager(name, host, nullptr) {}
     ~ElasticTaskManager();
 
     size_t addElasticTask(s4u::Host *host, double flopsTask, double interSpawnDelay);
 
     void addRatioChange(size_t id, double date, double visitsPerSec);
+    void addHost(size_t id, Host *host);
     void changeRatio(size_t id, double visitsPerSec);
     void changeTask(size_t id, double flops);
     void simpleChangeTask(size_t id);
@@ -115,6 +121,7 @@ public:
     void triggerOneTime();
     void triggerOneTime(double ratioLoad);
     void addOutputStream(size_t idOutput, double ratioLoad);
+    void addHost(Host *host);
     //void addOutputStreams(std::vector<streamET> streams);
     void removeOutputStream(size_t idOutput);
 };
