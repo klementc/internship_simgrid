@@ -128,6 +128,7 @@
     allocation with e.g. caching. Used real traces for evaluation. Explains how
     to deal with dynamic workload. For their Hotmail traces they reference [[http://research.microsoft.com/pubs/144957/euro040-thereska.pdf][this]]
     article which acknoledge some people for it at the end.
+  - <<GPRTB14>>[[http://ac.els-cdn.com/S0167739X1400003X/1-s2.0-S0167739X1400003X-main.pdf?_tid=4acfd48e-3871-11e6-afe5-00000aab0f6b&acdnat=1466597171_52db5c840097473a97294f899053a67b][Coordinating Managers]]. Uses RUBiS for experiments.
 + Simulation
   - <<CGLQS14>>[[https://hal.inria.fr/hal-01017319/PDF/simgrid3-journal.pdf][SimGrid]].
   - <<SOCC10>>[[http://research.microsoft.com/pubs/143358/socc10-spikes.pdf][Modeling workload spikes]]. Proposal for generating
@@ -149,6 +150,8 @@
     about switching strategies at runtime. They both seem to give details even
     if the code isn't available. Well I have no idea how this could by useful as
     they are describing experiments that have nothing to do with elastic tasks.
+  - <<RUBiS>>[[http://rubis.ow2.org/][RUBiS]]. Benchmarking auction website.
+  - <<YCSB>>[[http://delivery.acm.org/10.1145/1810000/1807152/p143-cooper.pdf?ip=131.254.104.45&id=1807152&acc=ACTIVE%20SERVICE&key=7EBF6E77E86B478F%2E9BD6B3DBCD4B0A3B%2E4D4702B0C3E38B35%2E4D4702B0C3E38B35&CFID=620961178&CFTOKEN=20477141&__acm__=1466600316_208bf65c16eed45e57cd254a778a1ecb][YCSB]]. Benchmarking Cloud Serving Systems.
 + Not relevant
   - [[http://ac.els-cdn.com/S1569190X1300124X/1-s2.0-S1569190X1300124X-main.pdf?_tid=0ede5a0c-2351-11e6-826f-00000aacb362&acdnat=1464274353_4043525da0d2e6c2cb9432f0a6955443][DCworms' paper]]. Simulation to study the energy-consumption of datacenters,
     part of CoolEmAll project. What's interesting for me is that it uses
@@ -466,8 +469,19 @@
   For each kind of request there would be an ET and we would put a constant
   triggering over 1 hour and change the ratio each hour.
 - Attended "Journées scientifiques". "Vérfier et corriger les logiciels",
-  "Modélisation pour la biologie et la médcine" and "Vers une informatique
+  "Modélisation pour la biologie et la médecine" and "Vers une informatique
   ouverte et reproductible".
+- A lot of papers use RUBiS. It's an auction website benchmark. Three kind of
+  users session : visitor, buyer and seller. We could have juste 3 ET with maybe
+  complex microtasks as users can see bids and bid themselves.
+- A lot of papers use YCSB. "Each workload represents a particular mix of
+  read/write operations, data sizes, request distributions, and so on, and can
+  be used to evaluate systems at one particular point in the performance space."
+  Four different kind of ET and it choses one random each time, so if we compute
+  proactively the number of time operations will be chosen we could use the
+  repeating characterisitc of ETs. One thing, as there are multiple records to
+  read/write we would have more than 4 ETs. We would need more than computing
+  tasks as reading records can vary depending on the writes.
 *** Blocking Points
 *** Planned Work
 - [ ] Write examples.

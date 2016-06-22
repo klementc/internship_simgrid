@@ -55,7 +55,7 @@ public:
     double flops;
     double interSpawnDelay;
     simgrid::s4u::Host *lastUsedHost;
-    std::vector<simgrid::s4u::Host*> hosts;
+    std::vector<simgrid::s4u::Host*> hosts;  // TODO, use hosts
     bool repeat = true;
     std::vector<streamET> outputStreams;
 
@@ -74,6 +74,7 @@ bool operator<(const EvntQ& lhs, const EvntQ& rhs);
 namespace simgrid {
 namespace s4u {
 
+/** @brief */
 XBT_PUBLIC_CLASS ElasticTaskManager : public Actor {
 private:
     std::vector<TaskDescription> tasks;
@@ -110,7 +111,7 @@ private:
     size_t id;
     ElasticTaskManager *etm;
 public:
-    ElasticTask(s4u::Host *host, double flopsTask, double interSpawnDelay, ElasticTaskManager *etm_);
+    ElasticTask(Host *host, double flopsTask, double interSpawnDelay, ElasticTaskManager *etm_);
     ElasticTask(Host *host, double flopsTask, ElasticTaskManager *etm_);
     ElasticTask(Host *host, double flopsTask, std::vector<RatioChange> fluctuations, ElasticTaskManager *etm_);
     ~ElasticTask();

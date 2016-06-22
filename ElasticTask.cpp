@@ -152,12 +152,6 @@ void ElasticTaskManager::execute() {
         }
         nextEvtQueue.pop();
     }
-    //for(std::vector<TaskDescription>::iterator it = tasks.begin(); it != tasks.end(); ++it) {
-    //    for(int i = 0; i < (*it).interSpawnDelay ; i++) {
-    //        msg_task_t task = MSG_task_create(std::to_string(i).c_str(), (*it).flops, 0.0, NULL);
-    //        MSG_task_execute(task);
-    //    }
-    //}
 }
 
 // ELASTICTASK ---------------------------------------------------------------------------------------------------------
