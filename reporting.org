@@ -482,6 +482,11 @@
   repeating characterisitc of ETs. One thing, as there are multiple records to
   read/write we would have more than 4 ETs. We would need more than computing
   tasks as reading records can vary depending on the writes.
+- Meeting notes
+  Ask if there is a detach for microtasks,
+  Still a while(1) and use a semaphor_acquire
+  talk with gabriel
+- Probable don't need ETM to be an Actor
 *** Blocking Points
 *** Planned Work
 - [ ] Write examples.

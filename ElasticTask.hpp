@@ -19,7 +19,7 @@
 #include <simgrid/s4u/actor.hpp>
 
 class EvntQ {
-public:
+  public:
     double date;
 
     EvntQ(double date_) : date(date_) {}
@@ -27,30 +27,30 @@ public:
 };
 
 typedef struct streamET {
-    size_t destET;
-    double ratioLoad;
+  size_t destET;
+  double ratioLoad;
 
-    //streamET() = default;
-    streamET(size_t destET_, double ratioLoad_)
+  //streamET() = default;
+  streamET(size_t destET_, double ratioLoad_)
     : destET(destET_), ratioLoad(ratioLoad_) {}
 } streamET;
 
 class RatioChange : public EvntQ {
-public:
+  public:
     size_t id;
     double visitsPerSec;
 
     //RatioChange() = default;
     RatioChange(size_t id_, double date_, double visitsPerSec_)
-    : EvntQ(date_), id(id_), visitsPerSec(visitsPerSec_) {}
+      : EvntQ(date_), id(id_), visitsPerSec(visitsPerSec_) {}
     RatioChange(size_t id_, double visitsPerSec_)  // for the event queue as the date is already known
-    : EvntQ(0.0), id(id_), visitsPerSec(visitsPerSec_) {}
+      : EvntQ(0.0), id(id_), visitsPerSec(visitsPerSec_) {}
     RatioChange(double date_, double visitsPerSec_)  // for the user that doesn't know the ID of the ET
-    : EvntQ(date_), visitsPerSec(visitsPerSec_) {}
+      : EvntQ(date_), visitsPerSec(visitsPerSec_) {}
 };
 
 class TaskDescription : public EvntQ {
-public:
+  public:
     size_t id;
     double flops;
     double interSpawnDelay;
@@ -61,12 +61,12 @@ public:
 
     //TaskDescription() = default;
     TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_, double date_)
-    : EvntQ(date_), flops(flops_), interSpawnDelay(interSpawnDelay_) {
-        hosts.push_back(host_);
-        lastUsedHost = hosts.at(0);
+        : EvntQ(date_), flops(flops_), interSpawnDelay(interSpawnDelay_) {
+      hosts.push_back(host_);
+      lastUsedHost = hosts.at(0);
     }
     TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_)
-    : TaskDescription(flops_, interSpawnDelay_, host_, 0.0) {}
+      : TaskDescription(flops_, interSpawnDelay_, host_, 0.0) {}
 };
 
 bool operator<(const EvntQ& lhs, const EvntQ& rhs);
@@ -76,13 +76,14 @@ namespace s4u {
 
 /** @brief */
 XBT_PUBLIC_CLASS ElasticTaskManager : public Actor {
-private:
+  private:
     std::vector<TaskDescription> tasks;
     std::priority_queue<EvntQ, std::vector<EvntQ>, std::less<EvntQ> > nextEvtQueue;
-public:
+    msg_sem_t sleep_sem;
+  public:
     ElasticTaskManager(const char *name, s4u::Host *host, std::function<void()> code);
     template<class C>
-    ElasticTaskManager(const char *name, s4u::Host *host, C code) :
+      ElasticTaskManager(const char *name, s4u::Host *host, C code) :
         ElasticTaskManager(name, host, std::function<void()>(std::move(code))) {}
     ElasticTaskManager(const char *name, s4u::Host *host) : ElasticTaskManager(name, host, nullptr) {}
     ~ElasticTaskManager();
@@ -107,10 +108,10 @@ public:
 };
 
 XBT_PUBLIC_CLASS ElasticTask {
-private:
+  private:
     size_t id;
     ElasticTaskManager *etm;
-public:
+  public:
     ElasticTask(Host *host, double flopsTask, double interSpawnDelay, ElasticTaskManager *etm_);
     ElasticTask(Host *host, double flopsTask, ElasticTaskManager *etm_);
     ElasticTask(Host *host, double flopsTask, std::vector<RatioChange> fluctuations, ElasticTaskManager *etm_);
