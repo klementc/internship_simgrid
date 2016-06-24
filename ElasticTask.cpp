@@ -17,10 +17,11 @@ using namespace s4u;
 
 // ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
 
-ElasticTaskManager::ElasticTaskManager(const char *name, Host *host, std::function<void()> code) :
-    Actor(name, host, code) {
+ElasticTaskManager::ElasticTaskManager() {
   sleep_sem = MSG_sem_init(0);
 }
+
+ElasticTaskManager::~ElasticTaskManager() {}
 
 size_t ElasticTaskManager::addElasticTask(Host *host, double flopsTask, double interSpawnDelay) {
   tasks.push_back(TaskDescription(flopsTask, interSpawnDelay, host, Engine::instance()->getClock()));
@@ -33,7 +34,7 @@ size_t ElasticTaskManager::addElasticTask(Host *host, double flopsTask, double i
 }
 
 void ElasticTaskManager::addHost(size_t id, Host *host) {
-  tasks.at(id).hosts.push_back(host);
+  tasks.at(id).hosts.push_back(host);  // TODO, use hosts
 }
 
 void ElasticTaskManager::changeRatio(size_t id, double visitsPerSec) {
@@ -145,14 +146,15 @@ void ElasticTaskManager::removeOutputStream(size_t sourceET, size_t destET) {
   simpleChangeTask(sourceET);
 }
 
-void ElasticTaskManager::execute() {
+void ElasticTaskManager::run() {
   while(1) {
     while(nextEvtQueue.top().date <= Engine::instance()->getClock()) {
       EvntQ currentEvent = nextEvtQueue.top();
       if (RatioChange* t = dynamic_cast<RatioChange*>(&currentEvent)) {  // Apparently this will never succeed
         changeRatio(t->id, t->visitsPerSec);
       } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(&currentEvent)) {
-        this_actor::execute(t->flops);
+        //this_actor::execute(t->flops);
+        MSG_task_create("hi", t->flops, 0.0, NULL);
         if (t->repeat) {
           t->date = Engine::instance()->getClock() + (1 / t->interSpawnDelay);
           nextEvtQueue.push(*t);

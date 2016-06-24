@@ -75,17 +75,13 @@ namespace simgrid {
 namespace s4u {
 
 /** @brief */
-XBT_PUBLIC_CLASS ElasticTaskManager : public Actor {
+XBT_PUBLIC_CLASS ElasticTaskManager {
   private:
     std::vector<TaskDescription> tasks;
     std::priority_queue<EvntQ, std::vector<EvntQ>, std::less<EvntQ> > nextEvtQueue;
     msg_sem_t sleep_sem;
   public:
-    ElasticTaskManager(const char *name, s4u::Host *host, std::function<void()> code);
-    template<class C>
-      ElasticTaskManager(const char *name, s4u::Host *host, C code) :
-        ElasticTaskManager(name, host, std::function<void()>(std::move(code))) {}
-    ElasticTaskManager(const char *name, s4u::Host *host) : ElasticTaskManager(name, host, nullptr) {}
+    ElasticTaskManager();
     ~ElasticTaskManager();
 
     size_t addElasticTask(s4u::Host *host, double flopsTask, double interSpawnDelay);
@@ -104,7 +100,7 @@ XBT_PUBLIC_CLASS ElasticTaskManager : public Actor {
     void addOutputStream(size_t sourceET, size_t destET, double ratioLoad);
     void removeOutputStream(size_t sourceET, size_t destET);
 
-    void execute();
+    void run();
 };
 
 XBT_PUBLIC_CLASS ElasticTask {

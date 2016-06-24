@@ -488,6 +488,7 @@
   talk with gabriel
 - Probable don't need ETM to be an Actor
 *** Blocking Points
+- Segfault when calling etm->run();
 *** Planned Work
 - [ ] Write examples.
 - [ ] Write correct execute code for ETM.
