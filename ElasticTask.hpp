@@ -78,8 +78,9 @@ namespace s4u {
 XBT_PUBLIC_CLASS ElasticTaskManager {
   private:
     std::vector<TaskDescription> tasks;
-    std::priority_queue<EvntQ, std::vector<EvntQ>, std::less<EvntQ> > nextEvtQueue;
+    std::priority_queue<EvntQ*, std::vector<EvntQ*>, std::less<EvntQ*> > nextEvtQueue;
     msg_sem_t sleep_sem;
+    bool keepGoing;
   public:
     ElasticTaskManager();
     ~ElasticTaskManager();
@@ -100,6 +101,7 @@ XBT_PUBLIC_CLASS ElasticTaskManager {
     void addOutputStream(size_t sourceET, size_t destET, double ratioLoad);
     void removeOutputStream(size_t sourceET, size_t destET);
 
+    void kill();
     void run();
 };
 

@@ -487,6 +487,9 @@
   Still a while(1) and use a semaphor_acquire
   talk with gabriel
 - Probable don't need ETM to be an Actor
+- Meeting notes
+  Use futures to do the microtasks
+  Still a msg_task in the end, future is controling the execution
 *** Blocking Points
 - Segfault when calling etm->run();
 *** Planned Work

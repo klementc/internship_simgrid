@@ -2,10 +2,12 @@
 #include "simgrid/s4u/engine.hpp"
 #include "simgrid/s4u/comm.hpp"
 #include "simgrid/s4u/forward.hpp"
+#include "simgrid/kernel/future.hpp"
 #include <vector>
 #include <queue>
 #include <string>
 #include <sstream>
+#include <iostream>
 #include "simgrid/msg.h"
 
 bool operator<(const EvntQ& lhs, const EvntQ& rhs) {
@@ -17,7 +19,7 @@ using namespace s4u;
 
 // ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
 
-ElasticTaskManager::ElasticTaskManager() {
+ElasticTaskManager::ElasticTaskManager() : keepGoing(true) {
   sleep_sem = MSG_sem_init(0);
 }
 
@@ -27,7 +29,8 @@ size_t ElasticTaskManager::addElasticTask(Host *host, double flopsTask, double i
   tasks.push_back(TaskDescription(flopsTask, interSpawnDelay, host, Engine::instance()->getClock()));
   tasks.at(tasks.size() - 1).id = tasks.size() - 1;
   if (interSpawnDelay > 0.0) {
-    nextEvtQueue.push(tasks.at(tasks.size() - 1));
+    TaskDescription *newTask = new TaskDescription(tasks.at(tasks.size() - 1));
+    nextEvtQueue.push(newTask);
     MSG_sem_release(sleep_sem);
   }
   return tasks.size() - 1;
@@ -42,7 +45,7 @@ void ElasticTaskManager::changeRatio(size_t id, double visitsPerSec) {
   tasks.at(id).interSpawnDelay = visitsPerSec;
   tasks.at(id).date = Engine::instance()->getClock();
   if(visitsPerSec > 0.0) {
-    nextEvtQueue.push(tasks.at(id));
+    nextEvtQueue.push(&(tasks.at(id)));
     MSG_sem_release(sleep_sem);
   }
 }
@@ -52,23 +55,23 @@ void ElasticTaskManager::changeTask(size_t id, double flops) {
   tasks.at(id).flops = flops;
   tasks.at(id).date = Engine::instance()->getClock();
   if(tasks.at(id).interSpawnDelay > 0.0) {
-    nextEvtQueue.push(tasks.at(id));
+    nextEvtQueue.push(&(tasks.at(id)));
     MSG_sem_release(sleep_sem);
   }
 }
 
 // TODO, All these change task method are too similar and messy
 void ElasticTaskManager::simpleChangeTask(size_t id) {  // A change has been done and we want to update the repeating
-  TaskDescription newTask = tasks.at(id);
-  std::priority_queue<EvntQ, std::vector<EvntQ>, std::less<EvntQ> > newNextEvtQueue;
+  TaskDescription *newTask = new TaskDescription(tasks.at(id));
+  std::priority_queue<EvntQ*, std::vector<EvntQ*>, std::less<EvntQ*> > newNextEvtQueue;
   while(!nextEvtQueue.empty()) {
     if(strcmp(typeid(nextEvtQueue.top()).name(), "TaskDescription")) {
       newNextEvtQueue.push(nextEvtQueue.top());
-    } else if (const TaskDescription* t = dynamic_cast<const TaskDescription*>(&nextEvtQueue.top())) {
+    } else if (const TaskDescription* t = dynamic_cast<const TaskDescription*>(nextEvtQueue.top())) {
       if (t->id != id) {
         newNextEvtQueue.push(nextEvtQueue.top());
       } else if (t->repeat) {
-        newTask.date = t->date;
+        newTask->date = t->date;
         newNextEvtQueue.push(newTask);
       }
     }
@@ -78,18 +81,19 @@ void ElasticTaskManager::simpleChangeTask(size_t id) {  // A change has been don
 }
 
 void ElasticTaskManager::addRatioChange(size_t id, double date, double visitsPerSec) {
-  nextEvtQueue.push(RatioChange(id, date, visitsPerSec));
-  if (date < nextEvtQueue.top().date) {
+  RatioChange *rC = new RatioChange(id, date, visitsPerSec);
+  nextEvtQueue.push(rC);
+  if (date < nextEvtQueue.top()->date) {
     MSG_sem_release(sleep_sem);
   }
 }
 
 void ElasticTaskManager::removeTask(size_t id) {  // remove all even non repeat
-  std::priority_queue<EvntQ, std::vector<EvntQ>, std::less<EvntQ> > newNextEvtQueue;
+  std::priority_queue<EvntQ*, std::vector<EvntQ*>, std::less<EvntQ*> > newNextEvtQueue;
   while(!nextEvtQueue.empty()) {
     if(strcmp(typeid(nextEvtQueue.top()).name(), "TaskDescription")) {
       newNextEvtQueue.push(nextEvtQueue.top());
-    } else if (const TaskDescription* t = dynamic_cast<const TaskDescription*>(&nextEvtQueue.top())) {
+    } else if (const TaskDescription* t = dynamic_cast<const TaskDescription*>(nextEvtQueue.top())) {
       if (t->id != id) {
         newNextEvtQueue.push(nextEvtQueue.top());
       }
@@ -100,11 +104,11 @@ void ElasticTaskManager::removeTask(size_t id) {  // remove all even non repeat
 }
 
 void ElasticTaskManager::removeRatioChanges(size_t id) {
-  std::priority_queue<EvntQ, std::vector<EvntQ>, std::less<EvntQ> > newNextEvtQueue;
+  std::priority_queue<EvntQ*, std::vector<EvntQ*>, std::less<EvntQ*> > newNextEvtQueue;
   while(!nextEvtQueue.empty()) {
     if(strcmp(typeid(nextEvtQueue.top()).name(), "RatioChange")) {
       newNextEvtQueue.push(nextEvtQueue.top());
-    } else if (const RatioChange* t = dynamic_cast<const RatioChange*>(&nextEvtQueue.top())) {
+    } else if (const RatioChange* t = dynamic_cast<const RatioChange*>(nextEvtQueue.top())) {
       if (t->id != id) {
         newNextEvtQueue.push(nextEvtQueue.top());
       }
@@ -115,18 +119,18 @@ void ElasticTaskManager::removeRatioChanges(size_t id) {
 }
 
 void ElasticTaskManager::triggerOneTimeTask(size_t id) {
-  TaskDescription newTask = tasks.at(id);
-  newTask.repeat = false;
-  newTask.date = 0.0;
+  TaskDescription *newTask = new TaskDescription(tasks.at(id));
+  newTask->repeat = false;
+  newTask->date = 0.0;
   nextEvtQueue.push(newTask);
   MSG_sem_release(sleep_sem);
 }
 
 void ElasticTaskManager::triggerOneTimeTask(size_t id, double ratioLoad) {
-  TaskDescription newTask = tasks.at(id);
-  newTask.repeat = false;
-  newTask.flops = newTask.flops * ratioLoad;
-  newTask.date = 0.0;
+  TaskDescription *newTask = new TaskDescription(tasks.at(id));
+  newTask->repeat = false;
+  newTask->flops = newTask->flops * ratioLoad;
+  newTask->date = 0.0;
   nextEvtQueue.push(newTask);
   MSG_sem_release(sleep_sem);
 }
@@ -146,26 +150,62 @@ void ElasticTaskManager::removeOutputStream(size_t sourceET, size_t destET) {
   simpleChangeTask(sourceET);
 }
 
+void ElasticTaskManager::kill() {
+  keepGoing = false;
+}
+
 void ElasticTaskManager::run() {
   while(1) {
-    while(nextEvtQueue.top().date <= Engine::instance()->getClock()) {
-      EvntQ currentEvent = nextEvtQueue.top();
-      if (RatioChange* t = dynamic_cast<RatioChange*>(&currentEvent)) {  // Apparently this will never succeed
+    std::cout << "1";
+    while(!nextEvtQueue.empty() && nextEvtQueue.top()->date <= Engine::instance()->getClock()) {
+      std::cout << "2";
+      EvntQ *currentEvent = nextEvtQueue.top();
+      if (RatioChange* t = dynamic_cast<RatioChange*>(currentEvent)) {
         changeRatio(t->id, t->visitsPerSec);
-      } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(&currentEvent)) {
-        //this_actor::execute(t->flops);
-        MSG_task_create("hi", t->flops, 0.0, NULL);
+      } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent)) {
+        std::cout << "3";
+        auto microtaskP = std::make_shared<simgrid::kernel::Promise<void>>();
+        auto microtaskF = microtaskP->get_future();
+        SIMIX_timer_set(0.0, [microtaskP, t] {
+          try {
+            std::cout << "4";
+            msg_task_t my_task = MSG_task_create(nullptr, t->flops, 0.0, NULL);
+            MSG_task_execute(my_task);
+            microtaskP->set_value();
+          } catch(...) {
+            microtaskP->set_exception(std::current_exception());
+          }
+        });
+        // TODO, in the future allow the user to write this part
+        microtaskF.then([this, t](simgrid::kernel::Future<void> result) {
+          //try {
+          for(std::vector<streamET>::iterator it = t->outputStreams.begin(); it != t->outputStreams.end(); ++it) {
+          std::cout << "5";
+            this->triggerOneTimeTask((*it).destET, (*it).ratioLoad);
+          }
+          //} catch(std::exception& e) {
+          //  XBT_INFO("Error: %e", e.what());
+          //}
+        });
         if (t->repeat) {
           t->date = Engine::instance()->getClock() + (1 / t->interSpawnDelay);
-          nextEvtQueue.push(*t);
+          nextEvtQueue.push(t);
         }
-        for(std::vector<streamET>::iterator it = t->outputStreams.begin(); it != t->outputStreams.end(); ++it) {
-          triggerOneTimeTask((*it).destET, (*it).ratioLoad);
-        }
+      } else {
+        std::cout << "wut";
+        exit(0);  // Should'nt happen
       }
+      //delete currentEvent;  // TODO, am I sure the next pop will pop the current event ?
       nextEvtQueue.pop();
     }
-    MSG_sem_acquire_timeout(sleep_sem, nextEvtQueue.top().date - Engine::instance()->getClock());
+    if(!keepGoing) {
+      break;
+    }
+    if(!nextEvtQueue.empty()) {
+      MSG_sem_acquire_timeout(sleep_sem, nextEvtQueue.top()->date - Engine::instance()->getClock());
+    } else {
+      MSG_sem_acquire_timeout(sleep_sem, 999.0);
+    }
   }
 }
 

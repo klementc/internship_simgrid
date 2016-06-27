@@ -7,9 +7,10 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(s4u_test, "a sample log category");
 
 void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm) {
   XBT_INFO("Creating first ET");
-  simgrid::s4u::ElasticTask *e1 = new simgrid::s4u::ElasticTask(simgrid::s4u::Host::by_name("Tremblay"), 2.0, 2.0,
-      etm.get());  // Doesn't work because using etm before it's initialized ?
-  sleep(60);
+  simgrid::s4u::ElasticTask *e1 = new simgrid::s4u::ElasticTask(simgrid::s4u::Host::by_name("Tremblay"), 0.0, 10.0,
+      etm.get());
+  sleep(15);
+  etm->kill();
   XBT_INFO("Done.");
   // TODO, kill the etm
 }
