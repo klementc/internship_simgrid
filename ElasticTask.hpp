@@ -54,7 +54,7 @@ class TaskDescription : public EvntQ {
     size_t id;
     double flops;
     double interSpawnDelay;
-    simgrid::s4u::Host *lastUsedHost;
+    size_t nextHost;
     std::vector<simgrid::s4u::Host*> hosts;  // TODO, use hosts
     bool repeat = true;
     std::vector<streamET> outputStreams;
@@ -63,7 +63,7 @@ class TaskDescription : public EvntQ {
     TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_, double date_)
         : EvntQ(date_), flops(flops_), interSpawnDelay(interSpawnDelay_) {
       hosts.push_back(host_);
-      lastUsedHost = hosts.at(0);
+      nextHost = 0;
     }
     TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_)
       : TaskDescription(flops_, interSpawnDelay_, host_, 0.0) {}

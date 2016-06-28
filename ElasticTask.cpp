@@ -37,7 +37,7 @@ size_t ElasticTaskManager::addElasticTask(Host *host, double flopsTask, double i
 }
 
 void ElasticTaskManager::addHost(size_t id, Host *host) {
-  tasks.at(id).hosts.push_back(host);  // TODO, use hosts
+  tasks.at(id).hosts.push_back(host);
 }
 
 void ElasticTaskManager::changeRatio(size_t id, double visitsPerSec) {
@@ -126,7 +126,7 @@ void ElasticTaskManager::triggerOneTimeTask(size_t id) {
   MSG_sem_release(sleep_sem);
 }
 
-void ElasticTaskManager::triggerOneTimeTask(size_t id, double ratioLoad) {
+void ElasticTaskManager::triggerOneTimeTask(size_t id, double ratioLoad) {  // TODO, network load to add
   TaskDescription *newTask = new TaskDescription(tasks.at(id));
   newTask->repeat = false;
   newTask->flops = newTask->flops * ratioLoad;
@@ -164,29 +164,49 @@ void ElasticTaskManager::run() {
         changeRatio(t->id, t->visitsPerSec);
       } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent)) {
         std::cout << "3";
-        auto microtaskP = std::make_shared<simgrid::kernel::Promise<void>>();
-        auto microtaskF = microtaskP->get_future();
-        SIMIX_timer_set(0.0, [microtaskP, t] {
-          try {
-            std::cout << "4";
-            msg_task_t my_task = MSG_task_create(nullptr, t->flops, 0.0, NULL);
-            MSG_task_execute(my_task);
-            microtaskP->set_value();
-          } catch(...) {
-            microtaskP->set_exception(std::current_exception());
-          }
-        });
-        // TODO, in the future allow the user to write this part
-        microtaskF.then([this, t](simgrid::kernel::Future<void> result) {
-          //try {
+        //auto microtaskP = std::make_shared<simgrid::kernel::Promise<void>>();
+        //auto microtaskF = microtaskP->get_future();
+        //SIMIX_timer_set(0.0, [microtaskP, t] {
+        //  try {
+        //    std::cout << "4";
+        //    Host *hostsA = &t->hosts[0];
+        //    msg_task_t my_task = MSG_task_create(nullptr, t->flops, 0.0, NULL);
+        //    MSG_task_execute(my_task);
+        //    microtaskP->set_value();
+        //  } catch(...) {
+        //    microtaskP->set_exception(std::current_exception());
+        //  }
+        //});
+        //// TODO, in the future allow the user to write this part
+        //microtaskF.then([this, t](simgrid::kernel::Future<void> result) {
+        //  //try {
+        //  std::cout << "5";
+        //  for(std::vector<streamET>::iterator it = t->outputStreams.begin(); it != t->outputStreams.end(); ++it) {
+        //    this->triggerOneTimeTask((*it).destET, (*it).ratioLoad);
+        //  }
+        //  //} catch(std::exception& e) {
+        //  //  XBT_INFO("Error: %e", e.what());
+        //  //}
+        //});
+        Actor(nullptr, t->hosts.at(t->nextHost), [this, t] {  // TODO, let the user write this part
+          //this_actor::execute(t->flops);
+          double flops_[1] = {t->flops};
+          double bytes_[1] = {0.0};
+          Host *hosts_[1] = {t->hosts.at(t->nextHost)};
+          msg_task_t my_task = MSG_parallel_task_create(nullptr, 1, hosts_, flops_, bytes_, NULL);
+          MSG_task_execute(my_task);
+          MSG_task.destroy(my_task);
+          std::cout << "4";
           for(std::vector<streamET>::iterator it = t->outputStreams.begin(); it != t->outputStreams.end(); ++it) {
-          std::cout << "5";
             this->triggerOneTimeTask((*it).destET, (*it).ratioLoad);
           }
-          //} catch(std::exception& e) {
-          //  XBT_INFO("Error: %e", e.what());
-          //}
         });
+        // The shifting of hosts will occur before but should be negligible
+        if(t->nextHost == t->hosts.size() - 1) {
+          t->nextHost = 0;
+        } else {
+          t->nextHost++;  // TODO, use proper index stuff
+        }
         if (t->repeat) {
           t->date = Engine::instance()->getClock() + (1 / t->interSpawnDelay);
           nextEvtQueue.push(t);
@@ -195,7 +215,7 @@ void ElasticTaskManager::run() {
         std::cout << "wut";
         exit(0);  // Should'nt happen
       }
-      //delete currentEvent;  // TODO, am I sure the next pop will pop the current event ?
+      delete currentEvent;  // TODO, am I sure the next pop will pop the current event ?
       nextEvtQueue.pop();
     }
     if(!keepGoing) {
