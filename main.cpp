@@ -9,6 +9,11 @@ void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm) {
   XBT_INFO("Creating first ET");
   simgrid::s4u::ElasticTask *e1 = new simgrid::s4u::ElasticTask(simgrid::s4u::Host::by_name("Tremblay"), 1.0, 5.0,
       etm.get());
+  simgrid::s4u::ElasticTask *e2 = new simgrid::s4u::ElasticTask(simgrid::s4u::Host::by_name("Tremblay"), 3.0, 2.5,
+      etm.get());
+  e1->setOutputFunction([e2]() {
+      e2->triggerOneTime(1.5);
+  });
   simgrid::s4u::this_actor::sleep(15);
   etm->kill();
   XBT_INFO("Done.");
@@ -25,18 +30,3 @@ int main(int argc, char **argv) {
   e->run();
   return 0;
 }
-
-
-
-// REMINDER
-//class ElasticSearchManager {
-//  // stuff
-//public:
-//  void run();
-//};
-
-//std::shared_ptr<ElasticSearchManager> etm = std::make_shared<ElasticSearchManager>();
-//Actor etmActor("etm", host, [etm] {
-//                 etm->run();
-//                 });
-//Actor anotherActor("other", host, [etm] { doSomething(etm); } )

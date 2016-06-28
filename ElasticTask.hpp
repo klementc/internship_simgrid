@@ -57,7 +57,8 @@ class TaskDescription : public EvntQ {
     size_t nextHost;
     std::vector<simgrid::s4u::Host*> hosts;  // TODO, use hosts
     bool repeat = true;
-    std::vector<streamET> outputStreams;
+    //std::vector<streamET> outputStreams;
+    std::function<void()> outputFunction = []() {};
 
     //TaskDescription() = default;
     TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_, double date_)
@@ -83,7 +84,7 @@ XBT_PUBLIC_CLASS ElasticTaskManager {
     bool keepGoing;
   public:
     ElasticTaskManager();
-    ~ElasticTaskManager();
+    //~ElasticTaskManager();
 
     size_t addElasticTask(s4u::Host *host, double flopsTask, double interSpawnDelay);
 
@@ -98,8 +99,9 @@ XBT_PUBLIC_CLASS ElasticTaskManager {
     void triggerOneTimeTask(size_t id);
     void triggerOneTimeTask(size_t id, double ratioLoad);
 
-    void addOutputStream(size_t sourceET, size_t destET, double ratioLoad);
-    void removeOutputStream(size_t sourceET, size_t destET);
+    //void addOutputStream(size_t sourceET, size_t destET, double ratioLoad);
+    //void removeOutputStream(size_t sourceET, size_t destET);
+    void setOutputFunction(size_t id, std::function<void()> code);
 
     void kill();
     void run();
@@ -120,7 +122,8 @@ XBT_PUBLIC_CLASS ElasticTask {
     void modifyTask(double flops);
     void triggerOneTime();
     void triggerOneTime(double ratioLoad);
-    void addOutputStream(size_t idOutput, double ratioLoad);
+    //void addOutputStream(size_t idOutput, double ratioLoad);
+    void setOutputFunction(std::function<void()> code);
     void addHost(Host *host);
     //void addOutputStreams(std::vector<streamET> streams);
     void removeOutputStream(size_t idOutput);

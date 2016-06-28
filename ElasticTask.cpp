@@ -23,7 +23,7 @@ ElasticTaskManager::ElasticTaskManager() : keepGoing(true) {
   sleep_sem = MSG_sem_init(0);
 }
 
-ElasticTaskManager::~ElasticTaskManager() {}
+//ElasticTaskManager::~ElasticTaskManager() {}
 
 size_t ElasticTaskManager::addElasticTask(Host *host, double flopsTask, double interSpawnDelay) {
   tasks.push_back(TaskDescription(flopsTask, interSpawnDelay, host, Engine::instance()->getClock()));
@@ -135,19 +135,26 @@ void ElasticTaskManager::triggerOneTimeTask(size_t id, double ratioLoad) {  // T
   MSG_sem_release(sleep_sem);
 }
 
-void ElasticTaskManager::addOutputStream(size_t sourceET, size_t destET, double ratioLoad) {
-  tasks.at(sourceET).outputStreams.push_back(streamET(destET, ratioLoad));
-  simpleChangeTask(sourceET);
-}
+/*
+ *void ElasticTaskManager::addOutputStream(size_t sourceET, size_t destET, double ratioLoad) {
+ *  tasks.at(sourceET).outputStreams.push_back(streamET(destET, ratioLoad));
+ *  simpleChangeTask(sourceET);
+ *}
+ *
+ *void ElasticTaskManager::removeOutputStream(size_t sourceET, size_t destET) {
+ *  for(std::vector<streamET>::iterator it = tasks.at(sourceET).outputStreams.begin();
+ *      it != tasks.at(sourceET).outputStreams.end(); ++it) {
+ *    if((*it).destET == destET) {
+ *      tasks.at(sourceET).outputStreams.erase(it);
+ *    }
+ *  }
+ *  simpleChangeTask(sourceET);
+ *}
+ */
 
-void ElasticTaskManager::removeOutputStream(size_t sourceET, size_t destET) {
-  for(std::vector<streamET>::iterator it = tasks.at(sourceET).outputStreams.begin();
-      it != tasks.at(sourceET).outputStreams.end(); ++it) {
-    if((*it).destET == destET) {
-      tasks.at(sourceET).outputStreams.erase(it);
-    }
-  }
-  simpleChangeTask(sourceET);
+void ElasticTaskManager::setOutputFunction(size_t id, std::function<void()> code) {
+  tasks.at(id).outputFunction = code;
+  simpleChangeTask(id);
 }
 
 void ElasticTaskManager::kill() {
@@ -188,7 +195,7 @@ void ElasticTaskManager::run() {
         //  //  XBT_INFO("Error: %e", e.what());
         //  //}
         //});
-        Actor(nullptr, t->hosts.at(t->nextHost), [this, t] {  // TODO, let the user write this part
+        Actor(nullptr, t->hosts.at(t->nextHost), [this, t] {
           //this_actor::execute(t->flops);
           double flops_[1] = {t->flops};
           double bytes_[1] = {0.0};
@@ -198,9 +205,12 @@ void ElasticTaskManager::run() {
           //MSG_task_destroy(my_task);
           this_actor::execute(t->flops);
           std::cout << "4";
-          for(std::vector<streamET>::iterator it = t->outputStreams.begin(); it != t->outputStreams.end(); ++it) {
-            this->triggerOneTimeTask((*it).destET, (*it).ratioLoad);
-          }
+          /*
+           *for(std::vector<streamET>::iterator it = t->outputStreams.begin(); it != t->outputStreams.end(); ++it) {
+           *  this->triggerOneTimeTask((*it).destET, (*it).ratioLoad);
+           *}
+           */
+          t->outputFunction();
         });
         // The shifting of hosts will occur before but should be negligible
         if(t->nextHost == t->hosts.size() - 1) {
@@ -242,7 +252,8 @@ ElasticTask::ElasticTask(Host *host, double flopsTask, ElasticTaskManager *etm_)
   id = etm->addElasticTask(host, flopsTask, 0.0);
 }
 
-ElasticTask::ElasticTask(Host *host, double flopsTask, std::vector<RatioChange> fluctuations, ElasticTaskManager *etm_) {
+ElasticTask::ElasticTask(Host *host, double flopsTask, std::vector<RatioChange> fluctuations,
+                         ElasticTaskManager *etm_) {
   etm = etm_;
   id = etm->addElasticTask(host, flopsTask, 0.0);
   setTriggerRatioVariation(fluctuations);
@@ -276,12 +287,18 @@ void ElasticTask::addHost(Host *host) {
   etm->addHost(id, host);
 }
 
-void ElasticTask::addOutputStream(size_t idOutput, double ratioLoad) {
-  etm->addOutputStream(id, idOutput, ratioLoad);
-}
+/*
+ *void ElasticTask::addOutputStream(size_t idOutput, double ratioLoad) {
+ *  etm->addOutputStream(id, idOutput, ratioLoad);
+ *}
+ *
+ *void ElasticTask::removeOutputStream(size_t idOutput) {
+ *  etm->removeOutputStream(id, idOutput);
+ *}
+ */
 
-void ElasticTask::removeOutputStream(size_t idOutput) {
-  etm->removeOutputStream(id, idOutput);
+void ElasticTask::setOutputFunction(std::function<void()> code) {
+  etm->setOutputFunction(id, code);
 }
 
 //void ElasticTask::addOutputStreams(std::vector<size_t> streams) {
