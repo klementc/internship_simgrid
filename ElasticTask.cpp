@@ -193,9 +193,10 @@ void ElasticTaskManager::run() {
           double flops_[1] = {t->flops};
           double bytes_[1] = {0.0};
           Host *hosts_[1] = {t->hosts.at(t->nextHost)};
-          msg_task_t my_task = MSG_parallel_task_create(nullptr, 1, hosts_, flops_, bytes_, NULL);
-          MSG_task_execute(my_task);
-          MSG_task.destroy(my_task);
+          //msg_task_t my_task = MSG_parallel_task_create(nullptr, 1, hosts_, flops_, bytes_, NULL);
+          //MSG_task_execute(my_task);
+          //MSG_task_destroy(my_task);
+          this_actor::execute(t->flops);
           std::cout << "4";
           for(std::vector<streamET>::iterator it = t->outputStreams.begin(); it != t->outputStreams.end(); ++it) {
             this->triggerOneTimeTask((*it).destET, (*it).ratioLoad);
@@ -215,8 +216,8 @@ void ElasticTaskManager::run() {
         std::cout << "wut";
         exit(0);  // Should'nt happen
       }
-      delete currentEvent;  // TODO, am I sure the next pop will pop the current event ?
-      nextEvtQueue.pop();
+      nextEvtQueue.pop();  // TODO, is it deleted?
+      //delete currentEvent;
     }
     if(!keepGoing) {
       break;

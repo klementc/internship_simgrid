@@ -16,6 +16,7 @@ void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm) {
 }
 
 int main(int argc, char **argv) {
+  //MSG_init(&argc, argv);
   simgrid::s4u::Engine *e = new simgrid::s4u::Engine(&argc, argv);
   std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm = std::make_shared<simgrid::s4u::ElasticTaskManager>();
   e->loadPlatform("../simgrid/examples/platforms/two_hosts.xml");
