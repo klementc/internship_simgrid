@@ -498,8 +498,28 @@
 
 ** Week 7 <2016-06-27 Mon>--<2016-07-01 Fri>
 *** Things Done
+- Meeting notes
+  Examples and see the time to do it and the load which is equivalent to a paper
+  (run multiple experiments by increasing the rate/number of ET and see the
+  overall time).
+  One figure that shows the number of microtasks over the time (the little boxes
+  with the start and end...).
+- Experiments planning
+  DejaVu. "Two servers. Intel SR1560 Series rack servers with Intel Xeon X5472
+  processors (eight cores at 3 GHz), 8 GB of DRAM, and 6 MB of L2 cache per
+  every two cores. EC2 cluster of 20 virtual machines. To demonstrate DejaVu’s
+  ability to scale out, we vary the number of active instances from 2 to 10 as
+  the workload intensity changes, but resort only to EC2’s large instance type.
+  In contrast, we demonstrate its ability to scale up by varying the instance
+  type from large to extra-large, while keeping the number of active instances
+  constant." Multi-tier apps, serving static and dynamic content, DB
+  interractions... Evaluate time for increasing ETs rate.
+  + Platform similar to DejaVu.
+
 *** Blocking Points
 *** Planned Work
+- [ ] Write what I'm planning to do with the expreriments, what I wanna show...
+- [ ] Write what I'm planning to say in my final report.
 
 ** Week 8 <2016-07-04 Mon>--<2016-07-08 Fri>
 *** Things Done

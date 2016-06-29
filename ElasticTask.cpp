@@ -135,23 +135,6 @@ void ElasticTaskManager::triggerOneTimeTask(size_t id, double ratioLoad) {  // T
   MSG_sem_release(sleep_sem);
 }
 
-/*
- *void ElasticTaskManager::addOutputStream(size_t sourceET, size_t destET, double ratioLoad) {
- *  tasks.at(sourceET).outputStreams.push_back(streamET(destET, ratioLoad));
- *  simpleChangeTask(sourceET);
- *}
- *
- *void ElasticTaskManager::removeOutputStream(size_t sourceET, size_t destET) {
- *  for(std::vector<streamET>::iterator it = tasks.at(sourceET).outputStreams.begin();
- *      it != tasks.at(sourceET).outputStreams.end(); ++it) {
- *    if((*it).destET == destET) {
- *      tasks.at(sourceET).outputStreams.erase(it);
- *    }
- *  }
- *  simpleChangeTask(sourceET);
- *}
- */
-
 void ElasticTaskManager::setOutputFunction(size_t id, std::function<void()> code) {
   tasks.at(id).outputFunction = code;
   simpleChangeTask(id);
@@ -162,56 +145,21 @@ void ElasticTaskManager::kill() {
 }
 
 void ElasticTaskManager::run() {
+  unsigned long long task_count = 0;
   while(1) {
-    std::cout << "1";
     while(!nextEvtQueue.empty() && nextEvtQueue.top()->date <= Engine::instance()->getClock()) {
-      std::cout << "2";
       EvntQ *currentEvent = nextEvtQueue.top();
       if (RatioChange* t = dynamic_cast<RatioChange*>(currentEvent)) {
         changeRatio(t->id, t->visitsPerSec);
       } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent)) {
-        std::cout << "3";
-        //auto microtaskP = std::make_shared<simgrid::kernel::Promise<void>>();
-        //auto microtaskF = microtaskP->get_future();
-        //SIMIX_timer_set(0.0, [microtaskP, t] {
-        //  try {
-        //    std::cout << "4";
-        //    Host *hostsA = &t->hosts[0];
-        //    msg_task_t my_task = MSG_task_create(nullptr, t->flops, 0.0, NULL);
-        //    MSG_task_execute(my_task);
-        //    microtaskP->set_value();
-        //  } catch(...) {
-        //    microtaskP->set_exception(std::current_exception());
-        //  }
-        //});
-        //// TODO, in the future allow the user to write this part
-        //microtaskF.then([this, t](simgrid::kernel::Future<void> result) {
-        //  //try {
-        //  std::cout << "5";
-        //  for(std::vector<streamET>::iterator it = t->outputStreams.begin(); it != t->outputStreams.end(); ++it) {
-        //    this->triggerOneTimeTask((*it).destET, (*it).ratioLoad);
-        //  }
-        //  //} catch(std::exception& e) {
-        //  //  XBT_INFO("Error: %e", e.what());
-        //  //}
-        //});
-        Actor(nullptr, t->hosts.at(t->nextHost), [this, t] {
-          //this_actor::execute(t->flops);
-          double flops_[1] = {t->flops};
-          double bytes_[1] = {0.0};
-          Host *hosts_[1] = {t->hosts.at(t->nextHost)};
-          //msg_task_t my_task = MSG_parallel_task_create(nullptr, 1, hosts_, flops_, bytes_, NULL);
-          //MSG_task_execute(my_task);
-          //MSG_task_destroy(my_task);
+        std::string host_name = t->hosts.at(t->nextHost)->name();
+        Actor(nullptr, t->hosts.at(t->nextHost), [this, t, task_count, host_name] {
+          std::cout << "TaskStart " << Engine::instance()->getClock() << " " << t->flops << " " << task_count
+                    << " " << host_name << std::endl;
           this_actor::execute(t->flops);
-          std::cout << "4";
-          /*
-           *for(std::vector<streamET>::iterator it = t->outputStreams.begin(); it != t->outputStreams.end(); ++it) {
-           *  this->triggerOneTimeTask((*it).destET, (*it).ratioLoad);
-           *}
-           */
           t->outputFunction();
         });
+        ++task_count;
         // The shifting of hosts will occur before but should be negligible
         if(t->nextHost == t->hosts.size() - 1) {
           t->nextHost = 0;
@@ -287,20 +235,6 @@ void ElasticTask::addHost(Host *host) {
   etm->addHost(id, host);
 }
 
-/*
- *void ElasticTask::addOutputStream(size_t idOutput, double ratioLoad) {
- *  etm->addOutputStream(id, idOutput, ratioLoad);
- *}
- *
- *void ElasticTask::removeOutputStream(size_t idOutput) {
- *  etm->removeOutputStream(id, idOutput);
- *}
- */
-
 void ElasticTask::setOutputFunction(std::function<void()> code) {
   etm->setOutputFunction(id, code);
 }
-
-//void ElasticTask::addOutputStreams(std::vector<size_t> streams) {
-
-//}

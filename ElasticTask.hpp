@@ -57,7 +57,6 @@ class TaskDescription : public EvntQ {
     size_t nextHost;
     std::vector<simgrid::s4u::Host*> hosts;  // TODO, use hosts
     bool repeat = true;
-    //std::vector<streamET> outputStreams;
     std::function<void()> outputFunction = []() {};
 
     //TaskDescription() = default;
@@ -99,8 +98,6 @@ XBT_PUBLIC_CLASS ElasticTaskManager {
     void triggerOneTimeTask(size_t id);
     void triggerOneTimeTask(size_t id, double ratioLoad);
 
-    //void addOutputStream(size_t sourceET, size_t destET, double ratioLoad);
-    //void removeOutputStream(size_t sourceET, size_t destET);
     void setOutputFunction(size_t id, std::function<void()> code);
 
     void kill();
@@ -122,10 +119,8 @@ XBT_PUBLIC_CLASS ElasticTask {
     void modifyTask(double flops);
     void triggerOneTime();
     void triggerOneTime(double ratioLoad);
-    //void addOutputStream(size_t idOutput, double ratioLoad);
     void setOutputFunction(std::function<void()> code);
     void addHost(Host *host);
-    //void addOutputStreams(std::vector<streamET> streams);
     void removeOutputStream(size_t idOutput);
 };
 
