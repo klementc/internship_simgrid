@@ -32,6 +32,7 @@
      + What's a cloud
      + Minimising the cost (in all forms) is a research challenge, particularly
        for fluctuating usage
+     + Different types of scaling
      + Present the survey that has categorized these works
      + Simulation isn't used that much and it would give a lot
      + How are they categorized
@@ -515,7 +516,23 @@
   constant." Multi-tier apps, serving static and dynamic content, DB
   interractions... Evaluate time for increasing ETs rate.
   + Platform similar to DejaVu.
-
+- Meeting notes
+  2Gflops for one host seems pretty standart
+  multiple hosts, one cluster
+  try to imitate the papers that use simulate
+  One experiment to show performances
+  Show with experiments which (interisting) studies it allows
+  One slide : what they wanted to do, how do we do it in simgrid
+  4 subsection in experimentation : performances, functionnalities (one for each
+  paper)
+  see cfg=tracing, should be autocmatic
+  for performances do n hosts and n ET (one for each)
+  5 pages of what people do, why they need to evaluate using my work
+- 5 papers using simulation: OMNeT++, home-made python discret event simulator
+  that models a service deployed in the cloude (WC98 traces), ??,
+  SPECjEnterprise2010 (WC98 traces), SPECjEnterprise2010 (WC98 traces)
+  5 papers using simulation: generic??, vertical scaling, vertical scaling,
+  generic??, vertical scaling??
 *** Blocking Points
 *** Planned Work
 - [ ] Write what I'm planning to do with the expreriments, what I wanna show...
@@ -526,7 +543,7 @@
 *** Blocking Points
 *** Planned Work
 
-** Week 9 <2016-07-11 Mon>--<2016-07-15 Fri>
+** Week 9 <2016-07-11 Mon>--<2016-07-13 Wed>
 *** Things Done
 *** Blocking Points
 *** Planned Work

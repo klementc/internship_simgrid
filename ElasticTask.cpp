@@ -152,7 +152,7 @@ void ElasticTaskManager::run() {
       if (RatioChange* t = dynamic_cast<RatioChange*>(currentEvent)) {
         changeRatio(t->id, t->visitsPerSec);
       } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent)) {
-        std::string host_name = t->hosts.at(t->nextHost)->name();
+        std::string host_name = t->hosts.at(t->nextHost)->name();  // TODO, check nextHost is still valid
         Actor(nullptr, t->hosts.at(t->nextHost), [this, t, task_count, host_name] {
           std::cout << "TaskStart " << Engine::instance()->getClock() << " " << t->flops << " " << task_count
                     << " " << host_name << std::endl;
