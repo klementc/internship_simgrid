@@ -140,6 +140,22 @@ void ElasticTaskManager::setOutputFunction(size_t id, std::function<void()> code
   simpleChangeTask(id);
 }
 
+void ElasticTaskManager::setTimestampsFile(size_t id, std::string filename) {
+  tasks.at(id).repeat = false;
+  tasks.at(id).myfile->open(filename);
+  removeTask(id);
+  std::string timestamp;
+  if(tasks.at(id).myfile->is_open()) {
+    if(!tasks.at(id).myfile->eof()) {
+      std::getline(*(tasks.at(id).myfile), timestamp);
+      tasks.at(id).date = std::stod(timestamp);
+      nextEvtQueue.push(&(tasks.at(id)));
+    } else {
+      tasks.at(id).myfile->close();
+    }
+  }
+}
+
 void ElasticTaskManager::kill() {
   keepGoing = false;
 }
@@ -152,7 +168,10 @@ void ElasticTaskManager::run() {
       if (RatioChange* t = dynamic_cast<RatioChange*>(currentEvent)) {
         changeRatio(t->id, t->visitsPerSec);
       } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent)) {
-        std::string host_name = t->hosts.at(t->nextHost)->name();  // TODO, check nextHost is still valid
+        if (t->hosts.size() <= t->nextHost) {
+          t->nextHost = 0;
+        }
+        std::string host_name = t->hosts.at(t->nextHost)->name();
         Actor(nullptr, t->hosts.at(t->nextHost), [this, t, task_count, host_name] {
           std::cout << "TaskStart " << Engine::instance()->getClock() << " " << t->flops << " " << task_count
                     << " " << host_name << std::endl;
@@ -169,6 +188,15 @@ void ElasticTaskManager::run() {
         if (t->repeat) {
           t->date = Engine::instance()->getClock() + (1 / t->interSpawnDelay);
           nextEvtQueue.push(t);
+        } else if (t->myfile->is_open()) {
+          if (t->myfile->eof()) {
+            t->myfile->close();
+          } else {
+            std::string timestamp;
+            std::getline(*(t->myfile), timestamp);
+            t->date = std::stod(timestamp);
+            nextEvtQueue.push(t);
+          }
         }
       } else {
         std::cout << "wut";
@@ -237,4 +265,8 @@ void ElasticTask::addHost(Host *host) {
 
 void ElasticTask::setOutputFunction(std::function<void()> code) {
   etm->setOutputFunction(id, code);
+}
+
+void ElasticTask::setTimestampsFile(std::string filename) {
+  etm->setTimestampsFile(id, filename);
 }

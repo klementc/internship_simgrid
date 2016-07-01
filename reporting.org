@@ -529,10 +529,20 @@
   for performances do n hosts and n ET (one for each)
   5 pages of what people do, why they need to evaluate using my work
 - 5 papers using simulation: OMNeT++, home-made python discret event simulator
-  that models a service deployed in the cloude (WC98 traces), ??,
+  that models a service deployed in the cloud (WC98 traces), ??,
   SPECjEnterprise2010 (WC98 traces), SPECjEnterprise2010 (WC98 traces)
   5 papers using simulation: generic??, vertical scaling, vertical scaling,
   generic??, vertical scaling??
+- Meeting note
+  ET should be able to able to take a file text of timestamps
+  from WC98 do one ET with an average flops and use ^
+  keep the file opened and add tasks over time (like add a new parameter like
+  repeating)
+  translate WC98 to a timestamp (one timestamp per line)
+  use XBT::translateinteger
+  3 types of experiments: functionnalities, traces, perf
+  add deadline with outputFunction
+  add probalistic law
 *** Blocking Points
 *** Planned Work
 - [ ] Write what I'm planning to do with the expreriments, what I wanna show...

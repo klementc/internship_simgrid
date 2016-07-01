@@ -4,6 +4,9 @@
 #include <vector>
 #include <queue>
 #include <string>
+#include <cstring>
+#include <fstream>
+#include <iostream>
 
 #include <xbt/base.h>
 #include <xbt/string.hpp>
@@ -58,15 +61,21 @@ class TaskDescription : public EvntQ {
     std::vector<simgrid::s4u::Host*> hosts;  // TODO, use hosts
     bool repeat = true;
     std::function<void()> outputFunction = []() {};
+    bool hasTimestamps = false;
+    std::ifstream *myfile;
 
     //TaskDescription() = default;
     TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_, double date_)
         : EvntQ(date_), flops(flops_), interSpawnDelay(interSpawnDelay_) {
       hosts.push_back(host_);
       nextHost = 0;
+      myfile = new std::ifstream;
     }
     TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_)
       : TaskDescription(flops_, interSpawnDelay_, host_, 0.0) {}
+    ~TaskDescription() {
+      delete myfile;
+    }
 };
 
 bool operator<(const EvntQ& lhs, const EvntQ& rhs);
@@ -99,6 +108,7 @@ XBT_PUBLIC_CLASS ElasticTaskManager {
     void triggerOneTimeTask(size_t id, double ratioLoad);
 
     void setOutputFunction(size_t id, std::function<void()> code);
+    void setTimestampsFile(size_t id, std::string filename);
 
     void kill();
     void run();
@@ -121,7 +131,7 @@ XBT_PUBLIC_CLASS ElasticTask {
     void triggerOneTime(double ratioLoad);
     void setOutputFunction(std::function<void()> code);
     void addHost(Host *host);
-    void removeOutputStream(size_t idOutput);
+    void setTimestampsFile(std::string filename);
 };
 
 }}
