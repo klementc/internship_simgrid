@@ -543,6 +543,11 @@
   3 types of experiments: functionnalities, traces, perf
   add deadline with outputFunction
   add probalistic law
+- Meeting notes
+  use deployment file
+  put scripts in begin{example} in reporting.org, so that it can be executed
+  with C-c C-c
+  look [[https://github.com/taisbellini/aiyra/blob/master/LabBook.org]]
 *** Blocking Points
 *** Planned Work
 - [ ] Write what I'm planning to do with the expreriments, what I wanna show...

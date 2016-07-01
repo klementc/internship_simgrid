@@ -176,6 +176,8 @@ void ElasticTaskManager::run() {
           std::cout << "TaskStart " << Engine::instance()->getClock() << " " << t->flops << " " << task_count
                     << " " << host_name << std::endl;
           this_actor::execute(t->flops);
+          std::cout << "TaskEnd " << Engine::instance()->getClock() << " " << task_count << " " << host_name
+                    << std::endl;
           t->outputFunction();
         });
         ++task_count;

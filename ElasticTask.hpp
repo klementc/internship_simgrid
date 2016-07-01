@@ -73,9 +73,9 @@ class TaskDescription : public EvntQ {
     }
     TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_)
       : TaskDescription(flops_, interSpawnDelay_, host_, 0.0) {}
-    ~TaskDescription() {
-      delete myfile;
-    }
+    //~TaskDescription() {
+    //  delete myfile;
+    //}
 };
 
 bool operator<(const EvntQ& lhs, const EvntQ& rhs);
