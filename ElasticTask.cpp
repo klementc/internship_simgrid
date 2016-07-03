@@ -10,10 +10,6 @@
 #include <iostream>
 #include "simgrid/msg.h"
 
-bool operator<(const EvntQ& lhs, const EvntQ& rhs) {
-  return lhs.date < rhs.date;
-}
-
 using namespace simgrid;
 using namespace s4u;
 
@@ -31,6 +27,7 @@ size_t ElasticTaskManager::addElasticTask(Host *host, double flopsTask, double i
   if (interSpawnDelay > 0.0) {
     TaskDescription *newTask = new TaskDescription(tasks.at(tasks.size() - 1));
     nextEvtQueue.push(newTask);
+    //std::cout << tasks.size() << " " << nextEvtQueue.size() << std::endl;
     MSG_sem_release(sleep_sem);
   }
   return tasks.size() - 1;
@@ -45,7 +42,8 @@ void ElasticTaskManager::changeRatio(size_t id, double visitsPerSec) {
   tasks.at(id).interSpawnDelay = visitsPerSec;
   tasks.at(id).date = Engine::instance()->getClock();
   if(visitsPerSec > 0.0) {
-    nextEvtQueue.push(&(tasks.at(id)));
+    TaskDescription *newTask = new TaskDescription(tasks.at(id));
+    nextEvtQueue.push(newTask);
     MSG_sem_release(sleep_sem);
   }
 }
@@ -55,7 +53,8 @@ void ElasticTaskManager::changeTask(size_t id, double flops) {
   tasks.at(id).flops = flops;
   tasks.at(id).date = Engine::instance()->getClock();
   if(tasks.at(id).interSpawnDelay > 0.0) {
-    nextEvtQueue.push(&(tasks.at(id)));
+    TaskDescription *newTask = new TaskDescription(tasks.at(id));
+    nextEvtQueue.push(newTask);
     MSG_sem_release(sleep_sem);
   }
 }
@@ -63,7 +62,7 @@ void ElasticTaskManager::changeTask(size_t id, double flops) {
 // TODO, All these change task method are too similar and messy
 void ElasticTaskManager::simpleChangeTask(size_t id) {  // A change has been done and we want to update the repeating
   TaskDescription *newTask = new TaskDescription(tasks.at(id));
-  std::priority_queue<EvntQ*, std::vector<EvntQ*>, std::less<EvntQ*> > newNextEvtQueue;
+  std::priority_queue<EvntQ*, std::vector<EvntQ*>, Comparator> newNextEvtQueue;
   while(!nextEvtQueue.empty()) {
     if(strcmp(typeid(nextEvtQueue.top()).name(), "TaskDescription")) {
       newNextEvtQueue.push(nextEvtQueue.top());
@@ -89,13 +88,15 @@ void ElasticTaskManager::addRatioChange(size_t id, double date, double visitsPer
 }
 
 void ElasticTaskManager::removeTask(size_t id) {  // remove all even non repeat
-  std::priority_queue<EvntQ*, std::vector<EvntQ*>, std::less<EvntQ*> > newNextEvtQueue;
+  std::priority_queue<EvntQ*, std::vector<EvntQ*>, Comparator> newNextEvtQueue;
   while(!nextEvtQueue.empty()) {
     if(strcmp(typeid(nextEvtQueue.top()).name(), "TaskDescription")) {
       newNextEvtQueue.push(nextEvtQueue.top());
     } else if (const TaskDescription* t = dynamic_cast<const TaskDescription*>(nextEvtQueue.top())) {
       if (t->id != id) {
         newNextEvtQueue.push(nextEvtQueue.top());
+      } else {
+        delete nextEvtQueue.top();
       }
     }
     nextEvtQueue.pop();
@@ -104,7 +105,7 @@ void ElasticTaskManager::removeTask(size_t id) {  // remove all even non repeat
 }
 
 void ElasticTaskManager::removeRatioChanges(size_t id) {
-  std::priority_queue<EvntQ*, std::vector<EvntQ*>, std::less<EvntQ*> > newNextEvtQueue;
+  std::priority_queue<EvntQ*, std::vector<EvntQ*>, Comparator> newNextEvtQueue;
   while(!nextEvtQueue.empty()) {
     if(strcmp(typeid(nextEvtQueue.top()).name(), "RatioChange")) {
       newNextEvtQueue.push(nextEvtQueue.top());
@@ -142,18 +143,20 @@ void ElasticTaskManager::setOutputFunction(size_t id, std::function<void()> code
 
 void ElasticTaskManager::setTimestampsFile(size_t id, std::string filename) {
   tasks.at(id).repeat = false;
-  tasks.at(id).myfile->open(filename);
+  tasks.at(id).ts_file->open(filename);
   removeTask(id);
   std::string timestamp;
-  if(tasks.at(id).myfile->is_open()) {
-    if(!tasks.at(id).myfile->eof()) {
-      std::getline(*(tasks.at(id).myfile), timestamp);
+  if(tasks.at(id).ts_file->is_open()) {
+    if(!tasks.at(id).ts_file->eof()) {
+      std::getline(*(tasks.at(id).ts_file), timestamp);
       tasks.at(id).date = std::stod(timestamp);
-      nextEvtQueue.push(&(tasks.at(id)));
+      TaskDescription *newTask = new TaskDescription(tasks.at(id));
+      nextEvtQueue.push(newTask);
     } else {
-      tasks.at(id).myfile->close();
+      tasks.at(id).ts_file->close();
     }
   }
+  MSG_sem_release(sleep_sem);
 }
 
 void ElasticTaskManager::kill() {
@@ -162,9 +165,16 @@ void ElasticTaskManager::kill() {
 
 void ElasticTaskManager::run() {
   unsigned long long task_count = 0;
+  //smx_mutex_t queue_mutex = simcall_mutex_init();
   while(1) {
     while(!nextEvtQueue.empty() && nextEvtQueue.top()->date <= Engine::instance()->getClock()) {
+      //std::cout << "in run " << tasks.size() << " " << nextEvtQueue.size() << " " << nextEvtQueue.top()->date << std::endl;
+      //simcall_mutex_lock(queue_mutex);
       EvntQ *currentEvent = nextEvtQueue.top();
+      nextEvtQueue.pop();  // TODO, is it deleted?
+      //simcall_mutex_unlock(queue_mutex);
+      //if(!nextEvtQueue.empty())
+      //std::cout << "in run2 " << tasks.size() << " " << nextEvtQueue.size() << " " << nextEvtQueue.top()->date << std::endl;
       if (RatioChange* t = dynamic_cast<RatioChange*>(currentEvent)) {
         changeRatio(t->id, t->visitsPerSec);
       } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent)) {
@@ -172,12 +182,12 @@ void ElasticTaskManager::run() {
           t->nextHost = 0;
         }
         std::string host_name = t->hosts.at(t->nextHost)->name();
-        Actor(nullptr, t->hosts.at(t->nextHost), [this, t, task_count, host_name] {
-          std::cout << "TaskStart " << Engine::instance()->getClock() << " " << t->flops << " " << task_count
-                    << " " << host_name << std::endl;
+        Actor(nullptr, t->hosts.at(t->nextHost), [t, task_count, host_name] {
+          //std::cout << "TaskStart " << Engine::instance()->getClock() << " " << t->flops << " " << task_count
+          //          << " " << host_name << std::endl;
           this_actor::execute(t->flops);
-          std::cout << "TaskEnd " << Engine::instance()->getClock() << " " << task_count << " " << host_name
-                    << std::endl;
+          //std::cout << "TaskEnd " << Engine::instance()->getClock() << " " << task_count << " " << host_name
+          //          << std::endl;
           t->outputFunction();
         });
         ++task_count;
@@ -190,13 +200,17 @@ void ElasticTaskManager::run() {
         if (t->repeat) {
           t->date = Engine::instance()->getClock() + (1 / t->interSpawnDelay);
           nextEvtQueue.push(t);
-        } else if (t->myfile->is_open()) {
-          if (t->myfile->eof()) {
-            t->myfile->close();
+        } else if (t->ts_file->is_open()) {
+          if (t->ts_file->eof()) {
+            t->ts_file->close();
           } else {
             std::string timestamp;
-            std::getline(*(t->myfile), timestamp);
-            t->date = std::stod(timestamp);
+            std::getline(*(t->ts_file), timestamp);
+            try {
+              t->date = std::stod(timestamp);
+            } catch(const std::invalid_argument& e) {
+              //std::cout << "exception for stod(timestamp)" << std::endl;
+            }
             nextEvtQueue.push(t);
           }
         }
@@ -204,7 +218,8 @@ void ElasticTaskManager::run() {
         std::cout << "wut";
         exit(0);  // Should'nt happen
       }
-      nextEvtQueue.pop();  // TODO, is it deleted?
+      //if(!nextEvtQueue.empty())
+      //std::cout << "in run3 " << tasks.size() << " " << nextEvtQueue.size() << " " << nextEvtQueue.top()->date << std::endl;
       //delete currentEvent;
     }
     if(!keepGoing) {

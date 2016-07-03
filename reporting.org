@@ -548,6 +548,84 @@
   put scripts in begin{example} in reporting.org, so that it can be executed
   with C-c C-c
   look [[https://github.com/taisbellini/aiyra/blob/master/LabBook.org]]
+- Experiments of the weekend
+  + 0.80s user time to execute the 1000 requests test log file of WC98, with one
+    ET and 10 hosts (18+ seconds from real traces) and ~14000 MB max memory
+    Tried the day20 of WC98 with ~2million requests with 2000 hosts but after a
+    few hours it bricked my macbook and it restarted.
+  + 2nd experiment for raw perfs, some ET seem to not be created and after the
+    first second only one ET is repeated
+- Lost a day figuring out my queue has the biggest element on top instead of the
+  lowest FeelsGoodMan
+#+BEGIN_EXAMPLE
+#include <xbt/sysdep.h>
+#include "simgrid/s4u.h"
+#include "ElasticTask.hpp"
+#include "simgrid/msg.h"
+
+XBT_LOG_NEW_DEFAULT_CATEGORY(s4u_test, "a sample log category");
+
+void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm, double loadIncrease) {
+  XBT_INFO("Starting");
+  simgrid::s4u::ElasticTask *e1 = new simgrid::s4u::ElasticTask(simgrid::s4u::Host::by_name("cb1-2"), 5.0, 0.0,
+      etm.get());
+  simgrid::s4u::ElasticTask *e2 = new simgrid::s4u::ElasticTask(simgrid::s4u::Host::by_name("cb1-3"), 5.0, 0.0,
+      etm.get());
+  e1->setOutputFunction([e2]() {
+      e2->triggerOneTime(1.5);
+  });
+  simgrid::s4u::ElasticTask *e3 = new simgrid::s4u::ElasticTask(simgrid::s4u::Host::by_name("cb1-4"), 5.0, 0.0,
+      etm.get());
+  for(int i = 5; i < 20; i++) {
+    e3->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(i)));
+  }
+  e3->setTimestampsFile("d81_timestamp_wc.txt");
+  simgrid::s4u::this_actor::sleep(99999999);
+  etm->kill();
+  XBT_INFO("Done.");
+}
+
+int main(int argc, char **argv) {
+  simgrid::s4u::Engine *e = new simgrid::s4u::Engine(&argc, argv);
+  std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm = std::make_shared<simgrid::s4u::ElasticTaskManager>();
+  e->loadPlatform("dejavu_platform.xml");
+  simgrid::s4u::Actor("ETM", simgrid::s4u::Host::by_name("cb1-1"), [etm] { etm->run(); });
+  simgrid::s4u::Actor("main", simgrid::s4u::Host::by_name("cb1-1"), [etm] { eve(etm, 1.0); });
+  e->run();
+  return 0;
+}
+#+END_EXAMPLE
+#+BEGIN_EXAMPLE
+#include <xbt/sysdep.h>
+#include "simgrid/s4u.h"
+#include "ElasticTask.hpp"
+#include "simgrid/msg.h"
+
+XBT_LOG_NEW_DEFAULT_CATEGORY(s4u_test, "a sample log category");
+
+void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm, int n) {
+  XBT_INFO("Starting");
+  simgrid::s4u::ElasticTask *ets[n];
+  for(int i = 0; i < n; i++) {
+    ets[i] = new simgrid::s4u::ElasticTask(simgrid::s4u::Host::by_name("cb1-" + std::to_string(i+1)), 5.0, 1.0,
+                                           etm.get());
+  }
+  simgrid::s4u::this_actor::sleep(100);
+  etm->kill();
+  XBT_INFO("Done.");
+}
+
+int main(int argc, char **argv) {
+  int argcE = 1;
+  simgrid::s4u::Engine *e = new simgrid::s4u::Engine(&argcE, argv);
+  std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm = std::make_shared<simgrid::s4u::ElasticTaskManager>();
+  e->loadPlatform("dejavu_platform.xml");
+  simgrid::s4u::Actor("ETM", simgrid::s4u::Host::by_name("cb1-1"), [etm] { etm->run(); });
+  simgrid::s4u::Actor("main", simgrid::s4u::Host::by_name("cb1-1"), [etm, argv] { eve(etm, std::stoi(argv[1])); });
+  e->run();
+  return 0;
+}
+#+END_EXAMPLE
 *** Blocking Points
 *** Planned Work
 - [ ] Write what I'm planning to do with the expreriments, what I wanna show...

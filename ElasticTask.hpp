@@ -62,23 +62,27 @@ class TaskDescription : public EvntQ {
     bool repeat = true;
     std::function<void()> outputFunction = []() {};
     bool hasTimestamps = false;
-    std::ifstream *myfile;
+    std::ifstream *ts_file;
 
     //TaskDescription() = default;
     TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_, double date_)
         : EvntQ(date_), flops(flops_), interSpawnDelay(interSpawnDelay_) {
       hosts.push_back(host_);
       nextHost = 0;
-      myfile = new std::ifstream;
+      ts_file = new std::ifstream;
     }
     TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_)
       : TaskDescription(flops_, interSpawnDelay_, host_, 0.0) {}
     //~TaskDescription() {
-    //  delete myfile;
+    //  delete ts_file;
     //}
 };
 
-bool operator<(const EvntQ& lhs, const EvntQ& rhs);
+struct Comparator {
+  bool operator()(const EvntQ* lhs, const EvntQ* rhs) {
+    return lhs->date > rhs->date;
+  }
+};
 
 namespace simgrid {
 namespace s4u {
@@ -87,7 +91,7 @@ namespace s4u {
 XBT_PUBLIC_CLASS ElasticTaskManager {
   private:
     std::vector<TaskDescription> tasks;
-    std::priority_queue<EvntQ*, std::vector<EvntQ*>, std::less<EvntQ*> > nextEvtQueue;
+    std::priority_queue<EvntQ*, std::vector<EvntQ*>, Comparator> nextEvtQueue;
     msg_sem_t sleep_sem;
     bool keepGoing;
   public:
