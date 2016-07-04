@@ -35,14 +35,23 @@
 \maketitle
 
 \begin{abstract}
+  Cloud computing is a model that makes available infrastructures, platforms and
+  software with a pay-as-you-go subscription. It aims to reduce the cost with a
+  layer of visualization that allows virtual resources to be dynamically
+  adjusted and occupied on-demand. The problem of using the minimal resources
+  for the current demand/usage is still a research challenge that spans all
+  layers and applications. This dynamic management of clouds is called cloud
+  elasticity.
 \end{abstract}
 
 \begin{IEEEkeywords}
+  Simulation;
+  Cloud elasticity;
+  Workload
 \end{IEEEkeywords}
 
 \section{Introduction} \label{intro}
-\cite{casanova:hal-01017319} \cite{Naskos2016} \cite{tighe2013towards} 
-\cite{calheiros2011cloudsim}
+
 
 \section{Background} \label{background}
 	\begin{itemize}
@@ -57,13 +66,19 @@
 		\item Say that it covered everything
 	\end{itemize}
   
-  Cloud computing is a model that makes available infrastructures, platforms
-  and software with a pay-as-you-go subscription. It aims to reduce the cost
-  with a layer of visualization that allows virtual resources to be
-  dynamically adjusted and occupied on-demand. The problem of using the
-  minimal resources for the current demand/usage is still a research
-  challenge that spans all layers and applications. This dynamic management
-  of clouds is called cloud elasticity.
+  \begin{figure*}
+    \caption{http://cloud-simulation-frameworks.wikispaces.asu.edu/}
+    \centering
+    \includegraphics[width=0.7\textwidth]{../plots/cloud_architecture}
+    \label{cloud_arch}
+  \end{figure*}
+  
+  The global architecture is described in the \figurename~\ref{cloud_arch}.
+  %TODO describe cloud structure and business model
+  
+  The problem of using the minimal resources for the current demand/usage is
+  still a research challenge that spans all layers and applications. This
+  dynamic management of clouds is called cloud elasticity.
   
   \cite{Naskos2016} has categorized works on cloud elasticity and allows to see
   which elements of a cloud infrastructure, platform or application/software are
@@ -88,23 +103,13 @@
   cloud, simulation or emulation.
   
   The survey gives a good overview on what elements of a cloud are
-  manipulated to achieve cloud elasticity.
+  manipulated to achieve cloud elasticity. No clue have been found to prove the 
+  opposite at the time of writing.
   
-  But in the end..
-  // How can I be sure that it has covered all cases?
-  
-  As the proposals are on reacting to variating usage, simulators need a way
-  to express this fluctuating workload. We worked on elastic tasks that model
-  tasks that are triggered regularly and with a usage that fluctuates over
-  time.
+  As the proposals are on reacting to variating usage, simulators need a way to
+  express this fluctuating workload. We worked on elastic tasks that model tasks
+  that are triggered regularly and with a usage that fluctuates over time.
 
-  
-  \begin{figure*}
-    \label{cloud_arch}
-    \caption{http://cloud-simulation-frameworks.wikispaces.asu.edu/}
-    \centering
-    \includegraphics[width=0.8\textwidth]{../plots/cloud_architecture}
-  \end{figure*}
 
 \section{State of the art} \label{sota}
   \begin{itemize}
@@ -118,25 +123,23 @@
   Based on the classification of the survey, a simulator should allow the
   manipulation of scopes, the evaluation of the different purposes, make
   possible the elastic actions and allow multiple providers.
-  
-  // Tell that simgrid does all last 3 ?
-  
+
+
   At the moment no simulator article talks about dynamic workload. On the other
-  hand in the code of DCsim (\cite{tighe2013towards}) there was an interactive
-  task and in the code of CloudSim (\cite{calheiros2011cloudsim}) there was an
+  hand in the code of DCsim \cite{tighe2013towards} there was an interactive
+  task and in the code of CloudSim \cite{calheiros2011cloudsim} there was an
   host with dynamic workload.
   
   // Go to contribution and go through each scope ?
   
-  For en-actor scopes, the point of elastic tasks is just to generate usage
-  so they can chose an application type depending on what kind of usage they
-  want (cpu, disk...). For the different kinds of application type, elastic
-  tasks have the same mechanism it is just the inherent micro-task that is
-  repeated that changes. An elastic task will repeatedly execute an MSG task.
-  Currently an MSG task can only simulate computing and message passing so
-  only Multi-tier Applications can be simulated at the moment. Simulating
-  disk and RAM usage would allow the simulation of databases, storage and
-  thus generic application.
+  For en-actor scopes, the point of elastic tasks is just to generate usage so
+  they can chose an application type depending on what kind of usage they want
+  (cpu, disk...). For the different kinds of application type, elastic tasks
+  have the same mechanism it is just the inherent micro-task that is repeated
+  that changes. An elastic task will repeatedly execute an MSG task. Currently
+  an MSG task can only simulate computing and message passing so only Multi-tier
+  Applications can be simulated at the moment. Simulating disk and RAM usage
+  would allow the simulation of databases, storage and thus generic application.
        
 
 \section{Contribution} \label{contrib}
@@ -150,24 +153,33 @@
     \item Multiple provider is possible but has to be coded.
     \item Purpose?
   \end{itemize}
+  
+  The work was done on SimGrid \cite{casanova:hal-01017319}.
 
 \section{Evaluation} \label{eval}
   \begin{itemize}
     \item How the experiments were made
   \end{itemize}
+  
   \subsection{Raw performances}
     \begin{figure}
-      \label{time_raw}
       \centering
       \includegraphics[width=0.55\textwidth]{../plots/raw_perf_time}
+      \label{time_raw}
     \end{figure}
     \begin{figure}
-      \label{mem_raw}
       \centering
       \includegraphics[width=0.55\textwidth]{../plots/raw_perf_mem}
+      \label{mem_raw}
     \end{figure}
+    
+    % for the spikes in CPU it might be because I was doing other stuff with my 
+    % laptop
+    
   \subsection{Real traces}
+  
   \subsection{Functionalities}
+  
 
 \section{Conclusion} \label{conclu}
 
