@@ -54,18 +54,6 @@
 
 
 \section{Background} \label{background}
-	\begin{itemize}
-		\item What's a cloud
-		\item Minimizing the cost (in all forms) is a research challenge,
-		particularly for fluctuating usage
-		\item Different types of scaling
-		\item Present the survey that has categorized these works
-    \item How are they categorized
-		\item Simulation isn't used that much and it would give a lot
-		\item Say that it gives good overview of what is needed to simulate
-		\item Say that it covered everything
-	\end{itemize}
-  
   \begin{figure*}
     \caption{http://cloud-simulation-frameworks.wikispaces.asu.edu/}
     \centering
@@ -73,12 +61,39 @@
     \label{cloud_arch}
   \end{figure*}
   
-  The global architecture is described in the \figurename~\ref{cloud_arch}.
-  %TODO describe cloud structure and business model
+  The global architecture of a cloud is described in the 
+  \figurename~\ref{cloud_arch}. It is split in different layers and each layer 
+  has a specific role in the business model of clouds. On the lowest part there 
+  is the physical resources (e.g. data centers) with Infrastructure as a 
+  Service model (Iaas). The pricing is based of the resources available. Then 
+  comes the layer of virtualization and performances negotiation called 
+  Platform as a Service (PaaS). Dealing with Virtual Machines (VMs) allows a 
+  cleaner sharing of resources and makes it easier to answer the users' demands 
+  (e.g. deploying more VMs). The pricing depends of multiple factors, like the 
+  Quality of Service (QoS) for the quality of the network, the Service Level 
+  Agreement (SLA) for the faults rate, handling and responsibilities... On top 
+  of that is the layer for users' cloud tools with Software as a Service 
+  (SaaS). These tools will allow the user that writes cloud applications to 
+  manage resources, run their code...
   
-  The problem of using the minimal resources for the current demand/usage is
-  still a research challenge that spans all layers and applications. This
-  dynamic management of clouds is called cloud elasticity.
+  Most cloud applications will have fluctuating workload over time. For exemple 
+  with a website server the usage might be bigger during the day or during a 
+  short period because of a viral cultural event. Resources should thus be 
+  managed dynamically. Also, physical resources can encounter problems which 
+  makes them unavailable. Because of all these constraints the SLAs and QoS 
+  negotiations aren't satisfied easily and 100\% availability is never a thing. 
+  On top of that every actor wants to meet the obligations with a minimal cost. 
+  All these questions of availability and cost are current research problems. 
+  In particular we are interested in the works that tackle problems related to 
+  fluctuating and dynamic usage of cloud applications and resources. The 
+  ability for a cloud infrastructure to adapt to a dynamic workload is called 
+  cloud elasticity.
+  
+  There are some generic elastic actions. The act of deploying more VMs (and
+  thus having more resources overall) is called scaling up (and the convert is
+  scaling down). The act of moving VMs to a different location is called scaling
+  out. This is used for example when time passes by and users come from
+  different countries/continents.
   
   \cite{Naskos2016} has categorized works on cloud elasticity and allows to see
   which elements of a cloud infrastructure, platform or application/software are
@@ -123,24 +138,12 @@
   Based on the classification of the survey, a simulator should allow the
   manipulation of scopes, the evaluation of the different purposes, make
   possible the elastic actions and allow multiple providers.
-
-
+  
   At the moment no simulator article talks about dynamic workload. On the other
   hand in the code of DCsim \cite{tighe2013towards} there was an interactive
   task and in the code of CloudSim \cite{calheiros2011cloudsim} there was an
   host with dynamic workload.
-  
-  // Go to contribution and go through each scope ?
-  
-  For en-actor scopes, the point of elastic tasks is just to generate usage so
-  they can chose an application type depending on what kind of usage they want
-  (cpu, disk...). For the different kinds of application type, elastic tasks
-  have the same mechanism it is just the inherent micro-task that is repeated
-  that changes. An elastic task will repeatedly execute an MSG task. Currently
-  an MSG task can only simulate computing and message passing so only Multi-tier
-  Applications can be simulated at the moment. Simulating disk and RAM usage
-  would allow the simulation of databases, storage and thus generic application.
-       
+
 
 \section{Contribution} \label{contrib}
   What can my contribution do that is in the survey?
@@ -156,22 +159,32 @@
   
   The work was done on SimGrid \cite{casanova:hal-01017319}.
 
+
 \section{Evaluation} \label{eval}
-  \begin{itemize}
-    \item How the experiments were made
-  \end{itemize}
-  
+  The contribution has been evaluated on the predefined criteria. We first did 
+  an experiment for raw performances. Then we used real traces from WorldCup 98 
+  data access logs \cite{wc98} which are often used. After that we evaluated 
+  the expressiveness and functionalities. All experiments have been executed on 
+  a MacBook Pro with an Intel Core i5 and 8GB of RAM.
+    
   \subsection{Raw performances}
     \begin{figure}
+      \caption{Raw performances CPU time}
       \centering
       \includegraphics[width=0.55\textwidth]{../plots/raw_perf_time}
       \label{time_raw}
     \end{figure}
     \begin{figure}
+      \caption{Raw performances Max Memory}
       \centering
       \includegraphics[width=0.55\textwidth]{../plots/raw_perf_mem}
       \label{mem_raw}
     \end{figure}
+    
+    \figurename~\ref{time_raw} shows the CPU time (user + system time) while 
+    \figurename~\ref{mem_raw} shows the maximum memory used. The platform was
+    upgraded two times, at 1,600 from 2,000 hosts to 100,000, and then at
+    100,000 from 100,000 to 200,000.
     
     % for the spikes in CPU it might be because I was doing other stuff with my 
     % laptop
@@ -179,6 +192,10 @@
   \subsection{Real traces}
   
   \subsection{Functionalities}
+  
+
+\section{Future work} \label{futurework}
+% generator law
   
 
 \section{Conclusion} \label{conclu}
