@@ -23,7 +23,7 @@
 
 \setlength{\parskip}{1em}
 
-\title{Generating fluctuating workload for cloud elasticity simulation}
+\title{Generating fluctuating workload for cloud elasticity simulations}
 \author{
 	\IEEEauthorblockN{Simon Bihel}
 	\IEEEauthorblockA{(Student) Computer Science Department, ENS Rennes\\
@@ -55,28 +55,29 @@
 
 \section{Background} \label{background}
   \begin{figure*}
-    \caption{http://cloud-simulation-frameworks.wikispaces.asu.edu/}
+    \caption{Cloud architecture \\ 
+    \url{http://cloud-simulation-frameworks.wikispaces.asu.edu/}}
     \centering
     \includegraphics[width=0.7\textwidth]{../plots/cloud_architecture}
     \label{cloud_arch}
   \end{figure*}
   
-  The global architecture of a cloud is described in the 
-  \figurename~\ref{cloud_arch}. It is split in different layers and each layer 
-  has a specific role in the business model of clouds. On the lowest part there 
-  is the physical resources (e.g. data centers) with Infrastructure as a 
-  Service model (Iaas). The pricing is based of the resources available. Then 
-  comes the layer of virtualization and performances negotiation called 
-  Platform as a Service (PaaS). Dealing with Virtual Machines (VMs) allows a 
-  cleaner sharing of resources and makes it easier to answer the users' demands 
-  (e.g. deploying more VMs). The pricing depends of multiple factors, like the 
-  Quality of Service (QoS) for the quality of the network, the Service Level 
-  Agreement (SLA) for the faults rate, handling and responsibilities... On top 
-  of that is the layer for users' cloud tools with Software as a Service 
-  (SaaS). These tools will allow the user that writes cloud applications to 
-  manage resources, run their code...
+  The global architecture of a cloud is described in the
+  \figurename~\ref{cloud_arch}. It is split in different layers and each layer
+  has a specific role in the business model of clouds. On the lowest part there
+  is the physical resources (e.g. data centers) with Infrastructure as a Service
+  model (IaaS). The pricing is based of the resources available. Then comes the
+  layer of virtualization and performances negotiation called Platform as a
+  Service (PaaS). Dealing with Virtual Machines (VMs also called hosts) allows a
+  cleaner sharing of resources and makes it easier to answer the users' demands
+  (e.g. deploying more VMs). The pricing depends of multiple factors, like the
+  Quality of Service (QoS) for the quality of the network, the Service Level
+  Agreement (SLA) for the faults rate, handling and responsibilities... On top
+  of that is the layer for users' cloud tools with Software as a Service (SaaS).
+  These tools will allow the user that writes cloud applications to manage
+  resources, run their code...
   
-  Most cloud applications will have fluctuating workload over time. For exemple 
+  Most cloud applications will have fluctuating workload over time. For example 
   with a website server the usage might be bigger during the day or during a 
   short period because of a viral cultural event. Resources should thus be 
   managed dynamically. Also, physical resources can encounter problems which 
@@ -128,9 +129,7 @@
 
 \section{State of the art} \label{sota}
   \begin{itemize}
-    \item Which elements have to be simulated and how do they work ?
     \item How workloads are generally modelized
-    \item What others simulators have done
     \item What simulations for evaluation have been done
     \item What others evaluations do
   \end{itemize}
@@ -142,22 +141,41 @@
   At the moment no simulator article talks about dynamic workload. On the other
   hand in the code of DCsim \cite{tighe2013towards} there was an interactive
   task and in the code of CloudSim \cite{calheiros2011cloudsim} there was an
-  host with dynamic workload.
+  host with dynamic workload. There are some tools to generate artificial 
+  workload like CITATION NEEDED and they generally follow the following steps. 
+  They have a thread that acts like clients/users and it makes request over 
+  time and simulate times of thinking of the users.
 
 
 \section{Contribution} \label{contrib}
-  What can my contribution do that is in the survey?
-  \begin{itemize}
-    \item Only computational tasks for now, might be able to do storage/DBs
-    tasks in the future. Generic ones won't be possible unless you can pass a
-    task directly to an ET.
-    \item Need to use the host of a task when executing to allow vertical
-    scaling and need to manage multiple hosts to allow horizontal scaling.
-    \item Multiple provider is possible but has to be coded.
-    \item Purpose?
-  \end{itemize}
+  The work was done on SimGrid \cite{casanova:hal-01017319}. The code is
+  available here: \url{https://github.com/sbihel/internship_simgrid}. It was
+  written as a plug-in on top of the S4U interface which is intended to be the
+  core API. Elastic tasks are objects and are the only things the user has to
+  manipulate.
   
-  The work was done on SimGrid \cite{casanova:hal-01017319}.
+  An elastic task can repeat a certain task that we will call microtask. The 
+  user provides a rate of triggering per second and the flops required and then 
+  over time multiple identical microtasks will be created and executed. An 
+  elastic task can have multiple hosts to split the workload and there will be 
+  a cycling shifting between hosts when creating microtasks, keeping one host 
+  for one microtask.
+  
+  An output function can be provided to an elastic task and this function will 
+  be executed after each microtask that has ended. This has multiple usages. It 
+  allows the description of workflows of tasks. As microtasks only generate 
+  computing workload, output functions can be used to have different types of 
+  workloads like network usage, disk access (which can be simulated only by 
+  seeing it as a particular computing resource at the moment), and basically 
+  anything possible with SimGrid.
+  
+  It is also useful to study the behavior of a system dealing with real 
+  workload. For that an elastic task can be given a file of timestamps and it 
+  will trigger/generate a microtask for each time stamp.
+  
+  For detailed platforms description it is a core feature of SimGrid which 
+  allows to have multiple providers, topologies, hosts (VMs for us), 
+  bandwidths...
 
 
 \section{Evaluation} \label{eval}
@@ -190,8 +208,12 @@
     % laptop
     
   \subsection{Real traces}
+    For that we used real traces from WorldCup 98 
+    data access logs \cite{wc98} and after translating the requests log as a 
+    timestamps file we tested with...
   
   \subsection{Functionalities}
+   % horizontal scaling, vertical scaling, workflow
   
 
 \section{Future work} \label{futurework}
