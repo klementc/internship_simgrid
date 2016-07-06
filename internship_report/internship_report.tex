@@ -53,8 +53,8 @@
 
 \begin{IEEEkeywords}
   Simulation;
-  Cloud elasticity;
-  Workload
+  Workload;
+  Cloud elasticity
 \end{IEEEkeywords}
 
 \section{Introduction} \label{intro}
@@ -109,7 +109,7 @@
   model (IaaS). The pricing is based of the resources available. Then comes the
   layer of virtualization and performances negotiation called Platform as a
   Service (PaaS). Dealing with Virtual Machines (VMs also called hosts) allows a
-  cleaner sharing of resources and makes it easier to answer the users' demands
+  cleaner sharing of resources and makes it easier answering the users' demands
   (e.g. deploying more VMs). The pricing depends of multiple factors, like the
   Quality of Service (QoS) for the quality of the network, the Service Level
   Agreement (SLA) for the faults rate, handling and responsibilities... On top
@@ -138,8 +138,8 @@
   
   \cite{Naskos2016} has categorized works on cloud elasticity and allows to see
   which elements of a cloud infrastructure, platform or application/software are
-  impacted. As it is for now most research works are evaluated on real clouds It
-  is interesting for a distributed systems simulator to search what is needed
+  impacted. As it is for now most research works are evaluated on real clouds.
+  It is interesting for a distributed systems simulator to search what is needed
   for simulating cloud elasticity. If it is shown that research works on cloud
   elasticity can be evaluated on a simulator they would benefit from cost
   reduction, re-runable experiments, trust in results...
@@ -150,17 +150,17 @@
   Enhancing the \textit{performances} (to meet the SLA), reducing the
   \textit{energy consumption} footprint, being \textit{available} when needed
   and reducing the overall \textit{cost}. Another dimension is the decision
-  making. This is what a proposal add to an existing cloud to pursue its
-  purpose. In addition to the scope there is the elastic actions performed by
-  the proposals. As the scope is about what elements of a cloud are concerned,
-  the elastic action is about what is done to them. Then there is the provider
-  dimension that tells if there is only one provider or multiple ones. At last
-  there is the method used by the proposal to evaluate itself, through real
-  cloud, simulation or emulation.
+  making. This is what a proposal add to an existing cloud to reach its goal. In
+  addition to the scope there is the elastic actions performed by the proposals.
+  As the scope is about what elements of a cloud are concerned, the elastic
+  action is about what is done to them. Then there is the provider dimension
+  that tells if there is only one provider or multiple ones. At last there is
+  the method used by the proposal to evaluate itself, through real cloud,
+  simulation or emulation.
   
-  The survey gives a good overview on what elements of a cloud are
-  manipulated to achieve cloud elasticity. No clue have been found to prove the 
-  opposite at the time of writing.
+  The survey gives a good overview on what elements of a cloud are manipulated
+  to achieve cloud elasticity. No clue have been found proving the opposite at
+  the time of writing.
   
   As the proposals are on reacting to variating usage, simulators need a way to
   express this fluctuating workload. We worked on elastic tasks that model tasks
@@ -168,11 +168,6 @@
 
 
 \section{State of the art} \label{sota}
-  \begin{itemize}
-    \item What simulations for evaluation have been done
-    \item What others evaluations do
-  \end{itemize}
-  
   Based on the classification of the survey, a simulator should allow the
   manipulation of scopes, the evaluation of the different purposes, make
   possible the elastic actions and allow multiple providers.
@@ -258,9 +253,9 @@
     % exceeding computing capacities of hosts might slow things
     
   \subsection{Real traces}
-    For that we used real traces from WorldCup 98 
-    data access logs \cite{wc98} and after translating the requests log as a 
-    timestamps file we tested with...
+    For that we used real traces from WorldCup 98 data access logs \cite{wc98}
+    and after translating the requests log as a timestamps file we tested
+    with...
   
   \subsection{Functionalities}
    % horizontal scaling, vertical scaling, workflow
