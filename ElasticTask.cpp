@@ -181,8 +181,8 @@ void ElasticTaskManager::run() {
         if (t->hosts.size() <= t->nextHost) {
           t->nextHost = 0;
         }
-        std::string host_name = t->hosts.at(t->nextHost)->name();
-        Actor(nullptr, t->hosts.at(t->nextHost), [t, task_count, host_name] {
+        //std::string host_name = t->hosts.at(t->nextHost)->name();
+        Actor::createActor(nullptr, t->hosts.at(t->nextHost), [t, task_count] {
           //std::cout << "TaskStart " << Engine::instance()->getClock() << " " << t->flops << " " << task_count
           //          << " " << host_name << std::endl;
           this_actor::execute(t->flops);

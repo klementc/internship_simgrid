@@ -640,5 +640,6 @@ int main(int argc, char **argv) {
 *** Things Done
 *** Blocking Points
 *** Planned Work
+- [ ] Give back keys and pass and ethernet adapter.
 
 * Conclusion

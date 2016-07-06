@@ -29,12 +29,11 @@ void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm, int n) {
 }
 
 int main(int argc, char **argv) {
-  int argcE = 1;
-  simgrid::s4u::Engine *e = new simgrid::s4u::Engine(&argcE, argv);
+  simgrid::s4u::Engine *e = new simgrid::s4u::Engine(&argc, argv);
   std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm = std::make_shared<simgrid::s4u::ElasticTaskManager>();
   e->loadPlatform("dejavu_platform.xml");
-  simgrid::s4u::Actor("ETM", simgrid::s4u::Host::by_name("cb1-1"), [etm] { etm->run(); });
-  simgrid::s4u::Actor("main", simgrid::s4u::Host::by_name("cb1-1"), [etm, argv] { eve(etm, std::stoi(argv[1])); });
+  simgrid::s4u::Actor::createActor("ETM", simgrid::s4u::Host::by_name("cb1-1"), [etm] { etm->run(); });
+  simgrid::s4u::Actor::createActor("main", simgrid::s4u::Host::by_name("cb1-1"), [etm] { eve(etm, 1); });
   e->run();
   return 0;
 }

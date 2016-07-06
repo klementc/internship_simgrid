@@ -1,4 +1,5 @@
 \documentclass[a4paper]{IEEEtran}
+%\documentclass[a4paper, onecolumn]{IEEEtran}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
@@ -41,7 +42,13 @@
   adjusted and occupied on-demand. The problem of using the minimal resources
   for the current demand/usage is still a research challenge that spans all
   layers and applications. This dynamic management of clouds is called cloud
-  elasticity.
+  elasticity. To evaluate research work done on cloud elasticity simulation can 
+  be used and presents some advantages. While the simulation of cloud 
+  structures are already possible there is a lack of workload generation which 
+  is essential to evaluate works supposed to deal with fluctuating workload. 
+  This paper presents a way of describing workloads using tasks that are 
+  repeated over time with parameters that can be modified over time. It also 
+  shows that this proposition fits the needs of past works.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -51,6 +58,39 @@
 \end{IEEEkeywords}
 
 \section{Introduction} \label{intro}
+  Nowadays clouds are used for a lot of applications that need servers. From 
+  websites to scientific computing, it allows apps creators to avoid managing 
+  their own servers. Because of a well defined business model the cloud 
+  structure is composed of layers where each layer uses the precedent one and 
+  provides a service to the next one. The services provided by a layer is 
+  negotiated (e.g. to determine the pricing) and levels of quality have to be 
+  met. Of course the goal is to meet these levels of quality while minimizing 
+  the costs like the usage of the bottom layer, energy consumption... Research 
+  is being done to tackle this problem. The domain we are particularly 
+  interested in is the one that deals with fluctuating usage where dynamic 
+  management is required to minimize costs at all time.
+  
+  As clouds are complex structures these works have to be evaluated. One way of 
+  doing is to use a real cloud and deploy the work that should be tested, and 
+  then generate somewhat artificial workload for the app. Another way of doing 
+  it would be to simulate the cloud and the workload. This kind of evaluation 
+  has often been used for grids, which can be seen as the ancestor of clouds. 
+  Among the different advantages of simulations, price would come up on top. 
+  
+  For now it is possible to simulate clouds infrastructures but tasks are still 
+  seen as individual and independent computing task. For elastic clouds 
+  research it is essential to generate authentic workload and there is 
+  currently no way of manipulating naturally workloads for simulations. During 
+  the internship of Simon Bihel we worked on writing an API for SimGrid and this
+  paper presents the work done.
+  
+  In \ref{background} we give a more detailed presentation of clouds and their 
+  uses. In \ref{sota} we study the work done on simulation, workload generation 
+  and define in more details the needs for a workload generator based on past 
+  work on cloud elasticity. \ref{contrib} presents the actual contribution and 
+  its use. \ref{eval} provides an evaluation based on performances and 
+  expressiveness to make sure the contribution fits the needs. \ref{conclu} 
+  concludes on whether this contribution will help future research.
 
 
 \section{Background} \label{background}
@@ -129,7 +169,6 @@
 
 \section{State of the art} \label{sota}
   \begin{itemize}
-    \item How workloads are generally modelized
     \item What simulations for evaluation have been done
     \item What others evaluations do
   \end{itemize}
@@ -145,6 +184,13 @@
   workload like CITATION NEEDED and they generally follow the following steps. 
   They have a thread that acts like clients/users and it makes request over 
   time and simulate times of thinking of the users.
+  
+  On a less technical note, workloads are generally seen as a number of 
+  requests per a certain interval of time.
+  
+  Five papers in the survey used simulations. They used discrete event 
+  simulators (home-made or OMNeT++), used benchmarks like SPECjEnterprise2010 
+  to have close-to-reality hosts, and run real traces.
 
 
 \section{Contribution} \label{contrib}
@@ -202,10 +248,14 @@
     \figurename~\ref{time_raw} shows the CPU time (user + system time) while 
     \figurename~\ref{mem_raw} shows the maximum memory used. The platform was
     upgraded two times, at 1,600 from 2,000 hosts to 100,000, and then at
-    100,000 from 100,000 to 200,000.
+    100,000 from 100,000 to 200,000. We can see that the deployment of the 
+    platform has nearly no impact on the time but account for about a half of 
+    the memory used if there is as much ETs as hosts. Apart from that time and 
+    memory grows linearly depending of the ETs amounts and operations done.
     
     % for the spikes in CPU it might be because I was doing other stuff with my 
     % laptop
+    % exceeding computing capacities of hosts might slow things
     
   \subsection{Real traces}
     For that we used real traces from WorldCup 98 
