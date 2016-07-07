@@ -26,8 +26,9 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
+				<section><h3 class="no-toc-progress">Generating fluctuating workload for cloud elasticity simulations</h3></section>
+				<section><h1>Slide 1</h1></section>
+				<section><h2>Slide 2</h2></section>
 			</div>
 		</div>
 
@@ -45,7 +46,7 @@
 					{ src: 'plugin/markdown/markdown.js' },
 					{ src: 'plugin/notes/notes.js', async: true },
 					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-					{ src: 'plugin/toc-progress/toc-progress.js', async: true, callback: function() { toc_progress.initialize({background: 'rgba(0,255,0,0.1)'}); toc_progress.create(); } }
+					{ src: 'plugin/toc-progress/toc-progress.js', async: true, callback: function() { toc_progress.initialize('scroll', 'rgba(70,70,127,0.2)'); toc_progress.create(); } }
 				]
 			});
 			Reveal.configure({ slideNumber: 'c/t' });
