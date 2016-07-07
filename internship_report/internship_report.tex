@@ -175,10 +175,10 @@
   At the moment no simulator article talks about dynamic workload. On the other
   hand in the code of DCsim \cite{tighe2013towards} there was an interactive
   task and in the code of CloudSim \cite{calheiros2011cloudsim} there was an
-  host with dynamic workload. There are some tools to generate artificial 
-  workload like CITATION NEEDED and they generally follow the following steps. 
-  They have a thread that acts like clients/users and it makes request over 
-  time and simulate times of thinking of the users.
+  host with dynamic workload. There are some tools to generate artificial
+  workload like \cite{bodik2010characterizing} and they generally follow the
+  following steps. They have a thread that acts like clients/users and it makes
+  request over time and simulate times of thinking of the users.
   
   On a less technical note, workloads are generally seen as a number of 
   requests per a certain interval of time.
@@ -186,6 +186,16 @@
   Five papers in the survey used simulations. They used discrete event 
   simulators (home-made or OMNeT++), used benchmarks like SPECjEnterprise2010 
   to have close-to-reality hosts, and run real traces.
+  
+  \begin{center}
+  	\begin{tabular}{| l | c | c | c | c |}
+  		\hline
+  		Paper & Horizontal scaling & Vertical scaling & blabla & blabla \\ 
+  		\hline
+  		\cite{vasic2012dejavu} & \checkmark & \checkmark & & \\
+  		\hline
+  	\end{tabular}
+  \end{center}
 
 
 \section{Contribution} \label{contrib}
@@ -226,7 +236,7 @@
   the expressiveness and functionalities. All experiments have been executed on 
   a MacBook Pro with an Intel Core i5 and 8GB of RAM.
     
-  \subsection{Raw performances}
+  \subsection{Raw performances} \label{raw_perf}
     \begin{figure}
       \caption{Raw performances CPU time}
       \centering
@@ -254,15 +264,20 @@
     
   \subsection{Real traces}
     For that we used real traces from WorldCup 98 data access logs \cite{wc98}
-    and after translating the requests log as a timestamps file we tested
-    with...
+    with a platform of 2,000 host and enough flops. After translating the
+    requests log as a timestamps file we tested with the test file of 1,000. It
+    took 0.14 seconds of CPU time and 13,484 KB. Then with the same platform we
+    used the days 10 and 20 with respectively 1,522,111 and 6,326,015 requests.
+    The first one took 50.82 seconds of CPU time and 13,876 KB of memory and
+    the later took 229.62 seconds and 14,472 KB. Adding more hosts changed 
+    except for the deployment of the platform as we have seen in \ref{raw_perf}.
   
   \subsection{Functionalities}
    % horizontal scaling, vertical scaling, workflow
   
 
 \section{Future work} \label{futurework}
-% generator law
+% generator law, 
   
 
 \section{Conclusion} \label{conclu}

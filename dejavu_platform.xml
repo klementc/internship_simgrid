@@ -6,6 +6,7 @@
   </config>
 
   <AS id="AS0" routing="Full">
-    <cluster id="server1_cb1" prefix="cb1-" suffix="" radical="1-20" speed="5000Gf" core="8" bw="125MBps" lat="100us"/>
+    <cluster id="server1_cb1" prefix="cb1-" suffix="" radical="1-20000" speed="5000Gf" core="8" bw="125MBps"
+             lat="100us"/>
   </AS>
 </platform>
