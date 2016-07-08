@@ -26,8 +26,9 @@
 
 \title{Generating fluctuating workload for cloud elasticity simulations}
 \author{
-	\IEEEauthorblockN{Simon Bihel (Student)\IEEEauthorrefmark{1},
-    Martin Quinson\IEEEauthorrefmark{1}\IEEEauthorrefmark{3} and
+	\IEEEauthorblockN{Simon Bihel (Student)\IEEEauthorrefmark{1} \footnote{Work 
+	done during this author's internship.} \and
+    Martin Quinson\IEEEauthorrefmark{1}\IEEEauthorrefmark{3} \and
     Anne-C\'ecile Orgerie\IEEEauthorrefmark{2}\IEEEauthorrefmark{3}}\\
 	\IEEEauthorblockA{
     \hspace{1cm}\IEEEauthorrefmark{1}Dept. of Computer Science, ENS Rennes\\
@@ -196,15 +197,15 @@
   simulators (home-made or OMNeT++), used benchmarks like SPECjEnterprise2010 
   to have close-to-reality hosts, and run real traces.
   
-  \begin{center}
-  	\begin{tabular}{| l | c | c | c | c |}
-  		\hline
-  		Paper & Horizontal scaling & Vertical scaling & blabla & blabla \\ 
-  		\hline
-  		\cite{vasic2012dejavu} & \checkmark & \checkmark & & \\
-  		\hline
-  	\end{tabular}
-  \end{center}
+%  \begin{center}
+%  	\begin{tabular}{| l | c | c | c | c |}
+%  		\hline
+%  		Paper & Horizontal scaling & Vertical scaling & blabla & blabla \\ 
+%  		\hline
+%  		\cite{vasic2012dejavu} & \checkmark & \checkmark & & \\
+%  		\hline
+%  	\end{tabular}
+%  \end{center}
 
 
 \section{Contribution} \label{contrib}
@@ -282,15 +283,27 @@
     except for the deployment of the platform as we have seen in \ref{raw_perf}.
   
   \subsection{Functionalities}
-   % horizontal scaling, vertical scaling, workflow
+   For horizontal and vertical scalings, they can be performed by modifying the 
+   list of hosts of an ET. To scale up you just have to add hosts and to scale 
+   out you have to replace this list with different hosts. Concerning workflows 
+   of tasks you can set the output function with a function that has access to 
+   ETs you want to trigger and just trigger them in the function, with possibly 
+   a multiplicative effect of the workload.
   
 
-\section{Future work} \label{futurework}
-% generator law, 
+% \section{Future work} \label{futurework}
+% generator law, add natively other kinds of workload instead of letting the 
+% user do some kinds of hacks
   
 
 \section{Conclusion} \label{conclu}
+During this internship we've studied which actions were taken by elastic clouds 
+mechanisms. Then we searched what was done in simulations used for evaluations 
+and other evaluations to come with a contribution that meets the needs of 
+researchers. To prove that the contribution was good enough we evaluated it on 
+some criteria.
 
+% tho there is still work to do ?
 
 
 \bibliographystyle{IEEEtran}
