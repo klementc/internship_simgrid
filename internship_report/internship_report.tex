@@ -1,5 +1,5 @@
-\documentclass[a4paper]{IEEEtran}
-%\documentclass[a4paper, onecolumn]{IEEEtran}
+%\documentclass[a4paper]{IEEEtran}
+\documentclass[a4paper, onecolumn]{article}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
@@ -11,7 +11,7 @@
 %\usepackage{amsmath}
 \usepackage[cmex10]{amsmath}
 \usepackage{amssymb}
-%\usepackage{fullpage}
+\usepackage{fullpage}
 \usepackage{float}
 \usepackage{url} \urlstyle{sf}
 
@@ -25,21 +25,22 @@
 \setlength{\parskip}{1em}
 
 \title{Generating fluctuating workload for cloud elasticity simulations}
-\author{
-	\IEEEauthorblockN{Simon Bihel (Student)\IEEEauthorrefmark{1} \footnote{Work 
-	done during this author's internship.} \and
-    Martin Quinson\IEEEauthorrefmark{1}\IEEEauthorrefmark{3} \and
-    Anne-C\'ecile Orgerie\IEEEauthorrefmark{2}\IEEEauthorrefmark{3}}\\
-	\IEEEauthorblockA{
-    \hspace{1cm}\IEEEauthorrefmark{1}Dept. of Computer Science, ENS Rennes\\
-  	\hspace{1cm}\{firstname.lastname\}@ens-rennes.fr}\\
-  \IEEEauthorblockA{
-    \IEEEauthorrefmark{2}CNRS\\
-    anne-cecile.orgerie@inria.fr}\\
-  \IEEEauthorblockA{
-    \IEEEauthorrefmark{3}Myriads team, IRISA}
-}
+%\author{
+%	\IEEEauthorblockN{Simon Bihel (Student)\IEEEauthorrefmark{1} \footnote{Work 
+%	done during this author's internship.} \and
+%    Martin Quinson\IEEEauthorrefmark{1}\IEEEauthorrefmark{3} \and
+%    Anne-C\'ecile Orgerie\IEEEauthorrefmark{2}\IEEEauthorrefmark{3}}\\
+%	\IEEEauthorblockA{
+%    \hspace{1cm}\IEEEauthorrefmark{1}Dept. of Computer Science, ENS Rennes\\
+%  	\hspace{1cm}\{firstname.lastname\}@ens-rennes.fr}\\
+%  \IEEEauthorblockA{
+%    \IEEEauthorrefmark{2}CNRS\\
+%    anne-cecile.orgerie@inria.fr}\\
+%  \IEEEauthorblockA{
+%    \IEEEauthorrefmark{3}Myriads team, IRISA}
+%}
 %TODO I was also paid by Inria
+\author{Simon Bihel}
 
 
 \begin{document}
@@ -61,11 +62,13 @@
   shows that this proposition fits the needs of past works.
 \end{abstract}
 
-\begin{IEEEkeywords}
-  Simulation;
-  Workload;
-  Cloud elasticity
-\end{IEEEkeywords}
+%\begin{IEEEkeywords}
+%  Simulation;
+%  Workload;
+%  Cloud elasticity
+%\end{IEEEkeywords}
+\providecommand{\keywords}[1]{\textbf{\textit{Index terms---}} #1}
+\keywords{Simulation; Workload; Cloud elasticity}
 
 \section{Introduction} \label{intro}
   Nowadays clouds are used for a lot of applications that need servers. From 
@@ -127,12 +130,13 @@
   These tools will allow the user that writes cloud applications to manage
   resources, run their code...
   
-  Most cloud applications will have fluctuating workload over time. For example 
+  Cloud applications will have fluctuating workload over time. For example 
   with a website server the usage might be bigger during the day or during a 
   short period because of a viral cultural event. Resources should thus be 
   managed dynamically. Also, physical resources can encounter problems which 
   makes them unavailable. Because of all these constraints the SLAs and QoS 
-  negotiations aren't satisfied easily and 100\% availability is never a thing. 
+  negotiations are not satisfied easily and 100\% availability is never a 
+  thing. 
   On top of that every actor wants to meet the obligations with a minimal cost. 
   All these questions of availability and cost are current research problems. 
   In particular we are interested in the works that tackle problems related to 
@@ -140,11 +144,15 @@
   ability for a cloud infrastructure to adapt to a dynamic workload is called 
   cloud elasticity.
   
+  %TODO paragraph about the major problem is optimization (response time, cost)
+  
   There are some generic elastic actions. The act of deploying more VMs (and
   thus having more resources overall) is called scaling up (and the convert is
   scaling down). The act of moving VMs to a different location is called scaling
   out. This is used for example when time passes by and users come from
   different countries/continents.
+  
+  %TODO say that there are multiple things to evaluate (theory, simulation e.g.)
   
   \cite{Naskos2016} has categorized works on cloud elasticity and allows to see
   which elements of a cloud infrastructure, platform or application/software are
@@ -236,7 +244,7 @@
   
   For detailed platforms description it is a core feature of SimGrid which 
   allows to have multiple providers, topologies, hosts (VMs for us), 
-  bandwidths...
+  bandwidths... % say that this is not specific to cloud
 
 
 \section{Evaluation} \label{eval}
