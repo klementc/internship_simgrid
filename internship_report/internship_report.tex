@@ -40,7 +40,8 @@
 %    \IEEEauthorrefmark{3}Myriads team, IRISA}
 %}
 %TODO I was also paid by Inria
-\author{Simon Bihel}
+\author{Simon Bihel \\ (Student) Dept. of Computer Science, ENS Rennes\\
+  simon.bihel@ens-rennes.fr}
 
 
 \begin{document}
@@ -71,24 +72,24 @@
 \keywords{Simulation; Workload; Cloud elasticity}
 
 \section{Introduction} \label{intro}
-  Nowadays clouds are used for a lot of applications that need servers. From 
-  websites to scientific computing, it allows apps creators to avoid managing 
-  their own servers. Because of a well defined business model the cloud 
-  structure is composed of layers where each layer uses the precedent one and 
-  provides a service to the next one. The services provided by a layer is 
-  negotiated (e.g. to determine the pricing) and levels of quality have to be 
-  met. Of course the goal is to meet these levels of quality while minimizing 
-  the costs like the usage of the bottom layer, energy consumption... Research 
-  is being done to tackle this problem. The domain we are particularly 
-  interested in is the one that deals with fluctuating usage where dynamic 
-  management is required to minimize costs at all time.
+  Nowadays clouds are used for a lot of server-based applications. From websites
+  to scientific computing, it allows apps creators to avoid managing their own
+  servers. Because of a well defined business model the cloud structure is
+  composed of layers where each layer uses the precedent one and provides a
+  service to the next one. The services provided by a layer is negotiated (e.g.
+  to determine the pricing) and levels of quality have to be met. Of course the
+  goal is to meet these levels of quality while minimizing the costs like the
+  usage of the bottom layer, energy consumption... Research is being done to
+  tackle this problem. The domain we are particularly interested in is the one
+  that deals with fluctuating usage where dynamic management is required to
+  minimize costs at all time.
   
-  As clouds are complex structures these works have to be evaluated. One way of 
-  doing is to use a real cloud and deploy the work that should be tested, and 
-  then generate somewhat artificial workload for the app. Another way of doing 
-  it would be to simulate the cloud and the workload. This kind of evaluation 
-  has often been used for grids, which can be seen as the ancestor of clouds. 
-  Among the different advantages of simulations, price would come up on top. 
+  As clouds are complex structures these works have to be evaluated. One way is
+  to use a real cloud and deploy the work that should be tested, and then
+  generate somewhat artificial workload for the app. Another way of doing it
+  would be to simulate the cloud and the workload. This kind of evaluation has
+  often been used for grids, which can be seen as the ancestor of clouds. Among
+  the different advantages of simulations, simplicity would come up on top.
   
   For now it is possible to simulate clouds infrastructures but tasks are still 
   seen as individual and independent computing task. For elastic clouds 
@@ -115,23 +116,22 @@
     \label{cloud_arch}
   \end{figure*}
   
-  The global architecture of a cloud is described in the
-  \figurename~\ref{cloud_arch}. It is split in different layers and each layer
-  has a specific role in the business model of clouds. On the lowest part there
-  is the physical resources (e.g. data centers) with Infrastructure as a Service
-  model (IaaS). The pricing is based of the resources available. Then comes the
-  layer of virtualization and performances negotiation called Platform as a
-  Service (PaaS). Dealing with Virtual Machines (VMs also called hosts) allows a
-  cleaner sharing of resources and makes it easier answering the users' demands
-  (e.g. deploying more VMs). The pricing depends of multiple factors, like the
-  Quality of Service (QoS) for the quality of the network, the Service Level
-  Agreement (SLA) for the faults rate, handling and responsibilities... On top
-  of that is the layer for users' cloud tools with Software as a Service (SaaS).
-  These tools will allow the user that writes cloud applications to manage
-  resources, run their code...
+  \figurename~\ref{cloud_arch} describes the global architecture of a cloud. It
+  is split in different layers and each layer has a specific role in the model
+  of clouds. On the lowest part there is the physical resources (e.g. data
+  centers) with Infrastructure as a Service model (IaaS). The pricing is based
+  of the resources available. Then comes the layer of virtualization and
+  performances negotiation called Platform as a Service (PaaS). Dealing with
+  Virtual Machines (VMs also called hosts) allows a cleaner sharing of resources
+  and makes it easier answering the users' demands (e.g. deploying more VMs).
+  The pricing depends of multiple factors, like the Quality of Service (QoS) for
+  the quality of the network, the Service Level Agreement (SLA) for the faults
+  rate, handling and responsibilities... On top of that is the layer for users'
+  cloud tools with Software as a Service (SaaS). These tools will allow the user
+  that writes cloud applications to manage resources, run their code...
   
   Cloud applications will have fluctuating workload over time. For example 
-  with a website server the usage might be bigger during the day or during a 
+  with a website server the usage will be bigger during the day or during a 
   short period because of a viral cultural event. Resources should thus be 
   managed dynamically. Also, physical resources can encounter problems which 
   makes them unavailable. Because of all these constraints the SLAs and QoS 
@@ -155,12 +155,12 @@
   %TODO say that there are multiple things to evaluate (theory, simulation e.g.)
   
   \cite{Naskos2016} has categorized works on cloud elasticity and allows to see
-  which elements of a cloud infrastructure, platform or application/software are
-  impacted. As it is for now most research works are evaluated on real clouds.
-  It is interesting for a distributed systems simulator to search what is needed
-  for simulating cloud elasticity. If it is shown that research works on cloud
-  elasticity can be evaluated on a simulator they would benefit from cost
-  reduction, re-runable experiments, trust in results...
+  which elements of a cloud infrastructure (platform or application/software)
+  are impacted. As it is for now most research works are evaluated on real
+  clouds. It is interesting for a distributed systems simulator to search what
+  is needed for simulating cloud elasticity. If it is shown that research works
+  on cloud elasticity can be evaluated on a simulator they would benefit from
+  cost reduction, reproducible experiments, trust in results...
   
   In this survey proposals are categorized as follows. The scope is about what
   elements of a cloud the proposals work on. It can be the management of VMs,
@@ -183,37 +183,6 @@
   As the proposals are on reacting to variating usage, simulators need a way to
   express this fluctuating workload. We worked on elastic tasks that model tasks
   that are triggered regularly and with a usage that fluctuates over time.
-
-
-\section{State of the art} \label{sota}
-  Based on the classification of the survey, a simulator should allow the
-  manipulation of scopes, the evaluation of the different purposes, make
-  possible the elastic actions and allow multiple providers.
-  
-  At the moment no simulator article talks about dynamic workload. On the other
-  hand in the code of DCsim \cite{tighe2013towards} there was an interactive
-  task and in the code of CloudSim \cite{calheiros2011cloudsim} there was an
-  host with dynamic workload. There are some tools to generate artificial
-  workload like \cite{bodik2010characterizing} and they generally follow the
-  following steps. They have a thread that acts like clients/users and it makes
-  request over time and simulate times of thinking of the users.
-  
-  On a less technical note, workloads are generally seen as a number of 
-  requests per a certain interval of time.
-  
-  Five papers in the survey used simulations. They used discrete event 
-  simulators (home-made or OMNeT++), used benchmarks like SPECjEnterprise2010 
-  to have close-to-reality hosts, and run real traces.
-  
-%  \begin{center}
-%  	\begin{tabular}{| l | c | c | c | c |}
-%  		\hline
-%  		Paper & Horizontal scaling & Vertical scaling & blabla & blabla \\ 
-%  		\hline
-%  		\cite{vasic2012dejavu} & \checkmark & \checkmark & & \\
-%  		\hline
-%  	\end{tabular}
-%  \end{center}
 
 
 \section{Contribution} \label{contrib}
@@ -253,6 +222,9 @@
   data access logs \cite{wc98} which are often used. After that we evaluated 
   the expressiveness and functionalities. All experiments have been executed on 
   a MacBook Pro with an Intel Core i5 and 8GB of RAM.
+  
+  %TODO note that usually experiments will use 15 ETs but for raw performances 
+  %we use a lot
     
   \subsection{Raw performances} \label{raw_perf}
     \begin{figure}
@@ -279,6 +251,7 @@
     % for the spikes in CPU it might be because I was doing other stuff with my 
     % laptop
     % exceeding computing capacities of hosts might slow things
+    % 100 microtasks per ET
     
   \subsection{Real traces}
     For that we used real traces from WorldCup 98 data access logs \cite{wc98}
@@ -289,6 +262,20 @@
     The first one took 50.82 seconds of CPU time and 13,876 KB of memory and
     the later took 229.62 seconds and 14,472 KB. Adding more hosts changed 
     except for the deployment of the platform as we have seen in \ref{raw_perf}.
+    
+    \begin{center}
+     	\begin{tabular}{| l | c | c |}
+     		\hline
+     		Trace (\# of requests) & Time & Max Memory\\ 
+     		\hline
+     		test (1,000) & 0.14s & 13,484 KB\\
+        \hline
+        day 10 (1,522,111) & 50.82s & 13,876 KB\\
+        \hline
+        day 20 (6,326,015) & 229.62 & 14,472 KB\\
+     		\hline
+     	\end{tabular}
+    \end{center}
   
   \subsection{Functionalities}
    For horizontal and vertical scalings, they can be performed by modifying the 
@@ -302,6 +289,45 @@
 % \section{Future work} \label{futurework}
 % generator law, add natively other kinds of workload instead of letting the 
 % user do some kinds of hacks
+
+
+\section{Related work} \label{sota}
+According to the classification of the survey, a simulator should allow the
+manipulation of scopes, the evaluation of the different purposes, make
+possible the elastic actions and allow multiple providers.
+
+At the moment no simulator article talks about dynamic workload. On the other
+hand in the code of DCsim \cite{tighe2013towards} there was an interactive
+task and in the code of CloudSim \cite{calheiros2011cloudsim} there was an
+host with dynamic workload. There are some tools to generate artificial
+workload like \cite{bodik2010characterizing} and they generally follow the
+following steps. They have a thread that acts like clients/users and it makes
+request over time and simulate thinking times of the users.
+
+On a less technical note, workloads are generally seen as a number of 
+requests per a certain interval of time.
+
+Five papers in the survey used simulations. They used discrete event 
+simulators (home-made or OMNeT++), used benchmarks like SPECjEnterprise2010 
+to have close-to-reality hosts, and run real traces.
+
+  \begin{center}
+  	\begin{tabular}{| l | c | c |}
+  		\hline
+  		 & This API & \cite{vasic2012dejavu}\\ 
+  		\hline\hline
+  		Horizontal scaling & OK & \checkmark\\
+  		\hline
+  		Vertical scaling & OK & \checkmark\\
+  		\hline\hline
+  		Traces & OK & \\
+  		\hline
+  		Constant rates & OK & \\
+  		\hline
+  		Generating law & NO & $\times$ \\
+  		\hline
+  	\end{tabular}
+  \end{center}
   
 
 \section{Conclusion} \label{conclu}
@@ -312,6 +338,10 @@ researchers. To prove that the contribution was good enough we evaluated it on
 some criteria.
 
 % tho there is still work to do ?
+
+\section*{Acknowledgement}
+Thanks to Martin Quinson and Anne-C\'ecile Orgerie for guiding and advising me 
+during this internship.
 
 
 \bibliographystyle{IEEEtran}
