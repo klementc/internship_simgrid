@@ -17,23 +17,24 @@ void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm, int n) {
   //e1->setOutputFunction([e2]() {
   //    e2->triggerOneTime(1.5);
   //});
-  simgrid::s4u::ElasticTask *e3 = new simgrid::s4u::ElasticTask(simgrid::s4u::Host::by_name("cb1-4"), 1.0, 0.0,
+  simgrid::s4u::ElasticTask *e3 = new simgrid::s4u::ElasticTask(simgrid::s4u::Host::by_name("cb1-2"), 1.0, n,
       etm.get());
-  for(int i = 5; i < 20000; i++) {
+  for(int i = 3; i < 200; i++) {
     e3->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(i)));
   }
-  e3->setTimestampsFile("d20_timestamp_wc.txt");
-  simgrid::s4u::this_actor::sleep(10000);
+  //e3->setTimestampsFile("d20_timestamp_wc.txt");
+  simgrid::s4u::this_actor::sleep(100);
   etm->kill();
   XBT_INFO("Done.");
 }
 
 int main(int argc, char **argv) {
-  simgrid::s4u::Engine *e = new simgrid::s4u::Engine(&argc, argv);
+  int argcE = 1;
+  simgrid::s4u::Engine *e = new simgrid::s4u::Engine(&argcE, argv);
   std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm = std::make_shared<simgrid::s4u::ElasticTaskManager>();
   e->loadPlatform("dejavu_platform.xml");
   simgrid::s4u::Actor::createActor("ETM", simgrid::s4u::Host::by_name("cb1-1"), [etm] { etm->run(); });
-  simgrid::s4u::Actor::createActor("main", simgrid::s4u::Host::by_name("cb1-1"), [etm] { eve(etm, 1); });
+  simgrid::s4u::Actor::createActor("main", simgrid::s4u::Host::by_name("cb1-1"), [etm, argv] { eve(etm, std::stoi(argv[1])); });
   e->run();
   return 0;
 }

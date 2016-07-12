@@ -18,11 +18,12 @@
 \usepackage{dashrule}
 
 \usepackage{color}
+\usepackage{caption}
 \usepackage{subcaption}
 \newcommand{\alert}[1]{\color{red}{#1}}
 \newcommand{\greyout}[1]{\color{gray}{#1}}
 
-\setlength{\parskip}{1em}
+\setlength{\parskip}{0.8em}
 
 \title{Generating fluctuating workload for cloud elasticity simulations}
 %\author{
@@ -39,9 +40,8 @@
 %  \IEEEauthorblockA{
 %    \IEEEauthorrefmark{3}Myriads team, IRISA}
 %}
-%TODO I was also paid by Inria
 \author{Simon Bihel \\ (Student) Dept. of Computer Science, ENS Rennes\\
-  simon.bihel@ens-rennes.fr}
+  \href{mailto:simon.bihel@ens-rennes.fr}{simon.bihel@ens-rennes.fr}}
 
 
 \begin{document}
@@ -105,6 +105,13 @@
   its use. \ref{eval} provides an evaluation based on performances and 
   expressiveness to make sure the contribution fits the needs. \ref{conclu} 
   concludes on whether this contribution will help future research.
+  
+  The main contributions of this internship are:
+  \begin{itemize}
+  	\item categorization and generalization of experimental needs for this 
+  	domain, particularly workloads;
+  	\item implementation of an API to evaluate this way of seeing workloads.
+  \end{itemize}
 
 
 \section{Background} \label{background}
@@ -130,19 +137,18 @@
   cloud tools with Software as a Service (SaaS). These tools will allow the user
   that writes cloud applications to manage resources, run their code...
   
-  Cloud applications will have fluctuating workload over time. For example 
-  with a website server the usage will be bigger during the day or during a 
-  short period because of a viral cultural event. Resources should thus be 
-  managed dynamically. Also, physical resources can encounter problems which 
-  makes them unavailable. Because of all these constraints the SLAs and QoS 
-  negotiations are not satisfied easily and 100\% availability is never a 
-  thing. 
-  On top of that every actor wants to meet the obligations with a minimal cost. 
-  All these questions of availability and cost are current research problems. 
-  In particular we are interested in the works that tackle problems related to 
-  fluctuating and dynamic usage of cloud applications and resources. The 
-  ability for a cloud infrastructure to adapt to a dynamic workload is called 
-  cloud elasticity.
+  Cloud applications will have fluctuating workload over time. For example with
+  a website server the usage will be bigger during the day or during a short
+  period because of a viral cultural event. Resources should thus be managed
+  dynamically. Also, physical resources can encounter problems which makes them
+  unavailable. Because of all these constraints the SLAs and QoS negotiations
+  are not satisfied easily and 100\% availability is never a thing. On top of
+  that every actor wants to meet the obligations with a minimal cost. All these
+  questions of availability and cost are current research problems. In
+  particular we are interested in the works that tackle problems related to
+  fluctuating and dynamic usage of cloud applications and resources. The ability
+  for a cloud infrastructure to adapt to a dynamic workload is called cloud
+  elasticity.
   
   %TODO paragraph about the major problem is optimization (response time, cost)
   
@@ -227,32 +233,85 @@
   %we use a lot
     
   \subsection{Raw performances} \label{raw_perf}
+    We evaluate raw performances to make sure that users can do significant 
+    experiments. Basically we just want to see if the time and memory used grow 
+    linearly with the number of micro tasks so that it can be used on a regular 
+    computer and allows multiple quick experiments.
+  
     \begin{figure}
-      \caption{Raw performances CPU time}
       \centering
-      \includegraphics[width=0.55\textwidth]{../plots/raw_perf_time}
-      \label{time_raw}
+      \hspace*{-4em}
+	  \begin{subfigure}[t]{0.6\textwidth}
+        \includegraphics[width=\textwidth]{../plots/raw_perf_time}
+        \caption{Raw performances CPU time}
+        \label{time_raw}
+	  \end{subfigure}%
+	  ~
+	  \begin{subfigure}[t]{0.6\textwidth}
+        \includegraphics[width=\textwidth]{../plots/raw_perf_mem}
+        \caption{Raw performances Max Memory}
+        \label{mem_raw}
+      \end{subfigure}%
+      \caption{Raw performances}
     \end{figure}
+    
     \begin{figure}
-      \caption{Raw performances Max Memory}
       \centering
-      \includegraphics[width=0.55\textwidth]{../plots/raw_perf_mem}
-      \label{mem_raw}
+      \hspace*{-4em}
+      \begin{subfigure}[t]{0.6\textwidth}
+    	\includegraphics[width=\textwidth]{../plots/raw_perf_oneet_time}
+    	\caption{Raw performances CPU time}
+    	\label{time_oneet_raw}
+      \end{subfigure}%
+      ~
+      \begin{subfigure}[t]{0.6\textwidth}
+    	\includegraphics[width=\textwidth]{../plots/raw_perf_oneet_mem}
+    	\caption{Raw performances Max Memory}
+    	\label{mem_oneet_raw}
+      \end{subfigure}%
+      \caption{Raw performances}
     \end{figure}
     
-    \figurename~\ref{time_raw} shows the CPU time (user + system time) while 
-    \figurename~\ref{mem_raw} shows the maximum memory used. The platform was
-    upgraded two times, at 1,600 from 2,000 hosts to 100,000, and then at
-    100,000 from 100,000 to 200,000. We can see that the deployment of the 
-    platform has nearly no impact on the time but account for about a half of 
-    the memory used if there is as much ETs as hosts. Apart from that time and 
-    memory grows linearly depending of the ETs amounts and operations done.
+	Two different experiments were made. During first one the number of elastic 
+	tasks grows while keeping a ratio of one ET per host and one trigger per 
+	second. The sole purpose of this is to see the performances because a 
+	typical cloud app will use about 15 ETs. For the second experiment it's the 
+	number of triggering per second that grows while keeping only one ET with 
+	200 hosts.
     
-    % for the spikes in CPU it might be because I was doing other stuff with my 
-    % laptop
-    % exceeding computing capacities of hosts might slow things
-    % 100 microtasks per ET
+    \paragraph{Experiment 1}
+    \figurename~\ref{time_raw} shows the CPU time (user + system time) while
+    \figurename~\ref{mem_raw} shows the maximum memory used. To get the $x$ axis
+    with the total number of microtasks you just have to multiply by 100. The
+    platform was upgraded two times, at 1,600 from 2,000 hosts to 100,000, and
+    then at 100,000 from 100,000 to 200,000. We can see that the deployment of
+    the platform has nearly no impact on the time but account for about a half
+    of the memory used if there is as much ETs as hosts. Apart from that, time
+    and memory grows linearly depending of the ETs amounts and operations done.
     
+    \paragraph{Experiment 2}
+    \figurename~\ref{time_oneet_raw} shows the CPU time and
+    \figurename~\ref{mem_oneet_raw} shows the maximum memory used. To get the
+    $x$ axis with the total number of microtasks you just have to multiply by
+    100. As we don't touch the platform or application structure (we just touch
+    its usage) the memory remains constant. As seen before the time is linear 
+    with the number of microtasks and with about the same growing speed.
+    
+    What will create workload are the elastic tasks and the two way of 
+    increasing the workload (increasing the number of microtasks) are to add 
+    more elastic tasks or increase the ratio of triggering. For both this cases 
+    time is linear on the total number of microtasks and memory will increase 
+    depending on the size of the platform and app architecture while always 
+    being moderate for an present-day computer. We did not focused on the 
+    amount of flops a microtask has because in the end the simulator is just 
+    doing a subtraction. Though you have to be careful to always have enough 
+    resources because then microtasks are delayed and start to stack up. At 
+    some point the simulator will have a hard and in the end it might crash 
+    your computer because of an excessive usage (e.g. memory).
+    %TODO just say the memory used is unresonable
+    %TODO say that we need a callback when there are too much and QoS isn't met
+    
+       
   \subsection{Real traces}
     For that we used real traces from WorldCup 98 data access logs \cite{wc98}
     with a platform of 2,000 host and enough flops. After translating the
@@ -269,10 +328,10 @@
      		Trace (\# of requests) & Time & Max Memory\\ 
      		\hline
      		test (1,000) & 0.14s & 13,484 KB\\
-        \hline
-        day 10 (1,522,111) & 50.82s & 13,876 KB\\
-        \hline
-        day 20 (6,326,015) & 229.62 & 14,472 KB\\
+	        \hline
+	        day 10 (1,522,111) & 50.82s & 13,876 KB\\
+	        \hline
+	        day 20 (6,326,015) & 229.62 & 14,472 KB\\
      		\hline
      	\end{tabular}
     \end{center}
@@ -284,6 +343,24 @@
    of tasks you can set the output function with a function that has access to 
    ETs you want to trigger and just trigger them in the function, with possibly 
    a multiplicative effect of the workload.
+   
+   \begin{center}
+   	\begin{tabular}{| l | c | c |}
+   		\hline
+   		& This API & \cite{vasic2012dejavu}\\ 
+   		\hline\hline
+   		Horizontal scaling & OK & \checkmark\\
+   		\hline
+   		Vertical scaling & OK & \checkmark\\
+   		\hline\hline
+   		Traces & OK & \\
+   		\hline
+   		Constant rates & OK & \\
+   		\hline
+   		Generating law & NO & $\times$ \\
+   		\hline
+   	\end{tabular}
+   \end{center}
   
 
 % \section{Future work} \label{futurework}
@@ -310,24 +387,6 @@ requests per a certain interval of time.
 Five papers in the survey used simulations. They used discrete event 
 simulators (home-made or OMNeT++), used benchmarks like SPECjEnterprise2010 
 to have close-to-reality hosts, and run real traces.
-
-  \begin{center}
-  	\begin{tabular}{| l | c | c |}
-  		\hline
-  		 & This API & \cite{vasic2012dejavu}\\ 
-  		\hline\hline
-  		Horizontal scaling & OK & \checkmark\\
-  		\hline
-  		Vertical scaling & OK & \checkmark\\
-  		\hline\hline
-  		Traces & OK & \\
-  		\hline
-  		Constant rates & OK & \\
-  		\hline
-  		Generating law & NO & $\times$ \\
-  		\hline
-  	\end{tabular}
-  \end{center}
   
 
 \section{Conclusion} \label{conclu}

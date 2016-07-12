@@ -653,43 +653,75 @@ int main(int argc, char **argv) {
 ** Week 9 <2016-07-11 Mon>--<2016-07-13 Wed>
 *** Things Done
 - Meeting notes
-  Use LNCS latex template
-  Look back at tables to shows what papers need and what I can do
-  Paper notes: NP -> theory isn't enough as there are too much NP problems
-  Only me as author and put advisors in acknoledgement
-  Before clouds people runned their own stuff, now with pay as you go for some
-  parts
-  When saying that clouds are complex, say that so many problems are NP complete
-  so theory isn't enough
-  using simulations that are simple, reproductible, simplistic
-  at the end of the introduction put an itemize to say what the main
-  contributions are (tell simgrid): modelization of workload, implementation of
-  an API, evaluation
-  the contribution is about unraveling concepts about cloud workload
-  main contribution of the survey: categorizing works
-  the problem I solve is answering a need
-  Put state of the art at the end and name it Related Works
-  Say what a typicial simulation is: resources, algorithms used, what they are
-  evaluating, scenario
-  talk about simgrid in background
-  on start of contribution tell what is the characterization of a workload (what
-  is a task/gridlet/cloudlet (a constant computing load) which doesn't match a
-  fluctuating reactive cloud workload)
-  we're proposing a discrete representation of a continous event (one argument
-  is that a simulator is discrete)
-  link the models to elements of the contribution (an ET represents a flux)
-  instead of floprate we used taskrates to be generic (make sure to define
-  atomic/classic tasks)
-  from this, elastic actions types come naturally... list all actions possible
-  (and using tables makes it easier) one paragraph for each
-  Change "Nb of ET" to "number of elastic task"
-  Say the total number of microtasks
-  Do another experiment with only one ET and an increasing rate
-  Add conclusion to experiments
-  Use table for real traces instead of tons of numbers and use same plan for
-  other experiments
-  Use table for C to show which elastic actions are possible and which papers
-  use them
+  + Use LNCS latex template
+  + Look back at tables to shows what papers need and what I can do
+  + Paper notes: NP -> theory isn't enough as there are too much NP problems
+  - Only me as author and put advisors in acknoledgement
+  + Before clouds people runned their own stuff, now with pay as you go for some
+    parts
+  + When saying that clouds are complex, say that so many problems are NP
+    complete so theory isn't enough
+  + using simulations that are simple, reproductible, simplistic
+  + at the end of the introduction put an itemize to say what the main
+    contributions are (tell simgrid): modelization of workload, implementation
+    of an API, evaluation
+  + the contribution is about unraveling concepts about cloud workload
+  + main contribution of the survey: categorizing works
+  + the problem I solve is answering a need
+  + Put state of the art at the end and name it Related Works
+  + Say what a typicial simulation is: resources, algorithms used, what they are
+    evaluating, scenario
+  + talk about simgrid in background
+  + on start of contribution tell what is the characterization of a workload
+    (what is a task/gridlet/cloudlet (a constant computing load) which doesn't
+    match a fluctuating reactive cloud workload)
+  + we're proposing a discrete representation of a continous event (one argument
+    is that a simulator is discrete)
+  + link the models to elements of the contribution (an ET represents a flux)
+  + instead of floprate we used taskrates to be generic (make sure to define
+    atomic/classic tasks)
+  + from this, elastic actions types come naturally... list all actions possible
+    (and using tables makes it easier) one paragraph for each
+  - Change "Nb of ET" to "number of elastic task"
+  + Say the total number of microtasks
+  - Do another experiment with only one ET and an increasing rate
+  + Add conclusion to experiments
+  + Use table for real traces instead of tons of numbers and use same plan for
+    other experiments
+  + Use table for C to show which elastic actions are possible and which papers
+    use them
+- Experiment with only one ET and growing number of triggers per second
+#+BEGIN_SRC
+#include <xbt/sysdep.h>
+#include "simgrid/s4u.h"
+#include "ElasticTask.hpp"
+#include "simgrid/msg.h"
+
+XBT_LOG_NEW_DEFAULT_CATEGORY(s4u_test, "a sample log category");
+
+void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm, int n) {
+  XBT_INFO("Starting");
+  simgrid::s4u::ElasticTask *e3 = new simgrid::s4u::ElasticTask(simgrid::s4u::Host::by_name("cb1-2"), 1.0, n,
+      etm.get());
+  for(int i = 3; i < 200; i++) {
+    e3->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(i)));
+  }
+  simgrid::s4u::this_actor::sleep(100);
+  etm->kill();
+  XBT_INFO("Done.");
+}
+
+int main(int argc, char **argv) {
+  int argcE = 1;
+  simgrid::s4u::Engine *e = new simgrid::s4u::Engine(&argcE, argv);
+  std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm = std::make_shared<simgrid::s4u::ElasticTaskManager>();
+  e->loadPlatform("dejavu_platform.xml");
+  simgrid::s4u::Actor::createActor("ETM", simgrid::s4u::Host::by_name("cb1-1"), [etm] { etm->run(); });
+  simgrid::s4u::Actor::createActor("main", simgrid::s4u::Host::by_name("cb1-1"), [etm, argv] { eve(etm, std::stoi(argv[1])); });
+  e->run();
+  return 0;
+}
+#+END_SRC
 *** Blocking Points
 *** Planned Work
 - [ ] Give back keys and pass and ethernet adapter.
