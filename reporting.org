@@ -675,8 +675,8 @@ int main(int argc, char **argv) {
   + on start of contribution tell what is the characterization of a workload
     (what is a task/gridlet/cloudlet (a constant computing load) which doesn't
     match a fluctuating reactive cloud workload)
-  + we're proposing a discrete representation of a continous event (one argument
-    is that a simulator is discrete)
+    we're proposing a discrete representation of a continous event (one argument
+    is that a simulator is discrete, it's easier)
   + link the models to elements of the contribution (an ET represents a flux)
   + instead of floprate we used taskrates to be generic (make sure to define
     atomic/classic tasks)
@@ -722,6 +722,15 @@ int main(int argc, char **argv) {
   return 0;
 }
 #+END_SRC
+- to detect threshold we would need to set an alarm and be killed if we don't
+  kill it before (that would be online, offline is easy we juste compute the
+  time used) (the online way we can talk about it in conclusion as we didn't do
+  it) (the callback is defined by the user)
+- say in introduction why I did this internship
+  say in conclusion what I learned
+- conclusion: conclusion of what was done, what has still to be done, what I
+  learned (what was a simulator, what was a research code, life in research
+  environment)
 *** Blocking Points
 *** Planned Work
 - [ ] Give back keys and pass and ethernet adapter.
