@@ -91,12 +91,11 @@
   often been used for grids, which can be seen as the ancestor of clouds. Among
   the different advantages of simulations, simplicity would come up on top.
   
-  For now it is possible to simulate clouds infrastructures but tasks are still 
-  seen as individual and independent computing task. For elastic clouds 
-  research it is essential to generate authentic workload and there is 
-  currently no way of manipulating naturally workloads for simulations. During 
-  the internship of Simon Bihel we worked on writing an API for SimGrid and this
-  paper presents the work done.
+  For now it is possible to simulate clouds infrastructures but tasks are still
+  seen as individual and independent computing task. For elastic clouds research
+  it is essential to generate authentic workload and there is currently no way
+  of manipulating naturally workloads for simulations. During this internship we
+  worked on writing an API for SimGrid and this paper presents the work done.
   
   In \ref{background} we give a more detailed presentation of clouds and their 
   uses. In \ref{sota} we study the work done on simulation, workload generation 
@@ -185,7 +184,7 @@
   The survey gives a good overview on what elements of a cloud are manipulated
   to achieve cloud elasticity. No clue have been found proving the opposite at
   the time of writing.
-  
+  %TODO speak somewhere here (?) about what's a simulator
   As the proposals are on reacting to variating usage, simulators need a way to
   express this fluctuating workload. We worked on elastic tasks that model tasks
   that are triggered regularly and with a usage that fluctuates over time.
@@ -271,14 +270,14 @@
       \end{subfigure}%
       \caption{Raw performances}
     \end{figure}
-    %TODO start at 0 for mem_omeet
+    %TODO start at 0 for mem_oneet
     
-	Two different experiments were made. During first one the number of elastic 
-	tasks grows while keeping a ratio of one ET per host and one trigger per 
-	second. The sole purpose of this is to see the performances because a 
-	typical cloud app will use about 15 ETs. For the second experiment it's the 
-	number of triggering per second that grows while keeping only one ET with 
-	200 hosts.
+  	Two different experiments were made. During first one the number of elastic 
+  	tasks grows while keeping a ratio of one ET per host and one trigger per 
+  	second. The sole purpose of this is to see the performances because a 
+  	typical cloud app will use about 15 ETs. For the second experiment it's the 
+  	number of triggering per second that grows while keeping only one ET with 
+  	200 hosts.
     
     \paragraph{Experiment 1}
     \figurename~\ref{time_raw} shows the CPU time (user + system time) while
@@ -308,8 +307,8 @@
     doing a subtraction. Though you have to be careful to always have enough 
     resources because then microtasks are delayed and start to stack up. At 
     some point the simulator will have a hard and in the end it might crash 
-    your computer because of an excessive usage (e.g. memory).
-    %TODO just say the memory used is unresonable
+    your computer because of an excessive usage of memory.
+    
     %TODO say that we need a callback when there are too much and QoS isn't met
     
        
@@ -349,15 +348,15 @@
    	\begin{tabular}{| l | c | c |}
    		\hline
    		& This API & \cite{vasic2012dejavu}\\ 
-   		\hline\hline
+   		\hline
    		Horizontal scaling & OK & \checkmark\\
    		\hline
    		Vertical scaling & OK & \checkmark\\
    		\hline
-   		Workflow & & \\
+   		Workflow & OK & \\
    		\hline
-   		Threshold & & \\
-   		\hline\hline
+   		Threshold & NO & \\
+   		\hline
    		Traces & OK & \\
    		\hline
    		Constant rates & OK & \\
@@ -401,9 +400,27 @@ and other evaluations to come with a contribution that meets the needs of
 researchers. To prove that the contribution was good enough we evaluated it on 
 some criteria.
 
-% tho there is still work to do ?
+For future works we would need a callback for the user to set a certain 
+response time (a threshold) and allow him to react accordingly if this QoS level
+is not met. For that we would just need to either set an alarm and turn it off
+once the workload has been executed and if it is not then it stops it and
+execute a user's function. That would be an online solution and an offline one
+would be to just see how much time the workload took to be executed and let the
+user react accordingly. Another feature that would be really useful is a
+generating law. For an elastic task the date for the next triggering would be
+based on a statistical function. That would get us even closer to simple and
+simplistic setup for experiments. Finally, the microtasks we have used are
+computing tasks. Users can set the flops amount to 0 and add more specific tasks
+in an output function but this is too hack-y. Right now in SimGrid there is only
+computing and network tasks and you can also simulate disk usage by seeing it as
+a computing resource.
 
-\section*{Acknowledgement}
+On a more personal note, this internship has allowed me to discover what a 
+simulator was, what a research code looked like along with its development, the 
+life in a research environment, and many more.
+
+
+\section*{Acknowledgment}
 Thanks to Martin Quinson and Anne-C\'ecile Orgerie for guiding and advising me 
 during this internship.
 
