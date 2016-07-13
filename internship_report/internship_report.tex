@@ -25,7 +25,8 @@
 
 \setlength{\parskip}{0.75em}
 
-\title{Generating fluctuating workloads for cloud elasticity simulations}
+\title{Specifying the Experimental Scenarios for Simulated Cloud Studies}
+%TODO 2 part in experiment, the static 
 %\author{
 %	\IEEEauthorblockN{Simon Bihel (Student)\IEEEauthorrefmark{1} \footnote{Work 
 %	done during this author's internship.} \and
@@ -40,7 +41,7 @@
 %  \IEEEauthorblockA{
 %    \IEEEauthorrefmark{3}Myriads team, IRISA}
 %}
-\author{Simon Bihel \\ (Student) Dept. of Computer Science, ENS Rennes\\
+\author{Simon Bihel \\ Dept. of Computer Science, ENS Rennes\\
   \href{mailto:simon.bihel@ens-rennes.fr}{simon.bihel@ens-rennes.fr}}
 
 
@@ -106,17 +107,16 @@
   expressiveness to make sure the contribution fits the needs. \ref{conclu} 
   concludes on whether this contribution will help future research.
   
-  The main contributions of this internship are:
-  \begin{itemize}
-  	\item categorization and generalization of experimental needs for this 
-  	domain;
-  	\item implementation of an API to evaluate this categorization.
-  \end{itemize}
+  The main contributions of this internship are: (i) a categorization and
+  generalization of experimental needs for this domain; (ii) an implementation
+  of an API to evaluate this categorization.
 
 
 \section{Background} \label{background}
+	%TODO add subsections, cloud computing, typical cloud studies, experimental 
+	%methodologies
   \begin{figure*}
-    \caption{Cloud architecture \\ 
+    \caption{Cloud architecture. \\ 
     \url{http://cloud-simulation-frameworks.wikispaces.asu.edu/}}
     \centering
     \includegraphics[width=0.7\textwidth]{../plots/cloud_architecture}
@@ -206,13 +206,14 @@
   easily the tasks then the simulator will have no problem to simulate this 
   smooth execution. But if too much tasks are queued up the simulator will use 
   a lot of memory to keep track of every element's state.
-  
+    
   As the proposals are on reacting to variating usage, simulators need a way to
   express this fluctuating workload. We worked on elastic tasks that model tasks
   that are triggered regularly and with a usage that fluctuates over time.
 
 
 \section{Contribution} \label{contrib}
+  %TODO seperate the scientific needs and the technical
   The work was done on SimGrid \cite{casanova:hal-01017319}. The code is
   available here: \url{https://github.com/sbihel/internship_simgrid}. It was
   written as a plug-in on top of the S4U interface which is intended to be the
@@ -275,16 +276,16 @@
     	\hspace*{-4em}
     	\begin{subfigure}[t]{0.6\textwidth}
     		\includegraphics[width=\textwidth]{../plots/raw_perf_time}
-    		\caption{Raw performances CPU time}
+    		\caption{Raw performances CPU time.}
     		\label{time_raw}
     	\end{subfigure}%
     	~
     	\begin{subfigure}[t]{0.6\textwidth}
     		\includegraphics[width=\textwidth]{../plots/raw_perf_mem}
-    		\caption{Raw performances Max Memory}
+    		\caption{Raw performances Max Memory.}
     		\label{mem_raw}
     	\end{subfigure}%
-    	\caption{Raw performances}
+    	\caption{Raw performances.}
     \end{figure}
     
     \figurename~\ref{time_raw} shows the CPU time (user + system time) while
@@ -302,18 +303,18 @@
     	\hspace*{-4em}
     	\begin{subfigure}[t]{0.6\textwidth}
     		\includegraphics[width=\textwidth]{../plots/raw_perf_oneet_time}
-    		\caption{Raw performances CPU time}
+    		\caption{Raw performances CPU time.}
     		\label{time_oneet_raw}
     	\end{subfigure}%
     	~
     	\begin{subfigure}[t]{0.6\textwidth}
     		\includegraphics[width=\textwidth]{../plots/raw_perf_oneet_mem}
-    		\caption{Raw performances Max Memory}
+    		\caption{Raw performances Max Memory.}
     		\label{mem_oneet_raw}
     	\end{subfigure}%
-    	\caption{Raw performances}
+    	\caption{Raw performances.}
     \end{figure}
-    
+        
     \figurename~\ref{time_oneet_raw} shows the CPU time and
     \figurename~\ref{mem_oneet_raw} shows the maximum memory used. To get the
     $x$ axis with the total number of microtasks you just have to multiply by
@@ -364,7 +365,7 @@
 	     		\hline
 	     	\end{tabular}
 	    \end{center}
-	    \caption{Execution of WorlCup 98 website traces}
+	    \caption{Execution of WorlCup 98 website traces.}
 	    \label{tab_traces}
 	  \end{figure}
   
@@ -389,7 +390,7 @@
 	  			\hline
 	  			Workflow & YES & \\
 	  			\hline
-	  			Threshold & NO & \\
+	  			Threshold & NO & \\  %TODO define threshold
 	  			\hline
 	  			Traces & YES & \\
 	  			\hline
@@ -399,7 +400,7 @@
 	  			\hline
 	  		\end{tabular}
 	  	\end{center}
-	  	\caption{Functionnalities availability table}
+	  	\caption{Functionnal requirements of several scientific studies.}
 	  	\label{table_func}
 	  \end{figure}
   
@@ -466,7 +467,7 @@ life in a research environment, and many more.
 
 \section*{Acknowledgment}
 Thanks to Martin Quinson and Anne-C\'ecile Orgerie for guiding and advising me 
-during this internship.
+during this internship. Also many thanks to Inria for hosting me.
 
 
 \bibliographystyle{IEEEtran}

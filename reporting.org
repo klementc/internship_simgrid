@@ -732,6 +732,9 @@ int main(int argc, char **argv) {
   return 0;
 }
 #+END_SRC
+- Meeting notes
+  increase figures slides
+  First small sentence followed by a really long one -> not good
 *** Blocking Points
 *** Planned Work
 - [ ] Give back keys and pass and ethernet adapter.
