@@ -1,5 +1,5 @@
 %\documentclass[a4paper]{IEEEtran}
-\documentclass[a4paper, onecolumn]{article}
+\documentclass[a4paper, onecolumn, 11pt]{article}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
@@ -23,9 +23,9 @@
 \newcommand{\alert}[1]{\color{red}{#1}}
 \newcommand{\greyout}[1]{\color{gray}{#1}}
 
-\setlength{\parskip}{0.8em}
+\setlength{\parskip}{0.75em}
 
-\title{Generating fluctuating workload for cloud elasticity simulations}
+\title{Generating fluctuating workloads for cloud elasticity simulations}
 %\author{
 %	\IEEEauthorblockN{Simon Bihel (Student)\IEEEauthorrefmark{1} \footnote{Work 
 %	done during this author's internship.} \and
@@ -84,12 +84,13 @@
   that deals with fluctuating usage where dynamic management is required to
   minimize costs at all time.
   
-  As clouds are complex structures these works have to be evaluated. One way is
-  to use a real cloud and deploy the work that should be tested, and then
-  generate somewhat artificial workload for the app. Another way of doing it
-  would be to simulate the cloud and the workload. This kind of evaluation has
-  often been used for grids, which can be seen as the ancestor of clouds. Among
-  the different advantages of simulations, simplicity would come up on top.
+  As clouds are complex structures these works have to be evaluated. Theory is
+  not enough as so many problems are NP complete. One way is to use a real cloud
+  and deploy the work that should be tested, and then generate somewhat
+  artificial workload for the app. Another way of doing it would be to simulate
+  the cloud and the workload. This kind of evaluation has often been used for
+  grids, which can be seen as the ancestor of clouds. Among the different
+  advantages of simulations, simplicity would come up on top.
   
   For now it is possible to simulate clouds infrastructures but tasks are still
   seen as individual and independent computing task. For elastic clouds research
@@ -108,8 +109,8 @@
   The main contributions of this internship are:
   \begin{itemize}
   	\item categorization and generalization of experimental needs for this 
-  	domain, particularly workloads;
-  	\item implementation of an API to evaluate this way of seeing workloads.
+  	domain;
+  	\item implementation of an API to evaluate this categorization.
   \end{itemize}
 
 
@@ -134,7 +135,13 @@
   the quality of the network, the Service Level Agreement (SLA) for the faults
   rate, handling and responsibilities... On top of that is the layer for users'
   cloud tools with Software as a Service (SaaS). These tools will allow the user
-  that writes cloud applications to manage resources, run their code...
+  that writes cloud applications to manage resources, run their code... This 
+  architecture and organization is a real enhancement as before that users 
+  would have to run their own application stack (e.g. managing servers, 
+  databases, etc.). In addition to that the pay-as-you-go business models makes 
+  it even more convenient for the user to react, increase capacities, try new 
+  features, get more control on certain layers (e.g. for optimization purpose), 
+  etc.
   
   Cloud applications will have fluctuating workload over time. For example with
   a website server the usage will be bigger during the day or during a short
@@ -165,7 +172,10 @@
   clouds. It is interesting for a distributed systems simulator to search what
   is needed for simulating cloud elasticity. If it is shown that research works
   on cloud elasticity can be evaluated on a simulator they would benefit from
-  cost reduction, reproducible experiments, trust in results...
+  simple setups, cost reduction, reproducible experiments, trust in results... 
+  These are particularly important when comparing two algorithms, which is a
+  good part of this domain. Again, theory is not enough to study a cloud
+  software (e.g. a scheduler) as there are too many NP complete problems.
   
   In this survey proposals are categorized as follows. The scope is about what
   elements of a cloud the proposals work on. It can be the management of VMs,
@@ -184,7 +194,19 @@
   The survey gives a good overview on what elements of a cloud are manipulated
   to achieve cloud elasticity. No clue have been found proving the opposite at
   the time of writing.
-  %TODO speak somewhere here (?) about what's a simulator
+  
+  About simulators and particularly SimGrid. At first they are discrete event 
+  simulators. They have a queue of events and jump between following events 
+  thus not doing anything when the state of simulation remains constant. For 
+  cloud or grid simulator one of these events will be tasks (AKA jobs, 
+  gridlets, cloudlets, etc.) that will require a certain amount of flops (or 
+  another resource unit) to be completed. As they don't really execute these 
+  computing tasks, the completion of a task will be an event and if there is 
+  another task queued up it will start. If the simulated platform can handle 
+  easily the tasks then the simulator will have no problem to simulate this 
+  smooth execution. But if too much tasks are queued up the simulator will use 
+  a lot of memory to keep track of every element's state.
+  
   As the proposals are on reacting to variating usage, simulators need a way to
   express this fluctuating workload. We worked on elastic tasks that model tasks
   that are triggered regularly and with a usage that fluctuates over time.
@@ -194,9 +216,15 @@
   The work was done on SimGrid \cite{casanova:hal-01017319}. The code is
   available here: \url{https://github.com/sbihel/internship_simgrid}. It was
   written as a plug-in on top of the S4U interface which is intended to be the
-  core API. Elastic tasks are objects and are the only things the user has to
-  manipulate.
+  core API. Elastic tasks (ETs) are objects and are the only things the user has
+  to manipulate.
   
+  %TODO we see workload as a discrete stuff
+  One key notion is that we use a discrete representation of workloads. Even if 
+  workloads are generated by a discrete amount it is easier for cloud 
+  elasticity researchers to see the workload as a continuous function of flops. 
+  If we still decided to ..... because discrete event simulator
+   
   An elastic task can repeat a certain task that we will call microtask. The 
   user provides a rate of triggering per second and the flops required and then 
   over time multiple identical microtasks will be created and executed. An 
@@ -227,9 +255,6 @@
   data access logs \cite{wc98} which are often used. After that we evaluated 
   the expressiveness and functionalities. All experiments have been executed on 
   a MacBook Pro with an Intel Core i5 and 8GB of RAM.
-  
-  %TODO note that usually experiments will use 15 ETs but for raw performances 
-  %we use a lot
     
   \subsection{Raw performances} \label{raw_perf}
     We evaluate raw performances to make sure that users can do significant 
@@ -237,41 +262,6 @@
     linearly with the number of micro tasks so that it can be used on a regular 
     computer and allows multiple quick experiments.
   
-    \begin{figure}
-      \centering
-      \hspace*{-4em}
-	  \begin{subfigure}[t]{0.6\textwidth}
-        \includegraphics[width=\textwidth]{../plots/raw_perf_time}
-        \caption{Raw performances CPU time}
-        \label{time_raw}
-	  \end{subfigure}%
-	  ~
-	  \begin{subfigure}[t]{0.6\textwidth}
-        \includegraphics[width=\textwidth]{../plots/raw_perf_mem}
-        \caption{Raw performances Max Memory}
-        \label{mem_raw}
-      \end{subfigure}%
-      \caption{Raw performances}
-    \end{figure}
-    
-    \begin{figure}
-      \centering
-      \hspace*{-4em}
-      \begin{subfigure}[t]{0.6\textwidth}
-    	\includegraphics[width=\textwidth]{../plots/raw_perf_oneet_time}
-    	\caption{Raw performances CPU time}
-    	\label{time_oneet_raw}
-      \end{subfigure}%
-      ~
-      \begin{subfigure}[t]{0.6\textwidth}
-    	\includegraphics[width=\textwidth]{../plots/raw_perf_oneet_mem}
-    	\caption{Raw performances Max Memory}
-    	\label{mem_oneet_raw}
-      \end{subfigure}%
-      \caption{Raw performances}
-    \end{figure}
-    %TODO start at 0 for mem_oneet
-    
   	Two different experiments were made. During first one the number of elastic 
   	tasks grows while keeping a ratio of one ET per host and one trigger per 
   	second. The sole purpose of this is to see the performances because a 
@@ -280,6 +270,23 @@
   	200 hosts.
     
     \paragraph{Experiment 1}
+    \begin{figure}
+    	\centering
+    	\hspace*{-4em}
+    	\begin{subfigure}[t]{0.6\textwidth}
+    		\includegraphics[width=\textwidth]{../plots/raw_perf_time}
+    		\caption{Raw performances CPU time}
+    		\label{time_raw}
+    	\end{subfigure}%
+    	~
+    	\begin{subfigure}[t]{0.6\textwidth}
+    		\includegraphics[width=\textwidth]{../plots/raw_perf_mem}
+    		\caption{Raw performances Max Memory}
+    		\label{mem_raw}
+    	\end{subfigure}%
+    	\caption{Raw performances}
+    \end{figure}
+    
     \figurename~\ref{time_raw} shows the CPU time (user + system time) while
     \figurename~\ref{mem_raw} shows the maximum memory used. To get the $x$ axis
     with the total number of microtasks you just have to multiply by 100. The
@@ -290,6 +297,23 @@
     and memory grows linearly depending of the ETs amounts and operations done.
     
     \paragraph{Experiment 2}
+    \begin{figure}
+    	\centering
+    	\hspace*{-4em}
+    	\begin{subfigure}[t]{0.6\textwidth}
+    		\includegraphics[width=\textwidth]{../plots/raw_perf_oneet_time}
+    		\caption{Raw performances CPU time}
+    		\label{time_oneet_raw}
+    	\end{subfigure}%
+    	~
+    	\begin{subfigure}[t]{0.6\textwidth}
+    		\includegraphics[width=\textwidth]{../plots/raw_perf_oneet_mem}
+    		\caption{Raw performances Max Memory}
+    		\label{mem_oneet_raw}
+    	\end{subfigure}%
+    	\caption{Raw performances}
+    \end{figure}
+    
     \figurename~\ref{time_oneet_raw} shows the CPU time and
     \figurename~\ref{mem_oneet_raw} shows the maximum memory used. To get the
     $x$ axis with the total number of microtasks you just have to multiply by
@@ -312,60 +336,80 @@
     %TODO say that we need a callback when there are too much and QoS isn't met
     
        
-  \subsection{Real traces}
+  \subsection{Real traces} \label{real_traces}
+		Evaluating the use of traces feature has two goals. Show that it works and 
+		similarly to \ref{raw_perf} we want to show that evaluations done in papers 
+		are possible in a simulation.
+  
     For that we used real traces from WorldCup 98 data access logs \cite{wc98}
-    with a platform of 2,000 host and enough flops. After translating the
-    requests log as a timestamps file we tested with the test file of 1,000. It
-    took 0.14 seconds of CPU time and 13,484 KB. Then with the same platform we
-    used the days 10 and 20 with respectively 1,522,111 and 6,326,015 requests.
-    The first one took 50.82 seconds of CPU time and 13,876 KB of memory and
-    the later took 229.62 seconds and 14,472 KB. Adding more hosts changed 
-    except for the deployment of the platform as we have seen in \ref{raw_perf}.
-    
-    \begin{center}
-     	\begin{tabular}{| l | c | c |}
-     		\hline
-     		Trace (\# of requests) & Time & Max Memory\\ 
-     		\hline
-     		test (1,000) & 0.14s & 13,484 KB\\
-	        \hline
-	        day 10 (1,522,111) & 50.82s & 13,876 KB\\
-	        \hline
-	        day 20 (6,326,015) & 229.62 & 14,472 KB\\
-     		\hline
-     	\end{tabular}
-    \end{center}
+    with a platform of 2,000 host and enough flops. \figurename~\ref{tab_traces}
+    shows the results of a few executions. Again time and memory usage are
+    reasonable for days of real time simulated (even though these traces are
+    getting old and might not be as big as nowadays requests logs). Adding more
+    hosts changed nothing except for the deployment of the platform as we have
+    seen in \ref{raw_perf}.
+
+		\begin{figure}
+			\centering
+	    \begin{center}
+	     	\begin{tabular}{| l | c | c |}
+	     		\hline
+	     		Trace (\# of requests) & Time & Max Memory\\ 
+	     		\hline
+	     		test (1,000) & 0.14s & 13,484 KB\\
+		      \hline
+		      day 10 (1,522,111) & 50.82s & 13,876 KB\\
+		      \hline
+		      day 20 (6,326,015) & 229.62 & 14,472 KB\\
+	     		\hline
+	     	\end{tabular}
+	    \end{center}
+	    \caption{Execution of WorlCup 98 website traces}
+	    \label{tab_traces}
+	  \end{figure}
   
   \subsection{Functionalities}
-   For horizontal and vertical scalings, they can be performed by modifying the 
-   list of hosts of an ET. To scale up you just have to add hosts and to scale 
-   out you have to replace this list with different hosts. Concerning workflows 
-   of tasks you can set the output function with a function that has access to 
-   ETs you want to trigger and just trigger them in the function, with possibly 
-   a multiplicative effect of the workload.
-   
-   \begin{center}
-   	\begin{tabular}{| l | c | c |}
-   		\hline
-   		& This API & \cite{vasic2012dejavu}\\ 
-   		\hline
-   		Horizontal scaling & OK & \checkmark\\
-   		\hline
-   		Vertical scaling & OK & \checkmark\\
-   		\hline
-   		Workflow & OK & \\
-   		\hline
-   		Threshold & NO & \\
-   		\hline
-   		Traces & OK & \\
-   		\hline
-   		Constant rates & OK & \\
-   		\hline
-   		Generating law & NO & $\times$ \\
-   		\hline
-   	\end{tabular}
-   \end{center}
+	  As we have determined the needs for cloud elasticity works experiments, we 
+	  have to evaluate which ones are filled. Apart from performances which are 
+	  addressed in \ref{raw_perf} and \ref{real_traces} there are left elastic 
+	  actions, workload generation features, and system feedback. For various 
+	  papers, \figurename~\ref{table_func} shows which needs are filled and which 
+	  are not.
   
+	  \begin{figure}
+	  	\centering
+	  	\begin{center}
+	  		\begin{tabular}{| l | c | c |}
+	  			\hline
+	  			& Implemented & \cite{vasic2012dejavu}\\ 
+	  			\hline
+	  			Horizontal scaling & YES & \checkmark\\
+	  			\hline
+	  			Vertical scaling & YES & \checkmark\\
+	  			\hline
+	  			Workflow & YES & \\
+	  			\hline
+	  			Threshold & NO & \\
+	  			\hline
+	  			Traces & YES & \\
+	  			\hline
+	  			Constant rates & YES & \\
+	  			\hline
+	  			Generating law & NO & $\times$ \\
+	  			\hline
+	  		\end{tabular}
+	  	\end{center}
+	  	\caption{Functionnalities availability table}
+	  	\label{table_func}
+	  \end{figure}
+  
+	  For horizontal and vertical scalings, they can be performed by modifying the
+	  list of hosts of an ET. To scale up you just have to add hosts and to scale
+	  out you have to replace this list with different hosts. Concerning workflows
+	  of tasks you can set the output function with a function that has access to
+	  ETs you want to trigger and just trigger them in the function, with possibly
+	  a multiplicative effect of the workload.
+   
 
 % \section{Future work} \label{futurework}
 % generator law, add natively other kinds of workload instead of letting the 
@@ -385,8 +429,8 @@ workload like \cite{bodik2010characterizing} and they generally follow the
 following steps. They have a thread that acts like clients/users and it makes
 request over time and simulate thinking times of the users.
 
-On a less technical note, workloads are generally seen as a number of 
-requests per a certain interval of time.
+%On a less technical note, workloads are generally seen as a number of 
+%requests per a certain interval of time.
 
 Five papers in the survey used simulations. They used discrete event 
 simulators (home-made or OMNeT++), used benchmarks like SPECjEnterprise2010 

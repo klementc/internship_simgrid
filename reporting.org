@@ -653,22 +653,22 @@ int main(int argc, char **argv) {
 ** Week 9 <2016-07-11 Mon>--<2016-07-13 Wed>
 *** Things Done
 - Meeting notes
-  + Use LNCS latex template
+  - Use LNCS latex template
   + Look back at tables to shows what papers need and what I can do
-  + Paper notes: NP -> theory isn't enough as there are too much NP problems
+  - Paper notes: NP -> theory isn't enough as there are too much NP problems
   - Only me as author and put advisors in acknoledgement
-  + Before clouds people runned their own stuff, now with pay as you go for some
+  - Before clouds people runned their own stuff, now with pay as you go for some
     parts
-  + When saying that clouds are complex, say that so many problems are NP
+  - When saying that clouds are complex, say that so many problems are NP
     complete so theory isn't enough
   + using simulations that are simple, reproductible, simplistic
-  + at the end of the introduction put an itemize to say what the main
+  - at the end of the introduction put an itemize to say what the main
     contributions are (tell simgrid): modelization of workload, implementation
     of an API, evaluation
   + the contribution is about unraveling concepts about cloud workload
   + main contribution of the survey: categorizing works
   + the problem I solve is answering a need
-  + Put state of the art at the end and name it Related Works
+  - Put state of the art at the end and name it Related Works
   + Say what a typicial simulation is: resources, algorithms used, what they are
     evaluating, scenario
   + talk about simgrid in background
@@ -683,13 +683,23 @@ int main(int argc, char **argv) {
   + from this, elastic actions types come naturally... list all actions possible
     (and using tables makes it easier) one paragraph for each
   - Change "Nb of ET" to "number of elastic task"
-  + Say the total number of microtasks
+  - Say the total number of microtasks
   - Do another experiment with only one ET and an increasing rate
-  + Add conclusion to experiments
-  + Use table for real traces instead of tons of numbers and use same plan for
+  - Add conclusion to experiments
+  - Use table for real traces instead of tons of numbers and use same plan for
     other experiments
   + Use table for C to show which elastic actions are possible and which papers
     use them
+- Meeting notes
+  + to detect threshold we would need to set an alarm and be killed if we don't
+    kill it before (that would be online, offline is easy we juste compute the
+    time used) (the online way we can talk about it in conclusion as we didn't
+    do it) (the callback is defined by the user)
+  + say in introduction why I did this internship say in conclusion what I
+    learned
+  + conclusion: conclusion of what was done, what has still to be done, what I
+    learned (what was a simulator, what was a research code, life in research
+    environment)
 - Experiment with only one ET and growing number of triggers per second
 #+BEGIN_SRC
 #include <xbt/sysdep.h>
@@ -722,15 +732,6 @@ int main(int argc, char **argv) {
   return 0;
 }
 #+END_SRC
-- to detect threshold we would need to set an alarm and be killed if we don't
-  kill it before (that would be online, offline is easy we juste compute the
-  time used) (the online way we can talk about it in conclusion as we didn't do
-  it) (the callback is defined by the user)
-- say in introduction why I did this internship
-  say in conclusion what I learned
-- conclusion: conclusion of what was done, what has still to be done, what I
-  learned (what was a simulator, what was a research code, life in research
-  environment)
 *** Blocking Points
 *** Planned Work
 - [ ] Give back keys and pass and ethernet adapter.
