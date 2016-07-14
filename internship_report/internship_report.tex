@@ -26,7 +26,7 @@
 \setlength{\parskip}{0.75em}
 
 \title{Specifying the Experimental Scenarios for Simulated Cloud Studies}
-%TODO 2 part in experiment, the static 
+%TODO 2 part in experiment, the static (platform) and dynamic (workload) (?)
 %\author{
 %	\IEEEauthorblockN{Simon Bihel (Student)\IEEEauthorrefmark{1} \footnote{Work 
 %	done during this author's internship.} \and
@@ -55,13 +55,13 @@
   adjusted and occupied on-demand. The problem of using the minimal resources
   for the current demand/usage is still a research challenge that spans all
   layers and applications. This dynamic management of clouds is called cloud
-  elasticity. To evaluate research work done on cloud elasticity simulation can 
-  be used and presents some advantages. While the simulation of cloud 
-  structures are already possible there is a lack of workload generation which 
-  is essential to evaluate works supposed to deal with fluctuating workload. 
-  This paper presents a way of describing workloads using tasks that are 
-  repeated over time with parameters that can be modified over time. It also 
-  shows that this proposition fits the needs of past works.
+  elasticity. To evaluate research work done on cloud elasticity simulation can
+  be used and presents some advantages. While the simulation of cloud structures
+  are already possible there is a lack of workload generation which is essential
+  to evaluate works supposed to deal with fluctuating workload. This paper
+  presents a way of describing workloads using tasks that are repeated over time
+  with parameters that can be modified over time. It also shows that this
+  proposition fits the needs of past works.
 \end{abstract}
 
 %\begin{IEEEkeywords}
@@ -113,8 +113,6 @@
 
 
 \section{Background} \label{background}
-	%TODO add subsections, cloud computing, typical cloud studies, experimental 
-	%methodologies
   \begin{figure*}
     \caption{Cloud architecture. \\ 
     \url{http://cloud-simulation-frameworks.wikispaces.asu.edu/}}
@@ -122,6 +120,8 @@
     \includegraphics[width=0.7\textwidth]{../plots/cloud_architecture}
     \label{cloud_arch}
   \end{figure*}
+  
+  \subsection{Cloud Computing}
   
   \figurename~\ref{cloud_arch} describes the global architecture of a cloud. It
   is split in different layers and each layer has a specific role in the model
@@ -147,24 +147,30 @@
   a website server the usage will be bigger during the day or during a short
   period because of a viral cultural event. Resources should thus be managed
   dynamically. Also, physical resources can encounter problems which makes them
-  unavailable. Because of all these constraints the SLAs and QoS negotiations
-  are not satisfied easily and 100\% availability is never a thing. On top of
-  that every actor wants to meet the obligations with a minimal cost. All these
+  unavailable. Because of all these constraints the SLAs and QoS agreements are
+  not satisfied easily and 100\% availability is never a thing. On top of that
+  every actor wants to meet their obligations with a minimal cost. All these
   questions of availability and cost are current research problems. In
   particular we are interested in the works that tackle problems related to
   fluctuating and dynamic usage of cloud applications and resources. The ability
   for a cloud infrastructure to adapt to a dynamic workload is called cloud
   elasticity.
   
-  %TODO paragraph about the major problem is optimization (response time, cost)
+  There are some generic elastic actions that are used for common problems. The
+  act of deploying more VMs (and thus having more resources overall) is called
+  scaling up (and the convert is scaling down). The act of moving VMs to a
+  different location is called scaling out. This is used for example when time
+  passes by and users come from different countries/continents.
   
-  There are some generic elastic actions. The act of deploying more VMs (and
-  thus having more resources overall) is called scaling up (and the convert is
-  scaling down). The act of moving VMs to a different location is called scaling
-  out. This is used for example when time passes by and users come from
-  different countries/continents.
-  
-  %TODO say that there are multiple things to evaluate (theory, simulation e.g.)
+  \subsection{Typical Cloud Studies}
+  Examples of research done on cloud elasticity can be a better scheduler 
+  algorithm, a caching system to react more precisely and faster to common 
+  workload variations, extracting characteristics of real-world workload to 
+  produce synthetic ones for experiments, etc. Practical evaluations have to be 
+  done because theory is not enough to study a cloud system/software as there 
+  are too many NP complete problems. Then there are multiple choice with 
+  running the product of the research work on a real cloud platform, emulating 
+  one, or simulating one. 
   
   \cite{Naskos2016} has categorized works on cloud elasticity and allows to see
   which elements of a cloud infrastructure (platform or application/software)
@@ -172,10 +178,9 @@
   clouds. It is interesting for a distributed systems simulator to search what
   is needed for simulating cloud elasticity. If it is shown that research works
   on cloud elasticity can be evaluated on a simulator they would benefit from
-  simple setups, cost reduction, reproducible experiments, trust in results... 
-  These are particularly important when comparing two algorithms, which is a
-  good part of this domain. Again, theory is not enough to study a cloud
-  software (e.g. a scheduler) as there are too many NP complete problems.
+  simple setups, cost reduction, reproducible experiments, trust in results,
+  etc. These last ones are particularly important when comparing two algorithms,
+  which is a good part of this domain.
   
   In this survey proposals are categorized as follows. The scope is about what
   elements of a cloud the proposals work on. It can be the management of VMs,
@@ -195,6 +200,8 @@
   to achieve cloud elasticity. No clue have been found proving the opposite at
   the time of writing.
   
+  \subsection{Typical Experimental Methodologies}
+  
   About simulators and particularly SimGrid. At first they are discrete event 
   simulators. They have a queue of events and jump between following events 
   thus not doing anything when the state of simulation remains constant. For 
@@ -206,25 +213,24 @@
   easily the tasks then the simulator will have no problem to simulate this 
   smooth execution. But if too much tasks are queued up the simulator will use 
   a lot of memory to keep track of every element's state.
-    
-  As the proposals are on reacting to variating usage, simulators need a way to
-  express this fluctuating workload. We worked on elastic tasks that model tasks
-  that are triggered regularly and with a usage that fluctuates over time.
 
 
 \section{Contribution} \label{contrib}
-  %TODO seperate the scientific needs and the technical
-  The work was done on SimGrid \cite{casanova:hal-01017319}. The code is
-  available here: \url{https://github.com/sbihel/internship_simgrid}. It was
-  written as a plug-in on top of the S4U interface which is intended to be the
-  core API. Elastic tasks (ETs) are objects and are the only things the user has
-  to manipulate.
-  
-  %TODO we see workload as a discrete stuff
+As the proposals are on reacting to variating usage, simulators need a way to
+express this fluctuating workload. We worked on elastic tasks (ETs) that model
+tasks that are triggered regularly and with a usage that fluctuates over time.
+The work was done on SimGrid \cite{casanova:hal-01017319}. The code is available
+here: \url{https://github.com/sbihel/internship_simgrid}. It was written as a
+plug-in on top of the S4U interface which is intended to be the core API.
+Elastic tasks are objects and are the only things the user has to manipulate.
+
+  \subsection{Scientific Needs}
   One key notion is that we use a discrete representation of workloads. Even if 
   workloads are generated by a discrete amount it is easier for cloud 
   elasticity researchers to see the workload as a continuous function of flops. 
-  If we still decided to ..... because discrete event simulator
+  If we still decided to describe workloads as continuous execution of tasks 
+  (or jobs...) is mainly because everything was already there in SimGrid and 
+  simulators are event-based.
    
   An elastic task can repeat a certain task that we will call microtask. The 
   user provides a rate of triggering per second and the flops required and then 
@@ -233,6 +239,7 @@
   a cycling shifting between hosts when creating microtasks, keeping one host 
   for one microtask.
   
+  \subsection{Technical Needs}
   An output function can be provided to an elastic task and this function will 
   be executed after each microtask that has ended. This has multiple usages. It 
   allows the description of workflows of tasks. As microtasks only generate 
@@ -246,8 +253,17 @@
   will trigger/generate a microtask for each time stamp.
   
   For detailed platforms description it is a core feature of SimGrid which 
-  allows to have multiple providers, topologies, hosts (VMs for us), 
-  bandwidths... % say that this is not specific to cloud
+  allows to have multiple providers, topologies, hosts (understand VMs here), 
+  bandwidths, etc. Platforms are not specific to clouds and it shows again that 
+  as clouds are an extension of grids, our work on cloud simulations are an 
+  extension of grid simulations.
+  
+  For horizontal and vertical scalings, they can be performed by modifying the
+  list of hosts of an ET. To scale up you just have to add hosts and to scale
+  out you have to replace this list with different hosts. Concerning workflows
+  of tasks you can set the output function with a function that has access to
+  ETs you want to trigger and just trigger them in the function, with possibly
+  a multiplicative effect of the workload.
 
 
 \section{Evaluation} \label{eval}
@@ -337,7 +353,7 @@
     %TODO say that we need a callback when there are too much and QoS isn't met
     
        
-  \subsection{Real traces} \label{real_traces}
+  \subsection{Real Traces} \label{real_traces}
 		Evaluating the use of traces feature has two goals. Show that it works and 
 		similarly to \ref{raw_perf} we want to show that evaluations done in papers 
 		are possible in a simulation.
@@ -370,12 +386,12 @@
 	  \end{figure}
   
   \subsection{Functionalities}
-	  As we have determined the needs for cloud elasticity works experiments, we 
-	  have to evaluate which ones are filled. Apart from performances which are 
-	  addressed in \ref{raw_perf} and \ref{real_traces} there are left elastic 
-	  actions, workload generation features, and system feedback. For various 
-	  papers, \figurename~\ref{table_func} shows which needs are filled and which 
-	  are not.
+	  As we have determined the needs for cloud elasticity works experiments, we
+    have to evaluate which ones are met. Apart from performances which are
+    addressed in \ref{raw_perf} and \ref{real_traces} there are left elastic
+    actions, workload generation features and system feedback. For various
+    papers, \figurename~\ref{table_func} shows which needs are met and which are
+    not.
   
 	  \begin{figure}
 	  	\centering
@@ -383,45 +399,32 @@
 	  		\begin{tabular}{| l | c | c |}
 	  			\hline
 	  			& Implemented & \cite{vasic2012dejavu}\\ 
-	  			\hline
+	  			\hline \hline
 	  			Horizontal scaling & YES & \checkmark\\
 	  			\hline
 	  			Vertical scaling & YES & \checkmark\\
 	  			\hline
 	  			Workflow & YES & \\
 	  			\hline
-	  			Threshold & NO & \\  %TODO define threshold
+	  			Threshold & NO & \\  %TODO define threshold, in contribution 
+	  			                     %     section(?)
+          \hline \hline
+          Usage feedback & NO & $\times$\\
 	  			\hline
-	  			Traces & YES & \\
+	  			Traces & YES & \checkmark\\
 	  			\hline
 	  			Constant rates & YES & \\
 	  			\hline
-	  			Generating law & NO & $\times$ \\
+	  			Generating law & NO & \\
 	  			\hline
 	  		\end{tabular}
 	  	\end{center}
 	  	\caption{Functionnal requirements of several scientific studies.}
 	  	\label{table_func}
 	  \end{figure}
-  
-	  For horizontal and vertical scalings, they can be performed by modifying the
-	  list of hosts of an ET. To scale up you just have to add hosts and to scale
-	  out you have to replace this list with different hosts. Concerning workflows
-	  of tasks you can set the output function with a function that has access to
-	  ETs you want to trigger and just trigger them in the function, with possibly
-	  a multiplicative effect of the workload.
-   
-
-% \section{Future work} \label{futurework}
-% generator law, add natively other kinds of workload instead of letting the 
-% user do some kinds of hacks
 
 
-\section{Related work} \label{sota}
-According to the classification of the survey, a simulator should allow the
-manipulation of scopes, the evaluation of the different purposes, make
-possible the elastic actions and allow multiple providers.
-
+\section{Related Work} \label{sota}
 At the moment no simulator article talks about dynamic workload. On the other
 hand in the code of DCsim \cite{tighe2013towards} there was an interactive
 task and in the code of CloudSim \cite{calheiros2011cloudsim} there was an
@@ -430,13 +433,10 @@ workload like \cite{bodik2010characterizing} and they generally follow the
 following steps. They have a thread that acts like clients/users and it makes
 request over time and simulate thinking times of the users.
 
-%On a less technical note, workloads are generally seen as a number of 
-%requests per a certain interval of time.
-
 Five papers in the survey used simulations. They used discrete event 
 simulators (home-made or OMNeT++), used benchmarks like SPECjEnterprise2010 
 to have close-to-reality hosts, and run real traces.
-  
+
 
 \section{Conclusion} \label{conclu}
 During this internship we've studied which actions were taken by elastic clouds 
@@ -459,6 +459,7 @@ computing tasks. Users can set the flops amount to 0 and add more specific tasks
 in an output function but this is too hack-y. Right now in SimGrid there is only
 computing and network tasks and you can also simulate disk usage by seeing it as
 a computing resource.
+%TODO put detailed before, in contrib (?)
 
 On a more personal note, this internship has allowed me to discover what a 
 simulator was, what a research code looked like along with its development, the 
