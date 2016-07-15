@@ -26,7 +26,6 @@
 \setlength{\parskip}{0.75em}
 
 \title{Specifying the Experimental Scenarios for Simulated Cloud Studies}
-%TODO 2 part in experiment, the static (platform) and dynamic (workload) (?)
 %\author{
 %	\IEEEauthorblockN{Simon Bihel (Student)\IEEEauthorrefmark{1} \footnote{Work 
 %	done during this author's internship.} \and
@@ -75,15 +74,15 @@
 \section{Introduction} \label{intro}
   Nowadays clouds are used for a lot of server-based applications. From websites
   to scientific computing, it allows apps creators to avoid managing their own
-  servers. Because of a well defined business model the cloud structure is
-  composed of layers where each layer uses the precedent one and provides a
+  servers. Based a well defined and separated business model the cloud structure
+  is composed of layers where each layer uses the precedent one and provides a
   service to the next one. The services provided by a layer is negotiated (e.g.
   to determine the pricing) and levels of quality have to be met. Of course the
   goal is to meet these levels of quality while minimizing the costs like the
   usage of the bottom layer, energy consumption... Research is being done to
   tackle this problem. The domain we are particularly interested in is the one
-  that deals with fluctuating usage where dynamic management is required to
-  minimize costs at all time.
+  that deals with fluctuating usage. In this cases a dynamic management is
+  required to minimize costs at all time.
   
   As clouds are complex structures these works have to be evaluated. Theory is
   not enough as so many problems are NP complete. One way is to use a real cloud
@@ -99,12 +98,12 @@
   of manipulating naturally workloads for simulations. During this internship we
   worked on writing an API for SimGrid and this paper presents the work done.
   
-  In \ref{background} we give a more detailed presentation of clouds and their 
-  uses. In \ref{sota} we study the work done on simulation, workload generation 
-  and define in more details the needs for a workload generator based on past 
-  work on cloud elasticity. \ref{contrib} presents the actual contribution and 
-  its use. \ref{eval} provides an evaluation based on performances and 
-  expressiveness to make sure the contribution fits the needs. \ref{conclu} 
+  In \ref{background} we give a more detailed presentation of clouds and their
+  uses. In \ref{sota} we study the work done on simulation, workload generation
+  and define in more details the needs for a workload generator based on past
+  work on cloud elasticity. \ref{contrib} presents the actual contribution and
+  its use. \ref{eval} provides an evaluation based on performances and
+  expressiveness to make sure the contribution fits the needs. \ref{conclu}
   concludes on whether this contribution will help future research.
   
   The main contributions of this internship are: (i) a categorization and
@@ -135,26 +134,25 @@
   the quality of the network, the Service Level Agreement (SLA) for the faults
   rate, handling and responsibilities... On top of that is the layer for users'
   cloud tools with Software as a Service (SaaS). These tools will allow the user
-  that writes cloud applications to manage resources, run their code... This 
-  architecture and organization is a real enhancement as before that users 
-  would have to run their own application stack (e.g. managing servers, 
-  databases, etc.). In addition to that the pay-as-you-go business models makes 
-  it even more convenient for the user to react, increase capacities, try new 
-  features, get more control on certain layers (e.g. for optimization purpose), 
-  etc.
+  that writes cloud applications to manage resources, run their code... This
+  architecture and organization is a real enhancement as before that users would
+  have to run their own application stack (e.g. managing servers, databases,
+  etc.). In addition to that the pay-as-you-go business models makes it even
+  more convenient for the user to react, increase capacities, try new features,
+  get more control on certain layers (e.g. for optimization purpose), etc.
   
   Cloud applications will have fluctuating workload over time. For example with
   a website server the usage will be bigger during the day or during a short
-  period because of a viral cultural event. Resources should thus be managed
-  dynamically. Also, physical resources can encounter problems which makes them
-  unavailable. Because of all these constraints the SLAs and QoS agreements are
-  not satisfied easily and 100\% availability is never a thing. On top of that
-  every actor wants to meet their obligations with a minimal cost. All these
-  questions of availability and cost are current research problems. In
-  particular we are interested in the works that tackle problems related to
-  fluctuating and dynamic usage of cloud applications and resources. The ability
-  for a cloud infrastructure to adapt to a dynamic workload is called cloud
-  elasticity.
+  period of time because of a viral cultural event. Resources should thus be
+  managed dynamically. Also, physical resources can encounter problems which
+  makes them unavailable. Because of all these constraints the SLAs and QoS
+  agreements are not satisfied easily and 100\% availability is never a thing.
+  On top of that every actor wants to meet their obligations with a minimal
+  cost. All these questions of availability and cost are current research
+  problems. In particular we are interested in the works that tackle problems
+  related to fluctuating and dynamic usage of cloud applications and resources.
+  The ability for a cloud infrastructure to adapt to a dynamic workload is
+  called cloud elasticity.
   
   There are some generic elastic actions that are used for common problems. The
   act of deploying more VMs (and thus having more resources overall) is called
@@ -163,14 +161,14 @@
   passes by and users come from different countries/continents.
   
   \subsection{Typical Cloud Studies}
-  Examples of research done on cloud elasticity can be a better scheduler 
-  algorithm, a caching system to react more precisely and faster to common 
-  workload variations, extracting characteristics of real-world workload to 
-  produce synthetic ones for experiments, etc. Practical evaluations have to be 
-  done because theory is not enough to study a cloud system/software as there 
-  are too many NP complete problems. Then there are multiple choice with 
-  running the product of the research work on a real cloud platform, emulating 
-  one, or simulating one. 
+  Examples of research done on cloud elasticity can be a better scheduler
+  algorithm, a caching system to react more precisely and faster to common
+  workload variations, extracting characteristics of real-world workload to
+  produce synthetic ones for experiments, etc. Practical evaluations have to be
+  done because theory is not enough to study a cloud system/software as there
+  are too many NP complete problems. Then there are multiple choice with running
+  the product of the research work on a real cloud platform, emulating one, or
+  simulating one.
   
   \cite{Naskos2016} has categorized works on cloud elasticity and allows to see
   which elements of a cloud infrastructure (platform or application/software)
@@ -197,22 +195,25 @@
   simulation or emulation.
   
   The survey gives a good overview on what elements of a cloud are manipulated
-  to achieve cloud elasticity. No clue have been found proving the opposite at
-  the time of writing.
+  to achieve cloud elasticity. At the time of writing no piece of evidence has
+  been found to prove the opposite.
   
   \subsection{Typical Experimental Methodologies}
+  Clouds experiments follow traditional experiments steps: what are they
+  evaluating, setup (resources, platform), scenario (what actions are done
+  during the experiment), the results and their analysis.
   
-  About simulators and particularly SimGrid. At first they are discrete event 
-  simulators. They have a queue of events and jump between following events 
-  thus not doing anything when the state of simulation remains constant. For 
-  cloud or grid simulator one of these events will be tasks (AKA jobs, 
-  gridlets, cloudlets, etc.) that will require a certain amount of flops (or 
-  another resource unit) to be completed. As they don't really execute these 
-  computing tasks, the completion of a task will be an event and if there is 
-  another task queued up it will start. If the simulated platform can handle 
-  easily the tasks then the simulator will have no problem to simulate this 
-  smooth execution. But if too much tasks are queued up the simulator will use 
-  a lot of memory to keep track of every element's state.
+  About simulators and particularly SimGrid. At first they are discrete event
+  simulators. They have a queue of events and jump between following events thus
+  not doing anything when the state of simulation remains constant. For cloud or
+  grid simulator one of these events will be tasks (AKA jobs, gridlets,
+  cloudlets, etc.) that will require a certain amount of flops (or another
+  resource unit) to be completed. As they don't really execute these computing
+  tasks, the completion of a task will be an event and if there is another task
+  queued up it will start. If the simulated platform can handle easily the tasks
+  then the simulator will have no problem to simulate this smooth execution. But
+  if too much tasks are queued up the simulator will use a lot of memory to keep
+  track of every element's state.
 
 
 \section{Contribution} \label{contrib}
@@ -225,45 +226,65 @@ plug-in on top of the S4U interface which is intended to be the core API.
 Elastic tasks are objects and are the only things the user has to manipulate.
 
   \subsection{Scientific Needs}
-  One key notion is that we use a discrete representation of workloads. Even if 
-  workloads are generated by a discrete amount it is easier for cloud 
-  elasticity researchers to see the workload as a continuous function of flops. 
-  If we still decided to describe workloads as continuous execution of tasks 
-  (or jobs...) is mainly because everything was already there in SimGrid and 
-  simulators are event-based.
-   
-  An elastic task can repeat a certain task that we will call microtask. The 
-  user provides a rate of triggering per second and the flops required and then 
-  over time multiple identical microtasks will be created and executed. An 
-  elastic task can have multiple hosts to split the workload and there will be 
-  a cycling shifting between hosts when creating microtasks, keeping one host 
-  for one microtask.
+  One key notion is that we use a discrete representation of workloads. Even if
+  workloads are generated by a discrete amount it is easier for cloud elasticity
+  researchers to see the workload as a continuous function of flops. If we still
+  decided to describe workloads as continuous execution of tasks (or jobs...) is
+  mainly because everything was already there in SimGrid and simulators are
+  event-based. Also often times when visualizing the workload along side with
+  the number of hosts for example, people chose a time interval and print the
+  total number of requests for each interval. Finally talking about taskrates
+  instead of floprates makes it more generic as there are more resources than
+  just computing ones. With this representation the various elastic actions come
+  naturally as we explain in the following paragraphs.
   
-  \subsection{Technical Needs}
-  An output function can be provided to an elastic task and this function will 
-  be executed after each microtask that has ended. This has multiple usages. It 
-  allows the description of workflows of tasks. As microtasks only generate 
-  computing workload, output functions can be used to have different types of 
-  workloads like network usage, disk access (which can be simulated only by 
-  seeing it as a particular computing resource at the moment), and basically 
-  anything possible with SimGrid.
-  
-  It is also useful to study the behavior of a system dealing with real 
-  workload. For that an elastic task can be given a file of timestamps and it 
-  will trigger/generate a microtask for each time stamp.
-  
-  For detailed platforms description it is a core feature of SimGrid which 
-  allows to have multiple providers, topologies, hosts (understand VMs here), 
-  bandwidths, etc. Platforms are not specific to clouds and it shows again that 
-  as clouds are an extension of grids, our work on cloud simulations are an 
-  extension of grid simulations.
+  An elastic task can repeat a certain task that we call microtask. The user
+  provides a rate of triggering per second and the flops required and then over
+  time multiple identical microtasks will be created and executed. An elastic
+  task can have multiple hosts to split the workload and there will be a cycling
+  shifting between hosts when creating microtasks, keeping one host for one
+  microtask.
   
   For horizontal and vertical scalings, they can be performed by modifying the
   list of hosts of an ET. To scale up you just have to add hosts and to scale
   out you have to replace this list with different hosts. Concerning workflows
   of tasks you can set the output function with a function that has access to
-  ETs you want to trigger and just trigger them in the function, with possibly
-  a multiplicative effect of the workload.
+  ETs you want to trigger and just trigger them in the function, with possibly a
+  multiplicative effect of the workload.
+  
+  A way of evaluating the usage of hosts is also needed. There are two
+  mechanisms, one which we will call online and another called offline. The
+  online is a threshold. Detecting over-usage of an host is done by using the
+  resources requirements of tasks and their completion time required. When the
+  threshold is crossed a user-provided function is executed (to increase the
+  number of hosts for example) and the extra queue up tasks can be dealt with.
+  The offline mechanism is more passive as it is just a feedback to the user of
+  the time that passed before a task has been executed.
+  
+  \subsection{Technical Needs}
+  An output function can be provided to an elastic task and this function will
+  be executed after each microtask that has ended. This has multiple usages. It
+  allows the description of workflows of tasks. As microtasks only generate
+  computing workload, output functions can be used to have different types of
+  workloads like network usage, disk access (which can be simulated only by
+  seeing it as a particular computing resource at the moment), and basically
+  anything possible with SimGrid.
+  
+  It is also useful to study the behavior of a system dealing with real
+  workload. For that an elastic task can be given a file of timestamps and it
+  will trigger/generate a microtask for each time stamp. Another way of 
+  simplifying the workload generation for the user is to use a statistical law. 
+  It is also called generating law as found in the network simulator NS-3. The 
+  timespan or delay between two triggers of the ET is determined through a 
+  common law as Poisson or through a user provided one.
+  
+  For detailed platforms description it is a core feature of SimGrid which
+  allows to have multiple providers, topologies, hosts (understand VMs here),
+  bandwidths, etc. Platforms are not specific to clouds and it shows again that
+  as clouds are an extension of grids, our work on cloud simulations are an
+  extension of grid simulations. In the end as we are working on cloud
+  elasticity we are only interested in the dynamic part of simulations not the
+  static one.
 
 
 \section{Evaluation} \label{eval}
@@ -335,29 +356,29 @@ Elastic tasks are objects and are the only things the user has to manipulate.
     \figurename~\ref{mem_oneet_raw} shows the maximum memory used. To get the
     $x$ axis with the total number of microtasks you just have to multiply by
     100. As we don't touch the platform or application structure (we just touch
-    its usage) the memory remains constant. As seen before the time is linear 
+    its usage) the memory remains constant. As seen before the time is linear
     with the number of microtasks and with about the same growing speed.
     
-    What will create workload are the elastic tasks and the two way of 
-    increasing the workload (increasing the number of microtasks) are to add 
-    more elastic tasks or increase the ratio of triggering. For both this cases 
-    time is linear on the total number of microtasks and memory will increase 
-    depending on the size of the platform and app architecture while always 
-    being moderate for an present-day computer. We did not focused on the 
-    amount of flops a microtask has because in the end the simulator is just 
-    doing a subtraction. Though you have to be careful to always have enough 
-    resources because then microtasks are delayed and start to stack up. At 
-    some point the simulator will have a hard and in the end it might crash 
-    your computer because of an excessive usage of memory.
+    What will create workload are the elastic tasks and the two way of
+    increasing the workload (increasing the number of microtasks) are to add
+    more elastic tasks or increase the ratio of triggering. For both this cases
+    time is linear on the total number of microtasks and memory will increase
+    depending on the size of the platform and app architecture while always
+    being moderate for an present-day computer. We did not focused on the amount
+    of flops a microtask has because in the end the simulator is just doing a
+    subtraction. Though you have to be careful to always have enough resources
+    because then microtasks are delayed and start to stack up. At some point the
+    simulator will have a hard and in the end it might crash your computer
+    because of an excessive usage of memory.
     
     %TODO say that we need a callback when there are too much and QoS isn't met
     
        
   \subsection{Real Traces} \label{real_traces}
-		Evaluating the use of traces feature has two goals. Show that it works and 
-		similarly to \ref{raw_perf} we want to show that evaluations done in papers 
-		are possible in a simulation.
-  
+		Evaluating the use of traces feature has two goals. Show that it works and
+    similarly to \ref{raw_perf} we want to show that evaluations done in papers
+    are possible in a simulation.
+    
     For that we used real traces from WorldCup 98 data access logs \cite{wc98}
     with a platform of 2,000 host and enough flops. \figurename~\ref{tab_traces}
     shows the results of a few executions. Again time and memory usage are
@@ -396,26 +417,26 @@ Elastic tasks are objects and are the only things the user has to manipulate.
 	  \begin{figure}
 	  	\centering
 	  	\begin{center}
-	  		\begin{tabular}{| l | c | c |}
+	  		\begin{tabular}{| l | c | c | c | c |}
 	  			\hline
-	  			& Implemented & \cite{vasic2012dejavu}\\ 
+	  			& Implemented & \cite{vasic2012dejavu} & 
+	  			\cite{moore2013coordinated} & \cite{hwang2013adaptive}\\ 
 	  			\hline \hline
-	  			Horizontal scaling & YES & \checkmark\\
+	  			Horizontal scaling & YES & \checkmark & \checkmark & \checkmark\\
 	  			\hline
-	  			Vertical scaling & YES & \checkmark\\
+	  			Vertical scaling & YES & \checkmark & \checkmark & \checkmark\\
 	  			\hline
-	  			Workflow & YES & \\
-	  			\hline
-	  			Threshold & NO & \\  %TODO define threshold, in contribution 
-	  			                     %     section(?)
+	  			Threshold & NO &  & &\\
           \hline \hline
-          Usage feedback & NO & $\times$\\
+          Usage feedback & NO & $\times$ & $\times$ & $\times$\\
+          \hline
+          Workflow & YES & \checkmark & &\\
 	  			\hline
-	  			Traces & YES & \checkmark\\
+	  			Traces & YES & \checkmark & \checkmark & \checkmark\\
 	  			\hline
-	  			Constant rates & YES & \\
+	  			Constant rates & YES &  & &\\
 	  			\hline
-	  			Generating law & NO & \\
+	  			Generating law & NO &  & &\\
 	  			\hline
 	  		\end{tabular}
 	  	\end{center}
@@ -426,43 +447,42 @@ Elastic tasks are objects and are the only things the user has to manipulate.
 
 \section{Related Work} \label{sota}
 At the moment no simulator article talks about dynamic workload. On the other
-hand in the code of DCsim \cite{tighe2013towards} there was an interactive
-task and in the code of CloudSim \cite{calheiros2011cloudsim} there was an
-host with dynamic workload. There are some tools to generate artificial
-workload like \cite{bodik2010characterizing} and they generally follow the
-following steps. They have a thread that acts like clients/users and it makes
-request over time and simulate thinking times of the users.
+hand in the code of DCsim \cite{tighe2013towards} there was an interactive task
+and in the code of CloudSim \cite{calheiros2011cloudsim} there was an host with
+dynamic workload. There are some tools to generate artificial workload like
+\cite{bodik2010characterizing} and they generally follow the following steps.
+They have a thread that acts like clients/users and it makes request over time
+and simulate thinking times of the users.
 
-Five papers in the survey used simulations. They used discrete event 
-simulators (home-made or OMNeT++), used benchmarks like SPECjEnterprise2010 
-to have close-to-reality hosts, and run real traces.
+Five papers in the survey used simulations. They used discrete event simulators
+(home-made or OMNeT++), used benchmarks like SPECjEnterprise2010 to have
+close-to-reality hosts, and run real traces.
 
 
 \section{Conclusion} \label{conclu}
-During this internship we've studied which actions were taken by elastic clouds 
-mechanisms. Then we searched what was done in simulations used for evaluations 
-and other evaluations to come with a contribution that meets the needs of 
-researchers. To prove that the contribution was good enough we evaluated it on 
+During this internship we've studied which actions were taken by elastic clouds
+mechanisms. Then we searched what was done in simulations used for evaluations
+and other evaluations to come with a contribution that meets the needs of
+researchers. To prove that the contribution was good enough we evaluated it on
 some criteria.
 
-For future works we would need a callback for the user to set a certain 
-response time (a threshold) and allow him to react accordingly if this QoS level
-is not met. For that we would just need to either set an alarm and turn it off
-once the workload has been executed and if it is not then it stops it and
-execute a user's function. That would be an online solution and an offline one
-would be to just see how much time the workload took to be executed and let the
-user react accordingly. Another feature that would be really useful is a
-generating law. For an elastic task the date for the next triggering would be
-based on a statistical function. That would get us even closer to simple and
-simplistic setup for experiments. Finally, the microtasks we have used are
-computing tasks. Users can set the flops amount to 0 and add more specific tasks
-in an output function but this is too hack-y. Right now in SimGrid there is only
-computing and network tasks and you can also simulate disk usage by seeing it as
-a computing resource.
-%TODO put detailed before, in contrib (?)
+For future works we would need a callback for the user to set a certain response
+time (a threshold) and allow him to react accordingly if this QoS level is not
+met. For that we would just need to either set an alarm and turn it off once the
+workload has been executed and if it is not then it stops it and execute a
+user's function. That would be an online solution and an offline one would be to
+just see how much time the workload took to be executed and let the user react
+accordingly. Another feature that would be really useful is a generating law.
+For an elastic task the date for the next triggering would be based on a
+statistical function. That would get us even closer to simple and simplistic
+setup for experiments. Finally, the microtasks we have used are computing tasks.
+Users can set the flops amount to 0 and add more specific tasks in an output
+function but this is too hack-y. Right now in SimGrid there is only computing
+and network tasks and you can also simulate disk usage by seeing it as a
+computing resource. %TODO put detailed before, in contrib (?)
 
-On a more personal note, this internship has allowed me to discover what a 
-simulator was, what a research code looked like along with its development, the 
+On a more personal note, this internship has allowed me to discover what a
+simulator was, what a research code looked like along with its development, the
 life in a research environment, and many more.
 
 
