@@ -43,6 +43,9 @@
 			Dept. of Computer Science, ENS Rennnes
 		</p>
 		<p>
+			Internship done at Irisa in the Myriads team
+		</p>
+		<p>
 			Advisors: Martin Quinson and Anne-Cécile Orgerie
 		</p>
 	</section>
@@ -55,19 +58,19 @@
 	<section>
 		<h3>Cloud Structure</h3>
 		<figure>
-			<figcaption>
-				<a href="http://cloud-simulation-frameworks.wikispaces.asu.edu/">cloud-simulation-frameworks.wikispaces.asu.edu</a>
-			</figcaption>
-			<img src="../../plots/cloud_architecture.jpg">
+			<img src="../../plots/cloud1slide.png">
 		</figure>
 	</section>
 	<section>
 		<h3>Dealing with Fluctuating Workload</h3>
+		<img src="../../plots/traffic1.png" />
+		<img src="../../plots/traffic2.png" />
 		<p>Dynamic management: horizontal scaling, vertical scaling, etc.</p>
 		<p>Typical cloud studies: when to trigger these actions, how to perform them, etc.</p>
 	</section>
 	<section>
 		<h3>Typical Experimental Methodologies</h3>
+		<img src="../../plots/simcar.png"/>
 		<p>Traditional experiments steps: what are they evaluating, setup, scenario, the results and their analysis.</p>
 		<p>Simulation has many advantages but real experiments are still more used.</p>
 	</section>
@@ -76,23 +79,24 @@
 <section>
 	<section>
 		<h2>Contribution</h2>
-		<small>Work done in the form of a plugin for SimGrid.</small>
-		<small>Key element: elastic tasks.</small>
+		<p>
+			Defining the needs to represent all possible kinds of workloads.
+		</p>
 	</section>
 	<section>
 		<h3>Scientific Needs</h3>
 		<ul>
 			<li>Discrete workloads representation.</li>
-			<li>Repeating identical microtasks (aka tasks/gridlet/cloudlet).</li>
+			<li>Elastic Tasks: Repeating identical microtasks (aka tasks, cloudlet).</li>
 			<li>List of hosts to split workload.</li>
-			<li>Hosts usage, online and offline.</li>
+			<li>Hosts overusage detection.</li>
 		</ul>
 	</section>
 	<section>
 		<h3>Technical Needs</h3>
 		<ul>
 			<li>Output function (for tasks workflows).</li>
-			<li>Real traces.</li>
+			<li>Real traces of requests (e.g. apache).</li>
 			<li>Detailed platform description (core feature of SimGrid).</li>
 		</ul>
 	</section>
@@ -101,36 +105,67 @@
 <section>
 	<section>
 		<h2>Evaluation</h2>
-	</section>
-	<section>
-		<h3>Raw Performances</h3>
-		<div style="width:100%; height:375px; margin: auto; text-align:center;">
-			<div style="position:absolute; left:0; right:0;" class="fragment" data-fragment-index="1">
-				<img src="../../plots/raw_perf_oneet_time.png" style="width:450px;">
-				<img src="../../plots/raw_perf_oneet_mem.png" style="width:450px;">
-			</div>
-			<div style="position:absolute; left:0; right:0;" class="fragment" data-fragment-index="2">
-				<img src="../../plots/raw_perf_time.png" style="width:450px;">
-				<img src="../../plots/raw_perf_mem.png" style="width:450px;">
-			</div>
-		</div>
 		<p>
-			<small class="fragment" data-fragment-index="1">Less is best</small>
+			Implementation as a SimGrid Plugin.
+		</p>
+		<p>
+			~400 lines of C++. Hosts overusage detection not implemented yet.
 		</p>
 	</section>
 	<section>
-		<h3>Real Traces</h3>
-		<p>Tested with the WorldCup 98 data access logs. One day with ~6m requests is simulated in ~4min.</p>
+		<h3>Raw Performances</h3>
+		<div style="width:100%; height:425px; margin: auto; text-align:center;">
+			<div style="position:absolute; left:0; right:0;" class="fragment" data-fragment-index="1">
+				<img src="../../plots/raw_perf_oneet_time.png" style="width:550px;">
+			</div>
+			<div style="position:absolute; left:0; right:0;" class="fragment" data-fragment-index="2">
+				<img src="../../plots/raw_perf_oneet_mem.png" style="width:550px;">
+			</div>
+			<div style="position:absolute; left:0; right:0;" class="fragment" data-fragment-index="3">
+				<img src="../../plots/raw_perf_time.png" style="width:550px;">
+			</div>
+			<div style="position:absolute; left:0; right:0;" class="fragment" data-fragment-index="4">
+				<img src="../../plots/raw_perf_mem.png" style="width:550px;">
+			</div>
+		</div>
+		<!-- <p>
+			<small class="fragment" data-fragment-index="1">Less is best</small>
+		</p> -->
 	</section>
 	<section>
-		<h3>Functionalities</h3>
-		<p>Most functionalities have been implemented.</p>
+		<h3>Real Traces</h3>
+		<img src="../../plots/wc98.png" style="height:350px" />
+		<p>Tested with the WorldCup 98 data access logs.</p>
+		<p>One day with ~6 million requests (file size: 43MB) is simulated in ~4 minutes.</p>
+		<p>The parsing of the trace takes a long time.</p>
 	</section>
 </section>
 
 <section>
 	<section data-state="no-toc-progress">
 		<h2 class="no-toc-progress">Specifying the Experimental Scenarios for Simulated Cloud Studies</h2>
+		<ul>
+			<li>
+				Proposed a descrition of workloads to approach and ease the process of cloud simulations.
+			</li>
+			<li>
+				Implemented the proposition and showed it was usable.
+			</li>
+		</ul>
+		<p>
+			Further work:
+		</p>
+		<ul>
+			<li>
+				Finish implementation of all functionalities.
+			</li>
+			<li>
+				Reproduce papers' experiements.
+			</li>
+			<li>
+				Simulate more complex applications like tasks workflow.
+			</li>
+		</ul>
 	</section>
 </section>
 			</div>
