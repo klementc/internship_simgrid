@@ -70,7 +70,8 @@
 	</section>
 	<section>
 		<h3>Typical Experimental Methodologies</h3>
-		<img src="../../plots/simcar.png"/>
+		<img src="../../plots/simcar2.png" style="display: inline-block; margin-left: auto; margin-right: auto; height: 250px;"/>
+		<img src="../../plots/simcar.png" style="display: inline-block; margin-left: auto; margin-right: auto; height: 250px;"/>
 		<p>Traditional experiments steps: what are they evaluating, setup, scenario, the results and their analysis.</p>
 		<p>Simulation has many advantages but real experiments are still more used.</p>
 	</section>
@@ -87,7 +88,7 @@
 		<h3>Scientific Needs</h3>
 		<ul>
 			<li>Discrete workloads representation.</li>
-			<li>Elastic Tasks: Repeating identical microtasks (aka tasks, cloudlet).</li>
+			<li>Elastic Tasks: Repeating identical microtasks (aka tasks, cloudlet) with fixed size.</li>
 			<li>List of hosts to split workload.</li>
 			<li>Hosts overusage detection.</li>
 		</ul>
@@ -109,7 +110,7 @@
 			Implementation as a SimGrid Plugin.
 		</p>
 		<p>
-			~400 lines of C++. Hosts overusage detection not implemented yet.
+			~400 lines of C++. Hosts overusage detection not fully implemented yet.
 		</p>
 	</section>
 	<section>
@@ -121,10 +122,18 @@
 			<div style="position:absolute; left:0; right:0;" class="fragment" data-fragment-index="2">
 				<img src="../../plots/raw_perf_oneet_mem.png" style="width:550px;">
 			</div>
-			<div style="position:absolute; left:0; right:0;" class="fragment" data-fragment-index="3">
+		</div>
+		<!-- <p>
+			<small class="fragment" data-fragment-index="1">Less is best</small>
+		</p> -->
+	</section>
+	<section>
+		<h3>Raw Performances</h3>
+		<div style="width:100%; height:425px; margin: auto; text-align:center;">
+			<div style="position:absolute; left:0; right:0;" class="fragment" data-fragment-index="1">
 				<img src="../../plots/raw_perf_time.png" style="width:550px;">
 			</div>
-			<div style="position:absolute; left:0; right:0;" class="fragment" data-fragment-index="4">
+			<div style="position:absolute; left:0; right:0;" class="fragment" data-fragment-index="2">
 				<img src="../../plots/raw_perf_mem.png" style="width:550px;">
 			</div>
 		</div>
@@ -136,8 +145,8 @@
 		<h3>Real Traces</h3>
 		<img src="../../plots/wc98.png" style="height:350px" />
 		<p>Tested with the WorldCup 98 data access logs.</p>
-		<p>One day with ~6 million requests (file size: 43MB) is simulated in ~4 minutes.</p>
-		<p>The parsing of the trace takes a long time.</p>
+		<p>One day with ~6 million requests is simulated in ~4 minutes.</p>
+		<p>The parsing of the trace may be what takes a long time (file size: 43MB).</p>
 	</section>
 </section>
 
@@ -146,7 +155,7 @@
 		<h2 class="no-toc-progress">Specifying the Experimental Scenarios for Simulated Cloud Studies</h2>
 		<ul>
 			<li>
-				Proposed a descrition of workloads to approach and ease the process of cloud simulations.
+				Proposed a description of workloads to approach and ease the process of cloud simulations.
 			</li>
 			<li>
 				Implemented the proposition and showed it was usable.
