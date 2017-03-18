@@ -1,0 +1,6 @@
+[submodule "internship_report/Reveal.js-TOC-Progress"]
+	path = internship_report/Reveal.js-TOC-Progress
+	url = https://github.com/e-gor/Reveal.js-TOC-Progress
+[submodule "internship_report/reveal.js"]
+	path = internship_report/reveal.js
+	url = https://github.com/hakimel/reveal.js/
