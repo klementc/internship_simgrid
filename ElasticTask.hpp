@@ -16,10 +16,11 @@
 #include "simgrid/msg.h"
 
 #include <simgrid/simix.h>
-#include <simgrid/datatypes.h>
-#include <simgrid/s4u/forward.hpp>
+//#include <simgrid/datatypes.hpp>
+//#include <simgrid/forward.h>
 
-#include <simgrid/s4u/actor.hpp>
+#include <simgrid/s4u/Actor.hpp>
+//#include <simgrid/s4u/Semaphore.hpp>
 
 class EvntQ {
   public:
@@ -88,11 +89,11 @@ namespace simgrid {
 namespace s4u {
 
 /** @brief */
-XBT_PUBLIC_CLASS ElasticTaskManager {
+class ElasticTaskManager {
   private:
     std::vector<TaskDescription> tasks;
     std::priority_queue<EvntQ*, std::vector<EvntQ*>, Comparator> nextEvtQueue;
-    msg_sem_t sleep_sem;
+  simgrid::s4u::SemaphorePtr sleep_sem;//msg_sem_t sleep_sem;
     bool keepGoing;
   public:
     ElasticTaskManager();
@@ -118,7 +119,7 @@ XBT_PUBLIC_CLASS ElasticTaskManager {
     void run();
 };
 
-XBT_PUBLIC_CLASS ElasticTask {
+class ElasticTask {
   private:
     size_t id;
     ElasticTaskManager *etm;

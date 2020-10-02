@@ -1,7 +1,8 @@
 #include "ElasticTask.hpp"
-#include "simgrid/s4u/engine.hpp"
-#include "simgrid/s4u/comm.hpp"
-#include "simgrid/s4u/forward.hpp"
+#include "simgrid/s4u/Engine.hpp"
+#include "simgrid/s4u/Comm.hpp"
+#include "simgrid/s4u/Semaphore.hpp"
+//#include "simgrid/s4u/forward.hpp"
 #include "simgrid/kernel/future.hpp"
 #include <vector>
 #include <queue>
@@ -16,19 +17,19 @@ using namespace s4u;
 // ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
 
 ElasticTaskManager::ElasticTaskManager() : keepGoing(true) {
-  sleep_sem = MSG_sem_init(0);
+  sleep_sem = s4u::Semaphore::create(0); //MSG_sem_init(0);
 }
 
 //ElasticTaskManager::~ElasticTaskManager() {}
 
 size_t ElasticTaskManager::addElasticTask(Host *host, double flopsTask, double interSpawnDelay) {
-  tasks.push_back(TaskDescription(flopsTask, interSpawnDelay, host, Engine::instance()->getClock()));
+  tasks.push_back(TaskDescription(flopsTask, interSpawnDelay, host, Engine::get_instance()->get_clock()));
   tasks.at(tasks.size() - 1).id = tasks.size() - 1;
   if (interSpawnDelay > 0.0) {
     TaskDescription *newTask = new TaskDescription(tasks.at(tasks.size() - 1));
     nextEvtQueue.push(newTask);
     //std::cout << tasks.size() << " " << nextEvtQueue.size() << std::endl;
-    MSG_sem_release(sleep_sem);
+    sleep_sem->release(); //MSG_sem_release(sleep_sem);
   }
   return tasks.size() - 1;
 }
@@ -40,22 +41,22 @@ void ElasticTaskManager::addHost(size_t id, Host *host) {
 void ElasticTaskManager::changeRatio(size_t id, double visitsPerSec) {
   removeTask(id);
   tasks.at(id).interSpawnDelay = visitsPerSec;
-  tasks.at(id).date = Engine::instance()->getClock();
+  tasks.at(id).date = Engine::get_instance()->get_clock();
   if(visitsPerSec > 0.0) {
     TaskDescription *newTask = new TaskDescription(tasks.at(id));
     nextEvtQueue.push(newTask);
-    MSG_sem_release(sleep_sem);
+    sleep_sem->release();//MSG_sem_release(sleep_sem);
   }
 }
 
 void ElasticTaskManager::changeTask(size_t id, double flops) {
   removeTask(id);  // TODO, should it remove only regular task (not triggerOnce)
   tasks.at(id).flops = flops;
-  tasks.at(id).date = Engine::instance()->getClock();
+  tasks.at(id).date = Engine::get_instance()->get_clock();
   if(tasks.at(id).interSpawnDelay > 0.0) {
     TaskDescription *newTask = new TaskDescription(tasks.at(id));
     nextEvtQueue.push(newTask);
-    MSG_sem_release(sleep_sem);
+    sleep_sem->release(); //MSG_sem_release(sleep_sem);
   }
 }
 
@@ -83,7 +84,7 @@ void ElasticTaskManager::addRatioChange(size_t id, double date, double visitsPer
   RatioChange *rC = new RatioChange(id, date, visitsPerSec);
   nextEvtQueue.push(rC);
   if (date < nextEvtQueue.top()->date) {
-    MSG_sem_release(sleep_sem);
+    sleep_sem->release(); //MSG_sem_release(sleep_sem);
   }
 }
 
@@ -124,7 +125,7 @@ void ElasticTaskManager::triggerOneTimeTask(size_t id) {
   newTask->repeat = false;
   newTask->date = 0.0;
   nextEvtQueue.push(newTask);
-  MSG_sem_release(sleep_sem);
+  sleep_sem->release(); //MSG_sem_release(sleep_sem);
 }
 
 void ElasticTaskManager::triggerOneTimeTask(size_t id, double ratioLoad) {  // TODO, network load to add
@@ -133,7 +134,7 @@ void ElasticTaskManager::triggerOneTimeTask(size_t id, double ratioLoad) {  // T
   newTask->flops = newTask->flops * ratioLoad;
   newTask->date = 0.0;
   nextEvtQueue.push(newTask);
-  MSG_sem_release(sleep_sem);
+  sleep_sem->release(); //MSG_sem_release(sleep_sem);
 }
 
 void ElasticTaskManager::setOutputFunction(size_t id, std::function<void()> code) {
@@ -156,7 +157,7 @@ void ElasticTaskManager::setTimestampsFile(size_t id, std::string filename) {
       tasks.at(id).ts_file->close();
     }
   }
-  MSG_sem_release(sleep_sem);
+  sleep_sem->release(); //MSG_sem_release(sleep_sem);
 }
 
 void ElasticTaskManager::kill() {
@@ -167,7 +168,7 @@ void ElasticTaskManager::run() {
   unsigned long long task_count = 0;
   //smx_mutex_t queue_mutex = simcall_mutex_init();
   while(1) {
-    while(!nextEvtQueue.empty() && nextEvtQueue.top()->date <= Engine::instance()->getClock()) {
+    while(!nextEvtQueue.empty() && nextEvtQueue.top()->date <= Engine::get_instance()->get_clock()) {
       //std::cout << "in run " << tasks.size() << " " << nextEvtQueue.size() << " " << nextEvtQueue.top()->date << std::endl;
       //simcall_mutex_lock(queue_mutex);
       EvntQ *currentEvent = nextEvtQueue.top();
@@ -182,11 +183,11 @@ void ElasticTaskManager::run() {
           t->nextHost = 0;
         }
         //std::string host_name = t->hosts.at(t->nextHost)->name();
-        Actor::createActor(nullptr, t->hosts.at(t->nextHost), [t, task_count] {
-          //std::cout << "TaskStart " << Engine::instance()->getClock() << " " << t->flops << " " << task_count
+        Actor::create(nullptr, t->hosts.at(t->nextHost), [t, task_count] {
+          //std::cout << "TaskStart " << Engine::get_instance()->get_clock() << " " << t->flops << " " << task_count
           //          << " " << host_name << std::endl;
           this_actor::execute(t->flops);
-          //std::cout << "TaskEnd " << Engine::instance()->getClock() << " " << task_count << " " << host_name
+          //std::cout << "TaskEnd " << Engine::get_instance()->get_clock() << " " << task_count << " " << host_name
           //          << std::endl;
           t->outputFunction();
         });
@@ -198,7 +199,7 @@ void ElasticTaskManager::run() {
           t->nextHost++;  // TODO, use proper index stuff
         }
         if (t->repeat) {
-          t->date = Engine::instance()->getClock() + (1 / t->interSpawnDelay);
+          t->date = Engine::get_instance()->get_clock() + (1 / t->interSpawnDelay);
           nextEvtQueue.push(t);
         } else if (t->ts_file->is_open()) {
           if (t->ts_file->eof()) {
@@ -226,9 +227,9 @@ void ElasticTaskManager::run() {
       break;
     }
     if(!nextEvtQueue.empty()) {
-      MSG_sem_acquire_timeout(sleep_sem, nextEvtQueue.top()->date - Engine::instance()->getClock());
+      sleep_sem->acquire_timeout(nextEvtQueue.top()->date - Engine::get_instance()->get_clock()); //MSG_sem_acquire_timeout(sleep_sem, nextEvtQueue.top()->date - Engine::get_instance()->get_clock());
     } else {
-      MSG_sem_acquire_timeout(sleep_sem, 999.0);
+      sleep_sem->acquire_timeout(999.0); //      MSG_sem_acquire_timeout(sleep_sem, 999.0);
     }
   }
 }
