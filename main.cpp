@@ -22,7 +22,11 @@ void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm, int n) {
   for(int i = 3; i < 200; i++) {
     e3->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(i)));
   }
+  //  e3->triggerOneTime();
   //e3->setTimestampsFile("d20_timestamp_wc.txt");
+  e3->setTimestampsFile("ts.txt");
+  e3->setOutputFunction([e3](){XBT_INFO("done");});
+  e3->triggerOneTime(1.5);
   simgrid::s4u::this_actor::sleep_for(100);
   etm->kill();
   XBT_INFO("Done.");

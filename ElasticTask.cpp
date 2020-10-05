@@ -14,6 +14,8 @@
 using namespace simgrid;
 using namespace s4u;
 
+
+XBT_LOG_NEW_DEFAULT_CATEGORY(s4u, "elastic tasks");
 // ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
 
 ElasticTaskManager::ElasticTaskManager() : keepGoing(true) {
@@ -182,8 +184,9 @@ void ElasticTaskManager::run() {
         if (t->hosts.size() <= t->nextHost) {
           t->nextHost = 0;
         }
+	XBT_INFO("create actor");
         //std::string host_name = t->hosts.at(t->nextHost)->name();
-        Actor::create(nullptr, t->hosts.at(t->nextHost), [t, task_count] {
+        Actor::create(std::to_string(task_count), t->hosts.at(t->nextHost), [t, task_count] {
           //std::cout << "TaskStart " << Engine::get_instance()->get_clock() << " " << t->flops << " " << task_count
           //          << " " << host_name << std::endl;
           this_actor::execute(t->flops);
@@ -191,7 +194,8 @@ void ElasticTaskManager::run() {
           //          << std::endl;
           t->outputFunction();
         });
-        ++task_count;
+
+	++task_count;
         // The shifting of hosts will occur before but should be negligible
         if(t->nextHost == t->hosts.size() - 1) {
           t->nextHost = 0;
