@@ -1,12 +1,9 @@
 <?xml version='1.0'?>
-<!DOCTYPE platform SYSTEM "http://simgrid.gforge.inria.fr/simgrid/simgrid.dtd">
-<platform version="4">
-  <config id="General">
-<!--    <prop id="network/coordinates" value="yes"/>-->
-  </config>
+<!DOCTYPE platform SYSTEM "https://simgrid.org/simgrid.dtd">
+<platform version="4.1">
 
-  <AS id="AS0" routing="Full">
+  <zone id="AS0" routing="Full">
     <cluster id="server1_cb1" prefix="cb1-" suffix="" radical="1-200" speed="5000Gf" core="8" bw="125MBps"
              lat="100us"/>
-  </AS>
+  </zone>
 </platform>

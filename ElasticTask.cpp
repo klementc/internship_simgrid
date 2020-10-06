@@ -1,28 +1,27 @@
-#include "ElasticTask.hpp"
-#include "simgrid/s4u/Engine.hpp"
-#include "simgrid/s4u/Comm.hpp"
-#include "simgrid/s4u/Semaphore.hpp"
-//#include "simgrid/s4u/forward.hpp"
-#include "simgrid/kernel/future.hpp"
 #include <vector>
 #include <queue>
 #include <string>
 #include <sstream>
 #include <iostream>
+
+#include "simgrid/s4u/Engine.hpp"
+#include "simgrid/s4u/Comm.hpp"
+#include "simgrid/s4u/Semaphore.hpp"
+#include "simgrid/kernel/future.hpp"
 #include "simgrid/msg.h"
+
+#include "ElasticTask.hpp"
 
 using namespace simgrid;
 using namespace s4u;
 
 
-XBT_LOG_NEW_DEFAULT_CATEGORY(s4u, "elastic tasks");
+XBT_LOG_NEW_DEFAULT_CATEGORY(elastic, "elastic tasks");
+
 // ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
-
 ElasticTaskManager::ElasticTaskManager() : keepGoing(true) {
-  sleep_sem = s4u::Semaphore::create(0); //MSG_sem_init(0);
+  sleep_sem = s4u::Semaphore::create(0);
 }
-
-//ElasticTaskManager::~ElasticTaskManager() {}
 
 size_t ElasticTaskManager::addElasticTask(Host *host, double flopsTask, double interSpawnDelay) {
   tasks.push_back(TaskDescription(flopsTask, interSpawnDelay, host, Engine::get_instance()->get_clock()));
@@ -30,8 +29,8 @@ size_t ElasticTaskManager::addElasticTask(Host *host, double flopsTask, double i
   if (interSpawnDelay > 0.0) {
     TaskDescription *newTask = new TaskDescription(tasks.at(tasks.size() - 1));
     nextEvtQueue.push(newTask);
-    //std::cout << tasks.size() << " " << nextEvtQueue.size() << std::endl;
-    sleep_sem->release(); //MSG_sem_release(sleep_sem);
+    XBT_DEBUG("tasks: %d nextEvtQueue: %d", tasks.size(),nextEvtQueue.size());
+    sleep_sem->release();
   }
   return tasks.size() - 1;
 }
@@ -47,7 +46,7 @@ void ElasticTaskManager::changeRatio(size_t id, double visitsPerSec) {
   if(visitsPerSec > 0.0) {
     TaskDescription *newTask = new TaskDescription(tasks.at(id));
     nextEvtQueue.push(newTask);
-    sleep_sem->release();//MSG_sem_release(sleep_sem);
+    sleep_sem->release();
   }
 }
 
@@ -86,7 +85,7 @@ void ElasticTaskManager::addRatioChange(size_t id, double date, double visitsPer
   RatioChange *rC = new RatioChange(id, date, visitsPerSec);
   nextEvtQueue.push(rC);
   if (date < nextEvtQueue.top()->date) {
-    sleep_sem->release(); //MSG_sem_release(sleep_sem);
+    sleep_sem->release();
   }
 }
 
@@ -127,7 +126,7 @@ void ElasticTaskManager::triggerOneTimeTask(size_t id) {
   newTask->repeat = false;
   newTask->date = 0.0;
   nextEvtQueue.push(newTask);
-  sleep_sem->release(); //MSG_sem_release(sleep_sem);
+  sleep_sem->release();
 }
 
 void ElasticTaskManager::triggerOneTimeTask(size_t id, double ratioLoad) {  // TODO, network load to add
@@ -136,14 +135,20 @@ void ElasticTaskManager::triggerOneTimeTask(size_t id, double ratioLoad) {  // T
   newTask->flops = newTask->flops * ratioLoad;
   newTask->date = 0.0;
   nextEvtQueue.push(newTask);
-  sleep_sem->release(); //MSG_sem_release(sleep_sem);
+  sleep_sem->release();
 }
 
+/**
+ *  Sets the function to be called at the end of each microtask
+ */
 void ElasticTaskManager::setOutputFunction(size_t id, std::function<void()> code) {
   tasks.at(id).outputFunction = code;
   simpleChangeTask(id);
 }
 
+/**
+ * Import timestamps (one timestamp per line) from a file
+ */
 void ElasticTaskManager::setTimestampsFile(size_t id, std::string filename) {
   tasks.at(id).repeat = false;
   tasks.at(id).ts_file->open(filename);
@@ -159,7 +164,7 @@ void ElasticTaskManager::setTimestampsFile(size_t id, std::string filename) {
       tasks.at(id).ts_file->close();
     }
   }
-  sleep_sem->release(); //MSG_sem_release(sleep_sem);
+  sleep_sem->release();
 }
 
 void ElasticTaskManager::kill() {
@@ -168,34 +173,37 @@ void ElasticTaskManager::kill() {
 
 void ElasticTaskManager::run() {
   unsigned long long task_count = 0;
-  //smx_mutex_t queue_mutex = simcall_mutex_init();
   while(1) {
     while(!nextEvtQueue.empty() && nextEvtQueue.top()->date <= Engine::get_instance()->get_clock()) {
-      //std::cout << "in run " << tasks.size() << " " << nextEvtQueue.size() << " " << nextEvtQueue.top()->date << std::endl;
-      //simcall_mutex_lock(queue_mutex);
+      XBT_DEBUG("In run: %d, nextEvtQueue: %d, netxEvt date: %lf", 
+        tasks.size(), nextEvtQueue.size(), nextEvtQueue.top()->date);
       EvntQ *currentEvent = nextEvtQueue.top();
       nextEvtQueue.pop();  // TODO, is it deleted?
       //simcall_mutex_unlock(queue_mutex);
       //if(!nextEvtQueue.empty())
-      //std::cout << "in run2 " << tasks.size() << " " << nextEvtQueue.size() << " " << nextEvtQueue.top()->date << std::endl;
+      XBT_DEBUG("In run2: %d, nextEvtQueue: %d, netxEvt date: %lf", 
+        tasks.size(), nextEvtQueue.size(), nextEvtQueue.top()->date);
       if (RatioChange* t = dynamic_cast<RatioChange*>(currentEvent)) {
         changeRatio(t->id, t->visitsPerSec);
       } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent)) {
         if (t->hosts.size() <= t->nextHost) {
           t->nextHost = 0;
         }
-	XBT_INFO("create actor");
-        //std::string host_name = t->hosts.at(t->nextHost)->name();
-        Actor::create(std::to_string(task_count), t->hosts.at(t->nextHost), [t, task_count] {
-          //std::cout << "TaskStart " << Engine::get_instance()->get_clock() << " " << t->flops << " " << task_count
-          //          << " " << host_name << std::endl;
+	      XBT_INFO("create actor");
+        Actor::create("ET"+std::to_string(task_count), t->hosts.at(t->nextHost), [t, task_count] {
+          XBT_DEBUG("Taskstart: %f, flops: %f, taskcount: %d", 
+
+          Engine::get_instance()->get_clock(), t->flops, task_count);
           this_actor::execute(t->flops);
-          //std::cout << "TaskEnd " << Engine::get_instance()->get_clock() << " " << task_count << " " << host_name
-          //          << std::endl;
+          
+          XBT_DEBUG("Taskend: %f, flops: %f, taskcount: %d", 
+            Engine::get_instance()->get_clock(), t->flops, task_count);
+
+          // task finished, call output function
           t->outputFunction();
         });
 
-	++task_count;
+	      ++task_count;
         // The shifting of hosts will occur before but should be negligible
         if(t->nextHost == t->hosts.size() - 1) {
           t->nextHost = 0;
@@ -221,19 +229,16 @@ void ElasticTaskManager::run() {
         }
       } else {
         std::cout << "wut";
-        exit(0);  // Should'nt happen
+        exit(0);  // Shouldn't happen
       }
-      //if(!nextEvtQueue.empty())
-      //std::cout << "in run3 " << tasks.size() << " " << nextEvtQueue.size() << " " << nextEvtQueue.top()->date << std::endl;
-      //delete currentEvent;
     }
     if(!keepGoing) {
       break;
     }
     if(!nextEvtQueue.empty()) {
-      sleep_sem->acquire_timeout(nextEvtQueue.top()->date - Engine::get_instance()->get_clock()); //MSG_sem_acquire_timeout(sleep_sem, nextEvtQueue.top()->date - Engine::get_instance()->get_clock());
+      sleep_sem->acquire_timeout(nextEvtQueue.top()->date - Engine::get_instance()->get_clock()); 
     } else {
-      sleep_sem->acquire_timeout(999.0); //      MSG_sem_acquire_timeout(sleep_sem, 999.0);
+      sleep_sem->acquire_timeout(999.0);
     }
   }
 }

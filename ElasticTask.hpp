@@ -12,16 +12,9 @@
 #include <xbt/string.hpp>
 #include <xbt/signal.hpp>
 #include <xbt/Extendable.hpp>
-
 #include "simgrid/msg.h"
-
 #include <simgrid/simix.h>
-//#include <simgrid/datatypes.hpp>
-//#include <simgrid/forward.h>
-
 #include <simgrid/s4u/Actor.hpp>
-//#include <simgrid/s4u/Semaphore.hpp>
-
 
 class EvntQ {
   public:
@@ -31,21 +24,20 @@ class EvntQ {
     virtual ~EvntQ() {}
 };
 
-typedef struct streamET {
-  size_t destET;
-  double ratioLoad;
-
-  //streamET() = default;
-  streamET(size_t destET_, double ratioLoad_)
-    : destET(destET_), ratioLoad(ratioLoad_) {}
-} streamET;
+/**
+ * Compare EvntQ's event timestamps
+ */
+struct Comparator {
+  bool operator()(const EvntQ* lhs, const EvntQ* rhs) {
+    return lhs->date > rhs->date;
+  }
+};
 
 class RatioChange : public EvntQ {
   public:
     size_t id;
     double visitsPerSec;
 
-    //RatioChange() = default;
     RatioChange(size_t id_, double date_, double visitsPerSec_)
       : EvntQ(date_), id(id_), visitsPerSec(visitsPerSec_) {}
     RatioChange(size_t id_, double visitsPerSec_)  // for the event queue as the date is already known
@@ -80,12 +72,6 @@ class TaskDescription : public EvntQ {
     //}
 };
 
-struct Comparator {
-  bool operator()(const EvntQ* lhs, const EvntQ* rhs) {
-    return lhs->date > rhs->date;
-  }
-};
-
 namespace simgrid {
 namespace s4u {
 
@@ -94,11 +80,10 @@ class ElasticTaskManager {
   private:
     std::vector<TaskDescription> tasks;
     std::priority_queue<EvntQ*, std::vector<EvntQ*>, Comparator> nextEvtQueue;
-  simgrid::s4u::SemaphorePtr sleep_sem;//msg_sem_t sleep_sem;
+    simgrid::s4u::SemaphorePtr sleep_sem;
     bool keepGoing;
   public:
     ElasticTaskManager();
-    //~ElasticTaskManager();
 
     size_t addElasticTask(s4u::Host *host, double flopsTask, double interSpawnDelay);
 
@@ -138,6 +123,7 @@ class ElasticTask {
     void setOutputFunction(std::function<void()> code);
     void addHost(Host *host);
     void setTimestampsFile(std::string filename);
+    inline size_t getId(){ return id; }
 };
 
 }}
