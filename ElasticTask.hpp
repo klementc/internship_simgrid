@@ -58,7 +58,6 @@ class TaskDescription : public EvntQ {
     bool hasTimestamps = false;
     std::ifstream *ts_file;
 
-    //TaskDescription() = default;
     TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_, double date_)
         : EvntQ(date_), flops(flops_), interSpawnDelay(interSpawnDelay_) {
       hosts.push_back(host_);
@@ -67,9 +66,6 @@ class TaskDescription : public EvntQ {
     }
     TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_)
       : TaskDescription(flops_, interSpawnDelay_, host_, 0.0) {}
-    //~TaskDescription() {
-    //  delete ts_file;
-    //}
 };
 
 namespace simgrid {

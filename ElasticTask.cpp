@@ -3,12 +3,13 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-
+#include <simgrid/s4u/Host.hpp>
 #include "simgrid/s4u/Engine.hpp"
 #include "simgrid/s4u/Comm.hpp"
 #include "simgrid/s4u/Semaphore.hpp"
 #include "simgrid/kernel/future.hpp"
 #include "simgrid/msg.h"
+#include "simgrid/plugins/load.h"
 
 #include "ElasticTask.hpp"
 
@@ -20,6 +21,7 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(elastic, "elastic tasks");
 
 // ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
 ElasticTaskManager::ElasticTaskManager() : keepGoing(true) {
+  sg_host_load_plugin_init();
   sleep_sem = s4u::Semaphore::create(0);
 }
 
@@ -27,8 +29,7 @@ size_t ElasticTaskManager::addElasticTask(Host *host, double flopsTask, double i
   tasks.push_back(TaskDescription(flopsTask, interSpawnDelay, host, Engine::get_instance()->get_clock()));
   tasks.at(tasks.size() - 1).id = tasks.size() - 1;
   if (interSpawnDelay > 0.0) {
-    TaskDescription *newTask = new TaskDescription(tasks.at(tasks.size() - 1));
-    nextEvtQueue.push(newTask);
+    nextEvtQueue.push(&(tasks.at(tasks.size() -1 )));
     XBT_DEBUG("tasks: %d nextEvtQueue: %d", tasks.size(),nextEvtQueue.size());
     sleep_sem->release();
   }
@@ -81,6 +82,9 @@ void ElasticTaskManager::simpleChangeTask(size_t id) {  // A change has been don
   nextEvtQueue = newNextEvtQueue;
 }
 
+/**
+ * Modify the arrival rate of one of the tasks from date
+ */
 void ElasticTaskManager::addRatioChange(size_t id, double date, double visitsPerSec) {
   RatioChange *rC = new RatioChange(id, date, visitsPerSec);
   nextEvtQueue.push(rC);
@@ -167,10 +171,19 @@ void ElasticTaskManager::setTimestampsFile(size_t id, std::string filename) {
   sleep_sem->release();
 }
 
+/**
+ * Will stop run()'s infinite loop
+ */
 void ElasticTaskManager::kill() {
   keepGoing = false;
 }
 
+
+/**
+ * Supervisor of the elastictasks
+ * Fetches events at their execution time and creates a new microtask 
+ * on one of the provided hosts
+ */
 void ElasticTaskManager::run() {
   unsigned long long task_count = 0;
   while(1) {
@@ -178,38 +191,33 @@ void ElasticTaskManager::run() {
       XBT_DEBUG("In run: %d, nextEvtQueue: %d, netxEvt date: %lf", 
         tasks.size(), nextEvtQueue.size(), nextEvtQueue.top()->date);
       EvntQ *currentEvent = nextEvtQueue.top();
-      nextEvtQueue.pop();  // TODO, is it deleted?
-      //simcall_mutex_unlock(queue_mutex);
-      //if(!nextEvtQueue.empty())
-      XBT_DEBUG("In run2: %d, nextEvtQueue: %d, netxEvt date: %lf", 
-        tasks.size(), nextEvtQueue.size(), nextEvtQueue.top()->date);
+      nextEvtQueue.pop(); 
+      
       if (RatioChange* t = dynamic_cast<RatioChange*>(currentEvent)) {
         changeRatio(t->id, t->visitsPerSec);
       } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent)) {
-        if (t->hosts.size() <= t->nextHost) {
+        if (t->hosts.size() <= t->nextHost)
           t->nextHost = 0;
-        }
+        
 	      XBT_INFO("create actor");
         Actor::create("ET"+std::to_string(task_count), t->hosts.at(t->nextHost), [t, task_count] {
-          XBT_DEBUG("Taskstart: %f, flops: %f, taskcount: %d", 
-
-          Engine::get_instance()->get_clock(), t->flops, task_count);
-          this_actor::execute(t->flops);
+          XBT_DEBUG("Taskstart: %f, flops: %f, taskcount: %d, avgload: %f\%, computer flops: %f", 
+          Engine::get_instance()->get_clock(), t->flops, task_count, sg_host_get_avg_load(s4u::Host::current())*100 ,sg_host_get_computed_flops(s4u::Host::current()));
           
-          XBT_DEBUG("Taskend: %f, flops: %f, taskcount: %d", 
-            Engine::get_instance()->get_clock(), t->flops, task_count);
+          this_actor::execute(t->flops);
+          XBT_DEBUG("Taskend: %f, flops: %f, taskcount: %d, avgload: %f\%, computer flops: %f", 
+          Engine::get_instance()->get_clock(), t->flops, task_count, sg_host_get_avg_load(s4u::Host::current())*100 ,sg_host_get_computed_flops(s4u::Host::current()));
 
           // task finished, call output function
           t->outputFunction();
         });
 
 	      ++task_count;
-        // The shifting of hosts will occur before but should be negligible
-        if(t->nextHost == t->hosts.size() - 1) {
-          t->nextHost = 0;
-        } else {
-          t->nextHost++;  // TODO, use proper index stuff
-        }
+
+        t->nextHost++;
+        t->nextHost = t->nextHost % t->hosts.size();
+
+        // add next event to the queue (date defined through interspawndelay or file timestamps)
         if (t->repeat) {
           t->date = Engine::get_instance()->get_clock() + (1 / t->interSpawnDelay);
           nextEvtQueue.push(t);
