@@ -52,20 +52,17 @@ class TaskDescription : public EvntQ {
     double flops;
     double interSpawnDelay;
     size_t nextHost;
-    std::vector<simgrid::s4u::Host*> hosts;  // TODO, use hosts
     bool repeat = true;
     std::function<void()> outputFunction = []() {};
     bool hasTimestamps = false;
     std::ifstream *ts_file;
 
-    TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_, double date_)
+    TaskDescription(double flops_, double interSpawnDelay_, double date_)
         : EvntQ(date_), flops(flops_), interSpawnDelay(interSpawnDelay_) {
-      hosts.push_back(host_);
-      nextHost = 0;
       ts_file = new std::ifstream;
     }
-    TaskDescription(double flops_, double interSpawnDelay_, simgrid::s4u::Host *host_)
-      : TaskDescription(flops_, interSpawnDelay_, host_, 0.0) {}
+    TaskDescription(double flops_, double interSpawnDelay_)
+      : TaskDescription(flops_, interSpawnDelay_, 0.0) {}
 };
 
 namespace simgrid {
@@ -74,17 +71,21 @@ namespace s4u {
 /** @brief */
 class ElasticTaskManager {
   private:
+    std::vector<simgrid::s4u::Host*> availableHostsList_;
+    std::string rcvMailbox_;
     std::vector<TaskDescription> tasks;
     std::priority_queue<EvntQ*, std::vector<EvntQ*>, Comparator> nextEvtQueue;
     simgrid::s4u::SemaphorePtr sleep_sem;
     bool keepGoing;
-  public:
-    ElasticTaskManager();
+    int nextHost_;
 
-    size_t addElasticTask(s4u::Host *host, double flopsTask, double interSpawnDelay);
+  public:
+    ElasticTaskManager(std::string name);
+
+    size_t addElasticTask(double flopsTask, double interSpawnDelay);
 
     void addRatioChange(size_t id, double date, double visitsPerSec);
-    void addHost(size_t id, Host *host);
+    void addHost(Host *host);
     void changeRatio(size_t id, double visitsPerSec);
     void changeTask(size_t id, double flops);
     void simpleChangeTask(size_t id);
@@ -106,9 +107,9 @@ class ElasticTask {
     size_t id;
     ElasticTaskManager *etm;
   public:
-    ElasticTask(Host *host, double flopsTask, double interSpawnDelay, ElasticTaskManager *etm_);
-    ElasticTask(Host *host, double flopsTask, ElasticTaskManager *etm_);
-    ElasticTask(Host *host, double flopsTask, std::vector<RatioChange> fluctuations, ElasticTaskManager *etm_);
+    ElasticTask(double flopsTask, double interSpawnDelay, ElasticTaskManager *etm_);
+    ElasticTask(double flopsTask, ElasticTaskManager *etm_);
+    ElasticTask(double flopsTask, std::vector<RatioChange> fluctuations, ElasticTaskManager *etm_);
     ~ElasticTask();
 
     void setTriggerRatioVariation(std::vector<RatioChange> fluctuations);
@@ -117,7 +118,6 @@ class ElasticTask {
     void triggerOneTime();
     void triggerOneTime(double ratioLoad);
     void setOutputFunction(std::function<void()> code);
-    void addHost(Host *host);
     void setTimestampsFile(std::string filename);
     inline size_t getId(){ return id; }
 };

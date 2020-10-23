@@ -10,6 +10,7 @@
 #include "simgrid/kernel/future.hpp"
 #include "simgrid/msg.h"
 #include "simgrid/plugins/load.h"
+#include <simgrid/s4u/Mailbox.hpp>
 
 #include "ElasticTask.hpp"
 
@@ -20,13 +21,14 @@ using namespace s4u;
 XBT_LOG_NEW_DEFAULT_CATEGORY(elastic, "elastic tasks");
 
 // ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
-ElasticTaskManager::ElasticTaskManager() : keepGoing(true) {
+ElasticTaskManager::ElasticTaskManager(std::string name)
+  : rcvMailbox_(name), nextHost_(0), keepGoing(true){
   sg_host_load_plugin_init();
   sleep_sem = s4u::Semaphore::create(0);
 }
 
-size_t ElasticTaskManager::addElasticTask(Host *host, double flopsTask, double interSpawnDelay) {
-  tasks.push_back(TaskDescription(flopsTask, interSpawnDelay, host, Engine::get_instance()->get_clock()));
+size_t ElasticTaskManager::addElasticTask(double flopsTask, double interSpawnDelay) {
+  tasks.push_back(TaskDescription(flopsTask, interSpawnDelay, Engine::get_instance()->get_clock()));
   tasks.at(tasks.size() - 1).id = tasks.size() - 1;
   if (interSpawnDelay > 0.0) {
     nextEvtQueue.push(&(tasks.at(tasks.size() -1 )));
@@ -36,8 +38,8 @@ size_t ElasticTaskManager::addElasticTask(Host *host, double flopsTask, double i
   return tasks.size() - 1;
 }
 
-void ElasticTaskManager::addHost(size_t id, Host *host) {
-  tasks.at(id).hosts.push_back(host);
+void ElasticTaskManager::addHost(Host *host) {
+  availableHostsList_.push_back(host);
 }
 
 void ElasticTaskManager::changeRatio(size_t id, double visitsPerSec) {
@@ -181,31 +183,50 @@ void ElasticTaskManager::kill() {
 
 /**
  * Supervisor of the elastictasks
- * Fetches events at their execution time and creates a new microtask 
+ * Fetches events at their execution time and creates a new microtask
  * on one of the provided hosts
  */
 void ElasticTaskManager::run() {
+  // mailbox for incoming requests from other services
+  Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(rcvMailbox_);
   unsigned long long task_count = 0;
   while(1) {
+    XBT_INFO("starting loop");
+    /*try to receive any incoming message until next event starts*/
+    if(recvMB->empty() && !nextEvtQueue.empty()){
+      sleep_sem->acquire_timeout(nextEvtQueue.top()->date - Engine::get_instance()->get_clock());
+    } else if(!recvMB->empty()){
+      XBT_INFO("trying to receive incoming requests");
+      while(! recvMB->empty()){
+        // build corresponding task description and add it to the event queue
+        void* taskRequest = recvMB->get();
+        addElasticTask(1e9, 0);
+        XBT_INFO("received");
+      }
+    }else{
+      sleep_sem->acquire_timeout(999.0);
+    }
+    XBT_INFO("start executing");
+    // execute events that need be executed now
     while(!nextEvtQueue.empty() && nextEvtQueue.top()->date <= Engine::get_instance()->get_clock()) {
-      XBT_DEBUG("In run: %d, nextEvtQueue: %d, netxEvt date: %lf", 
+      XBT_DEBUG("In run: %d, nextEvtQueue: %d, netxEvt date: %lf",
         tasks.size(), nextEvtQueue.size(), nextEvtQueue.top()->date);
       EvntQ *currentEvent = nextEvtQueue.top();
-      nextEvtQueue.pop(); 
-      
+      nextEvtQueue.pop();
+
       if (RatioChange* t = dynamic_cast<RatioChange*>(currentEvent)) {
         changeRatio(t->id, t->visitsPerSec);
       } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent)) {
-        if (t->hosts.size() <= t->nextHost)
-          t->nextHost = 0;
-        
+        if (availableHostsList_.size() <= nextHost_)
+          nextHost_ = 0;
+
 	      XBT_INFO("create actor");
-        Actor::create("ET"+std::to_string(task_count), t->hosts.at(t->nextHost), [t, task_count] {
-          XBT_DEBUG("Taskstart: %f, flops: %f, taskcount: %d, avgload: %f\%, computer flops: %f", 
+        Actor::create("ET"+std::to_string(task_count), availableHostsList_.at(nextHost_), [t, task_count] {
+          XBT_DEBUG("Taskstart: %f, flops: %f, taskcount: %d, avgload: %f\%, computer flops: %f",
           Engine::get_instance()->get_clock(), t->flops, task_count, sg_host_get_avg_load(s4u::Host::current())*100 ,sg_host_get_computed_flops(s4u::Host::current()));
-          
+
           this_actor::execute(t->flops);
-          XBT_DEBUG("Taskend: %f, flops: %f, taskcount: %d, avgload: %f\%, computer flops: %f", 
+          XBT_DEBUG("Taskend: %f, flops: %f, taskcount: %d, avgload: %f\%, computer flops: %f",
           Engine::get_instance()->get_clock(), t->flops, task_count, sg_host_get_avg_load(s4u::Host::current())*100 ,sg_host_get_computed_flops(s4u::Host::current()));
 
           // task finished, call output function
@@ -214,8 +235,8 @@ void ElasticTaskManager::run() {
 
 	      ++task_count;
 
-        t->nextHost++;
-        t->nextHost = t->nextHost % t->hosts.size();
+        nextHost_++;
+        nextHost_ = nextHost_ % availableHostsList_.size();
 
         // add next event to the queue (date defined through interspawndelay or file timestamps)
         if (t->repeat) {
@@ -243,30 +264,30 @@ void ElasticTaskManager::run() {
     if(!keepGoing) {
       break;
     }
-    if(!nextEvtQueue.empty()) {
-      sleep_sem->acquire_timeout(nextEvtQueue.top()->date - Engine::get_instance()->get_clock()); 
+    /*if(!nextEvtQueue.empty()) {
+      sleep_sem->acquire_timeout(nextEvtQueue.top()->date - Engine::get_instance()->get_clock());
     } else {
       sleep_sem->acquire_timeout(999.0);
-    }
+    }*/
   }
 }
 
 // ELASTICTASK ---------------------------------------------------------------------------------------------------------
 
-ElasticTask::ElasticTask(Host *host, double flopsTask, double interSpawnDelay, ElasticTaskManager *etm_) {
+ElasticTask::ElasticTask(double flopsTask, double interSpawnDelay, ElasticTaskManager *etm_) {
   etm = etm_;
-  id = etm->addElasticTask(host, flopsTask, interSpawnDelay);
+  id = etm->addElasticTask(flopsTask, interSpawnDelay);
 }
 
-ElasticTask::ElasticTask(Host *host, double flopsTask, ElasticTaskManager *etm_) {
+ElasticTask::ElasticTask(double flopsTask, ElasticTaskManager *etm_) {
   etm = etm_;
-  id = etm->addElasticTask(host, flopsTask, 0.0);
+  id = etm->addElasticTask(flopsTask, 0.0);
 }
 
-ElasticTask::ElasticTask(Host *host, double flopsTask, std::vector<RatioChange> fluctuations,
+ElasticTask::ElasticTask(double flopsTask, std::vector<RatioChange> fluctuations,
                          ElasticTaskManager *etm_) {
   etm = etm_;
-  id = etm->addElasticTask(host, flopsTask, 0.0);
+  id = etm->addElasticTask(flopsTask, 0.0);
   setTriggerRatioVariation(fluctuations);
 }
 
@@ -292,10 +313,6 @@ void ElasticTask::triggerOneTime() {
 
 void ElasticTask::triggerOneTime(double ratioLoad) {
   etm->triggerOneTimeTask(id, ratioLoad);
-}
-
-void ElasticTask::addHost(Host *host) {
-  etm->addHost(id, host);
 }
 
 void ElasticTask::setOutputFunction(std::function<void()> code) {
