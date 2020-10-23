@@ -71,6 +71,7 @@ namespace s4u {
 /** @brief */
 class ElasticTaskManager {
   private:
+    std::function<void()> outputFunction = []() {};
     std::vector<simgrid::s4u::Host*> availableHostsList_;
     std::string rcvMailbox_;
     std::vector<TaskDescription> tasks;
@@ -83,7 +84,7 @@ class ElasticTaskManager {
     ElasticTaskManager(std::string name);
 
     size_t addElasticTask(double flopsTask, double interSpawnDelay);
-
+    void pollnet();
     void addRatioChange(size_t id, double date, double visitsPerSec);
     void addHost(Host *host);
     void changeRatio(size_t id, double visitsPerSec);
@@ -94,8 +95,7 @@ class ElasticTaskManager {
 
     void triggerOneTimeTask(size_t id);
     void triggerOneTimeTask(size_t id, double ratioLoad);
-
-    void setOutputFunction(size_t id, std::function<void()> code);
+    void setOutputFunction(std::function<void()> code);
     void setTimestampsFile(size_t id, std::string filename);
 
     void kill();
@@ -117,7 +117,6 @@ class ElasticTask {
     void modifyTask(double flops);
     void triggerOneTime();
     void triggerOneTime(double ratioLoad);
-    void setOutputFunction(std::function<void()> code);
     void setTimestampsFile(std::string filename);
     inline size_t getId(){ return id; }
 };

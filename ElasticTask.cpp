@@ -11,6 +11,7 @@
 #include "simgrid/msg.h"
 #include "simgrid/plugins/load.h"
 #include <simgrid/s4u/Mailbox.hpp>
+#include <simgrid/Exception.hpp>
 
 #include "ElasticTask.hpp"
 
@@ -23,6 +24,7 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(elastic, "elastic tasks");
 // ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
 ElasticTaskManager::ElasticTaskManager(std::string name)
   : rcvMailbox_(name), nextHost_(0), keepGoing(true){
+  XBT_INFO("%s", rcvMailbox_.c_str());
   sg_host_load_plugin_init();
   sleep_sem = s4u::Semaphore::create(0);
 }
@@ -145,14 +147,6 @@ void ElasticTaskManager::triggerOneTimeTask(size_t id, double ratioLoad) {  // T
 }
 
 /**
- *  Sets the function to be called at the end of each microtask
- */
-void ElasticTaskManager::setOutputFunction(size_t id, std::function<void()> code) {
-  tasks.at(id).outputFunction = code;
-  simpleChangeTask(id);
-}
-
-/**
  * Import timestamps (one timestamp per line) from a file
  */
 void ElasticTaskManager::setTimestampsFile(size_t id, std::string filename) {
@@ -180,6 +174,18 @@ void ElasticTaskManager::kill() {
   keepGoing = false;
 }
 
+void ElasticTaskManager::pollnet(){
+  Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(rcvMailbox_.c_str());
+  while(keepGoing){
+    try{
+      void* taskRequest = recvMB->get(999);
+      int i = addElasticTask(1e9, 0);
+      triggerOneTimeTask(i);
+      XBT_INFO("POLLING RECEIVED");
+      sleep_sem->release();
+    }catch(simgrid::TimeoutException){}
+  }
+}
 
 /**
  * Supervisor of the elastictasks
@@ -188,25 +194,13 @@ void ElasticTaskManager::kill() {
  */
 void ElasticTaskManager::run() {
   // mailbox for incoming requests from other services
-  Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(rcvMailbox_);
+  Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(rcvMailbox_.c_str());
   unsigned long long task_count = 0;
+  simgrid::s4u::Actor::create(rcvMailbox_+"polling",s4u::Host::current(),[&]{pollnet();});
   while(1) {
-    XBT_INFO("starting loop");
-    /*try to receive any incoming message until next event starts*/
-    if(recvMB->empty() && !nextEvtQueue.empty()){
-      sleep_sem->acquire_timeout(nextEvtQueue.top()->date - Engine::get_instance()->get_clock());
-    } else if(!recvMB->empty()){
-      XBT_INFO("trying to receive incoming requests");
-      while(! recvMB->empty()){
-        // build corresponding task description and add it to the event queue
-        void* taskRequest = recvMB->get();
-        addElasticTask(1e9, 0);
-        XBT_INFO("received");
-      }
-    }else{
-      sleep_sem->acquire_timeout(999.0);
-    }
-    XBT_INFO("start executing");
+    XBT_INFO("starting loop, event queue size: %d, %d tasks", nextEvtQueue.size(), tasks.size());
+
+
     // execute events that need be executed now
     while(!nextEvtQueue.empty() && nextEvtQueue.top()->date <= Engine::get_instance()->get_clock()) {
       XBT_DEBUG("In run: %d, nextEvtQueue: %d, netxEvt date: %lf",
@@ -221,16 +215,16 @@ void ElasticTaskManager::run() {
           nextHost_ = 0;
 
 	      XBT_INFO("create actor");
-        Actor::create("ET"+std::to_string(task_count), availableHostsList_.at(nextHost_), [t, task_count] {
-          XBT_DEBUG("Taskstart: %f, flops: %f, taskcount: %d, avgload: %f\%, computer flops: %f",
+        Actor::create("ET"+std::to_string(task_count), availableHostsList_.at(nextHost_), [this, t, task_count] {
+          XBT_INFO("Taskstart: %f, flops: %f, taskcount: %d, avgload: %f\%, computer flops: %f",
           Engine::get_instance()->get_clock(), t->flops, task_count, sg_host_get_avg_load(s4u::Host::current())*100 ,sg_host_get_computed_flops(s4u::Host::current()));
 
           this_actor::execute(t->flops);
-          XBT_DEBUG("Taskend: %f, flops: %f, taskcount: %d, avgload: %f\%, computer flops: %f",
+          XBT_INFO("Taskend: %f, flops: %f, taskcount: %d, avgload: %f\%, computer flops: %f",
           Engine::get_instance()->get_clock(), t->flops, task_count, sg_host_get_avg_load(s4u::Host::current())*100 ,sg_host_get_computed_flops(s4u::Host::current()));
 
           // task finished, call output function
-          t->outputFunction();
+          outputFunction();
         });
 
 	      ++task_count;
@@ -264,12 +258,19 @@ void ElasticTaskManager::run() {
     if(!keepGoing) {
       break;
     }
-    /*if(!nextEvtQueue.empty()) {
+
+    XBT_INFO("RUN: going to sleep on semaphore");
+    if(!nextEvtQueue.empty()) {
       sleep_sem->acquire_timeout(nextEvtQueue.top()->date - Engine::get_instance()->get_clock());
     } else {
       sleep_sem->acquire_timeout(999.0);
-    }*/
+    }
   }
+}
+
+void ElasticTaskManager::setOutputFunction(std::function<void()> f)
+{
+  outputFunction = f;
 }
 
 // ELASTICTASK ---------------------------------------------------------------------------------------------------------
@@ -315,9 +316,6 @@ void ElasticTask::triggerOneTime(double ratioLoad) {
   etm->triggerOneTimeTask(id, ratioLoad);
 }
 
-void ElasticTask::setOutputFunction(std::function<void()> code) {
-  etm->setOutputFunction(id, code);
-}
 
 void ElasticTask::setTimestampsFile(std::string filename) {
   etm->setTimestampsFile(id, filename);
