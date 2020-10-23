@@ -24,7 +24,7 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(elastic, "elastic tasks");
 // ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
 ElasticTaskManager::ElasticTaskManager(std::string name)
   : rcvMailbox_(name), nextHost_(0), keepGoing(true){
-  XBT_INFO("%s", rcvMailbox_.c_str());
+  XBT_DEBUG("%s", rcvMailbox_.c_str());
   sg_host_load_plugin_init();
   sleep_sem = s4u::Semaphore::create(0);
 }
@@ -181,7 +181,7 @@ void ElasticTaskManager::pollnet(){
       void* taskRequest = recvMB->get(999);
       int i = addElasticTask(1e9, 0);
       triggerOneTimeTask(i);
-      XBT_INFO("POLLING RECEIVED");
+      XBT_DEBUG("POLLING RECEIVED");
       sleep_sem->release();
     }catch(simgrid::TimeoutException){}
   }
@@ -198,7 +198,7 @@ void ElasticTaskManager::run() {
   unsigned long long task_count = 0;
   simgrid::s4u::Actor::create(rcvMailbox_+"polling",s4u::Host::current(),[&]{pollnet();});
   while(1) {
-    XBT_INFO("starting loop, event queue size: %d, %d tasks", nextEvtQueue.size(), tasks.size());
+    XBT_DEBUG("starting loop, event queue size: %d, %d tasks", nextEvtQueue.size(), tasks.size());
 
 
     // execute events that need be executed now
@@ -214,13 +214,13 @@ void ElasticTaskManager::run() {
         if (availableHostsList_.size() <= nextHost_)
           nextHost_ = 0;
 
-	      XBT_INFO("create actor");
+	      XBT_DEBUG("create actor");
         Actor::create("ET"+std::to_string(task_count), availableHostsList_.at(nextHost_), [this, t, task_count] {
-          XBT_INFO("Taskstart: %f, flops: %f, taskcount: %d, avgload: %f\%, computer flops: %f",
+          XBT_DEBUG("Taskstart: %f, flops: %f, taskcount: %d, avgload: %f\%, computer flops: %f",
           Engine::get_instance()->get_clock(), t->flops, task_count, sg_host_get_avg_load(s4u::Host::current())*100 ,sg_host_get_computed_flops(s4u::Host::current()));
 
           this_actor::execute(t->flops);
-          XBT_INFO("Taskend: %f, flops: %f, taskcount: %d, avgload: %f\%, computer flops: %f",
+          XBT_DEBUG("Taskend: %f, flops: %f, taskcount: %d, avgload: %f\%, computer flops: %f",
           Engine::get_instance()->get_clock(), t->flops, task_count, sg_host_get_avg_load(s4u::Host::current())*100 ,sg_host_get_computed_flops(s4u::Host::current()));
 
           // task finished, call output function
@@ -259,7 +259,7 @@ void ElasticTaskManager::run() {
       break;
     }
 
-    XBT_INFO("RUN: going to sleep on semaphore");
+    XBT_DEBUG("RUN: going to sleep on semaphore");
     if(!nextEvtQueue.empty()) {
       sleep_sem->acquire_timeout(nextEvtQueue.top()->date - Engine::get_instance()->get_clock());
     } else {
