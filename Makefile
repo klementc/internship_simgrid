@@ -5,6 +5,6 @@ PARAMS=  -L $(SG_PATH)/build/lib -lsimgrid -I $(SG_PATH)/build/include -I $(SG_P
 
 all: service
 
-service: ElasticTask.cpp main.cpp
+service: ElasticTask.cpp ElasticPolicyCPUThreshold.cpp main.cpp
 	g++ $(PARAMS) $^ -o $@
 

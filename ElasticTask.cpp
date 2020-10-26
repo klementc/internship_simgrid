@@ -8,7 +8,6 @@
 #include "simgrid/s4u/Comm.hpp"
 #include "simgrid/s4u/Semaphore.hpp"
 #include "simgrid/kernel/future.hpp"
-#include "simgrid/msg.h"
 #include "simgrid/plugins/load.h"
 #include <simgrid/s4u/Mailbox.hpp>
 #include <simgrid/Exception.hpp>
@@ -165,6 +164,25 @@ void ElasticTaskManager::setTimestampsFile(size_t id, std::string filename) {
     }
   }
   sleep_sem->release();
+}
+
+void ElasticTaskManager::removeHost(int i){
+  if(i<availableHostsList_.size()){
+    availableHostsList_.erase(availableHostsList_.begin()+i);
+  }else{
+    XBT_INFO("Cannot remove element at position %d, overflow", i);
+  }
+}
+
+unsigned int ElasticTaskManager::getInstanceAmount(){
+  return availableHostsList_.size();
+}
+std::vector<double> ElasticTaskManager::getCPULoads(){
+  std::vector<double> v;
+  for (int i=0; i<availableHostsList_.size();i++){
+    v.push_back(sg_host_get_current_load(availableHostsList_.at(i)));
+  }
+  return v;
 }
 
 /**

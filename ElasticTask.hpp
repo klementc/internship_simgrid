@@ -87,6 +87,7 @@ class ElasticTaskManager {
     void pollnet();
     void addRatioChange(size_t id, double date, double visitsPerSec);
     void addHost(Host *host);
+    void removeHost(int i);
     void changeRatio(size_t id, double visitsPerSec);
     void changeTask(size_t id, double flops);
     void simpleChangeTask(size_t id);
@@ -100,6 +101,11 @@ class ElasticTaskManager {
 
     void kill();
     void run();
+
+
+    // basic metrics
+    std::vector<double> getCPULoads();
+    unsigned int getInstanceAmount();
 };
 
 class ElasticTask {
