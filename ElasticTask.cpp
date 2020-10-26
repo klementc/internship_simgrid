@@ -28,8 +28,8 @@ ElasticTaskManager::ElasticTaskManager(std::string name)
   sleep_sem = s4u::Semaphore::create(0);
 }
 
-size_t ElasticTaskManager::addElasticTask(double flopsTask, double interSpawnDelay) {
-  tasks.push_back(TaskDescription(flopsTask, interSpawnDelay, Engine::get_instance()->get_clock()));
+size_t ElasticTaskManager::addElasticTask(double flopsTask, double interSpawnDelay, double s) {
+  tasks.push_back(TaskDescription(flopsTask, interSpawnDelay, Engine::get_instance()->get_clock(), s));
   tasks.at(tasks.size() - 1).id = tasks.size() - 1;
   if (interSpawnDelay > 0.0) {
     nextEvtQueue.push(&(tasks.at(tasks.size() -1 )));
@@ -37,6 +37,10 @@ size_t ElasticTaskManager::addElasticTask(double flopsTask, double interSpawnDel
     sleep_sem->release();
   }
   return tasks.size() - 1;
+}
+
+size_t ElasticTaskManager::addElasticTask(double flopsTask, double interSpawnDelay) {
+  return addElasticTask(flopsTask, interSpawnDelay, -1);
 }
 
 void ElasticTaskManager::addHost(Host *host) {
@@ -196,10 +200,10 @@ void ElasticTaskManager::pollnet(){
   Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(rcvMailbox_.c_str());
   while(keepGoing){
     try{
-      void* taskRequest = recvMB->get(999);
-      int i = addElasticTask(1e9, 0);
+      int* taskRequest = static_cast<int*>(recvMB->get(999));
+      int i = addElasticTask(1e9, 0, *taskRequest);
       triggerOneTimeTask(i);
-      XBT_DEBUG("POLLING RECEIVED");
+      XBT_DEBUG("POLLING RECEIVED size %d", *taskRequest);
       sleep_sem->release();
     }catch(simgrid::TimeoutException){}
   }
@@ -237,6 +241,9 @@ void ElasticTaskManager::run() {
           XBT_DEBUG("Taskstart: %f, flops: %f, taskcount: %d, avgload: %f\%, computer flops: %f",
           Engine::get_instance()->get_clock(), t->flops, task_count, sg_host_get_avg_load(s4u::Host::current())*100 ,sg_host_get_computed_flops(s4u::Host::current()));
 
+          // receive data from mailbox
+          simgrid::s4u::Mailbox* mb = simgrid::s4u::Mailbox::by_name(this_actor::get_host()->get_name()+"_data");
+          void* a = mb->get();
           this_actor::execute(t->flops);
           XBT_DEBUG("Taskend: %f, flops: %f, taskcount: %d, avgload: %f\%, computer flops: %f",
           Engine::get_instance()->get_clock(), t->flops, task_count, sg_host_get_avg_load(s4u::Host::current())*100 ,sg_host_get_computed_flops(s4u::Host::current()));
@@ -244,6 +251,10 @@ void ElasticTaskManager::run() {
           // task finished, call output function
           outputFunction();
         });
+        // send data to process to the instance
+        simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(availableHostsList_.at(nextHost_)->get_name()+"_data");
+        int a;
+        mbp->put(&a, (t->dSize == -1) ? 1 : t->dSize);
 
 	      ++task_count;
 

@@ -56,10 +56,15 @@ class TaskDescription : public EvntQ {
     std::function<void()> outputFunction = []() {};
     bool hasTimestamps = false;
     std::ifstream *ts_file;
+    double dSize;
+
+    TaskDescription(double flops_, double interSpawnDelay_, double date_, double dSize_)
+        : EvntQ(date_), flops(flops_), interSpawnDelay(interSpawnDelay_), dSize(dSize_) {
+      ts_file = new std::ifstream;
+    }
 
     TaskDescription(double flops_, double interSpawnDelay_, double date_)
-        : EvntQ(date_), flops(flops_), interSpawnDelay(interSpawnDelay_) {
-      ts_file = new std::ifstream;
+        : TaskDescription(flops_, interSpawnDelay_, date_, -1) {
     }
     TaskDescription(double flops_, double interSpawnDelay_)
       : TaskDescription(flops_, interSpawnDelay_, 0.0) {}
@@ -84,6 +89,7 @@ class ElasticTaskManager {
     ElasticTaskManager(std::string name);
 
     size_t addElasticTask(double flopsTask, double interSpawnDelay);
+    size_t addElasticTask(double flopsTask, double interSpawnDelay, double s);
     void pollnet();
     void addRatioChange(size_t id, double date, double visitsPerSec);
     void addHost(Host *host);

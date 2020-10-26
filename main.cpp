@@ -33,7 +33,7 @@ void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm, int n) {
   XBT_INFO("Starting");
   simgrid::s4u::Actor::create("ETM", simgrid::s4u::Host::by_name("cb1-1"), [etm] { etm->run(); });
   // provision the policy with a list of usable hosts
-  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol = new simgrid::s4u::ElasticPolicyCPUThreshold(3,0.7,0.1);
+  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
   for(int i = 1; i < 200; i++) {
     cpuPol->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(i)));
   }
@@ -48,21 +48,14 @@ void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm, int n) {
   XBT_INFO("puishing to mailbox"  );
   s4u_Mailbox* mb = s4u_Mailbox::by_name("coucou");
 
-/*
-  for(int i = 0;i<500;i++){
-    void* pl;
-    mb->put(pl, 50000);
-    simgrid::s4u::this_actor::sleep_for(.1);
-  }*/
-
   std::ifstream file;
-  file.open("ts.txt");
+  file.open("ts2.txt");
   double a;
   while (file >> a)
   {
     simgrid::s4u::this_actor::sleep_until(a);
-    void* pl;
-    mb->put(pl, 50);
+    int n = 50;
+    mb->put(&n, n);
   }
 
 

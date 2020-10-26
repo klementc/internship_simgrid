@@ -35,16 +35,14 @@ void ElasticPolicyCPUThreshold::run()
     std::vector<double> lv = etm->getCPULoads();
     double avgLoad = std::accumulate( lv.begin(), lv.end(), 0.0) / lv.size();
 
-    XBT_INFO("AVG LOAD ON GROUP IS %f (%d instances)", avgLoad, etm->getInstanceAmount());
+    XBT_INFO("%f %d stats", avgLoad, etm->getInstanceAmount());
 
     if(avgLoad > upperCPUThresh_){
       // if available hosts, add one
-      XBT_INFO("USAGE ABOVE THRESHOLD, SPAWN INSTANCE");
       etm->addHost(hostPool_.at(instanceToStartIndex));
       instanceToStartIndex = (instanceToStartIndex+1) % hostPool_.size();
     }else if(avgLoad < lowCPUThresh_ && etm->getInstanceAmount()>1){
       // if more than one instance, remove one
-      XBT_INFO("USAGE BELOW THRESHOLD, RMEOVE INSTANCE");
       etm->removeHost(0);
     }
 
