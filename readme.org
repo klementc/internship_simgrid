@@ -1,0 +1,6 @@
+* Simgrid elasticity
+This repo extends the work of [[https://github.com/sbihel/internship_simgrid][sbihel]] during his internship.
+Based on this code, we try to add elastic task representation adapted to
+microservice systems.
+
+Results can be seen in the analysis directory. 
