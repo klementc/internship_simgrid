@@ -201,7 +201,7 @@ void ElasticTaskManager::pollnet(){
   while(keepGoing){
     try{
       int* taskRequest = static_cast<int*>(recvMB->get(999));
-      int i = addElasticTask(1e9, 0, *taskRequest);
+      int i = addElasticTask(1e8, 0, *taskRequest);
       triggerOneTimeTask(i);
       XBT_DEBUG("POLLING RECEIVED size %d", *taskRequest);
       sleep_sem->release();

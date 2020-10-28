@@ -33,7 +33,7 @@ void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm, int n) {
   XBT_INFO("Starting");
   simgrid::s4u::Actor::create("ETM", simgrid::s4u::Host::by_name("cb1-1"), [etm] { etm->run(); });
   // provision the policy with a list of usable hosts
-  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
+  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol = new simgrid::s4u::ElasticPolicyCPUThreshold(3,0.7,0.1);
   for(int i = 1; i < 200; i++) {
     cpuPol->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(i)));
   }
@@ -49,7 +49,7 @@ void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm, int n) {
   s4u_Mailbox* mb = s4u_Mailbox::by_name("coucou");
 
   std::ifstream file;
-  file.open("ts2.txt");
+  file.open("timestampsExpo2.txt");
   double a;
   while (file >> a)
   {
@@ -64,7 +64,14 @@ void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm, int n) {
   cpuPol->kill();
   etm->kill();
 
-/*
+  XBT_INFO("Done.");
+
+}
+
+
+void test2()
+{
+
   std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm1 = std::make_shared<simgrid::s4u::ElasticTaskManager>("coucou");
   std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm2 = std::make_shared<simgrid::s4u::ElasticTaskManager>("s2");
   std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm3 = std::make_shared<simgrid::s4u::ElasticTaskManager>("s3");
@@ -74,27 +81,47 @@ void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm, int n) {
   simgrid::s4u::Actor::create("ET1", simgrid::s4u::Host::by_name("cb1-1"), [etm1] { etm1->run(); });
   simgrid::s4u::Actor::create("ET2", simgrid::s4u::Host::by_name("cb1-2"), [etm2] { etm2->run(); });
   simgrid::s4u::Actor::create("ET3", simgrid::s4u::Host::by_name("cb1-3"), [etm3] { etm3->run(); });
-  for(int i = 1; i < 50; i++){
-    etm1->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(i)));
-    etm2->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(50+i)));
-    etm3->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(100+i)));
-  }
 
-  simgrid::s4u::this_actor::sleep_for(5);
-  XBT_INFO("puishing to mailbox"  );
+  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol1 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
+  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol2 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
+  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol3 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
+  for(int i = 1; i < 100; i++) {
+    cpuPol1->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(i)));
+    cpuPol2->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(100+i)));
+    cpuPol3->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(200+i)));
+  }
+  cpuPol1->addElasticTaskManager(etm1.get());
+  cpuPol2->addElasticTaskManager(etm2.get());
+  cpuPol3->addElasticTaskManager(etm3.get());
+
+  simgrid::s4u::Actor::create("POLICY1", simgrid::s4u::Host::by_name("cb1-1"), [cpuPol1] { cpuPol1->run(); });
+  simgrid::s4u::Actor::create("POLICY2", simgrid::s4u::Host::by_name("cb1-100"), [cpuPol2] { cpuPol2->run(); });
+  simgrid::s4u::Actor::create("POLICY3", simgrid::s4u::Host::by_name("cb1-200"), [cpuPol3] { cpuPol3->run(); });
+
+  etm1->addHost(simgrid::s4u::Host::by_name("cb1-1"));
+  etm2->addHost(simgrid::s4u::Host::by_name("cb1-100"));
+  etm3->addHost(simgrid::s4u::Host::by_name("cb1-200"));
+
   s4u_Mailbox* mb = s4u_Mailbox::by_name("coucou");
-  for(int i = 0;i<500000;i++){
-    void* pl;
-    mb->put(pl, 5000);
-    simgrid::s4u::this_actor::sleep_for(0.5);
+  std::ifstream file;
+  file.open("default1TimeStamps.csv");
+  double a;
+  while (file >> a)
+  {
+    simgrid::s4u::this_actor::sleep_until(a);
+    int n = 50;
+    mb->put(&n, n);
   }
 
-  simgrid::s4u::this_actor::sleep_for(1000);
-  etm1->kill();
-  etm2->kill();
-  etm3->kill();*/
   XBT_INFO("Done.");
 
+  simgrid::s4u::this_actor::sleep_for(1000);
+  cpuPol1->kill();
+  cpuPol2->kill();
+  cpuPol3->kill();
+  etm1->kill();
+  etm2->kill();
+  etm3->kill();
 }
 
 int main(int argc, char **argv) {
@@ -102,7 +129,8 @@ int main(int argc, char **argv) {
   simgrid::s4u::Engine *e = new simgrid::s4u::Engine(&argc, argv);
   std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm = std::make_shared<simgrid::s4u::ElasticTaskManager>("coucou");
   e->load_platform("dejavu_platform.xml");
-  simgrid::s4u::Actor::create("main", simgrid::s4u::Host::by_name("cb1-2"), [etm, argv] { eve(etm, std::stoi(argv[1])); });
+  //simgrid::s4u::Actor::create("main", simgrid::s4u::Host::by_name("cb1-2"), [etm, argv] { eve(etm, std::stoi(argv[1])); });
+  simgrid::s4u::Actor::create("main", simgrid::s4u::Host::by_name("cb1-2"), [etm, argv] { test2(); });
   e->run();
   return 0;
 }

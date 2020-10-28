@@ -1,12 +1,13 @@
 #!/usr/bin/awk -f
 
 BEGIN {
-	print("timestamp,load,nInstances")
+	print("policy,timestamp,load,nInstances")
 }
 
 /POLICY/ && /stat/{
 	gsub(/]/, "")
-	print($2", "$4", "$5)
+	gsub(/\[/, "")
+	print($1","$2","$4","$5)
 }
 
 END {
