@@ -102,6 +102,10 @@ void test2()
   etm2->addHost(simgrid::s4u::Host::by_name("cb1-100"));
   etm3->addHost(simgrid::s4u::Host::by_name("cb1-200"));
 
+  etm1->setProcessRatio(1e8);
+  etm2->setProcessRatio(1e9);
+  etm3->setProcessRatio(2e7);
+
   s4u_Mailbox* mb = s4u_Mailbox::by_name("coucou");
   std::ifstream file;
   file.open("default1TimeStamps.csv");
@@ -115,7 +119,7 @@ void test2()
 
   XBT_INFO("Done.");
 
-  simgrid::s4u::this_actor::sleep_for(1000);
+  simgrid::s4u::this_actor::sleep_for(100);
   cpuPol1->kill();
   cpuPol2->kill();
   cpuPol3->kill();

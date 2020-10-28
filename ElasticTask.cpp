@@ -22,10 +22,15 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(elastic, "elastic tasks");
 
 // ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
 ElasticTaskManager::ElasticTaskManager(std::string name)
-  : rcvMailbox_(name), nextHost_(0), keepGoing(true){
+  : rcvMailbox_(name), nextHost_(0), keepGoing(true), processRatio_(1e7){
   XBT_DEBUG("%s", rcvMailbox_.c_str());
   sg_host_load_plugin_init();
   sleep_sem = s4u::Semaphore::create(0);
+}
+
+void ElasticTaskManager::setProcessRatio(int64_t pr)
+{
+  processRatio_ = pr;
 }
 
 size_t ElasticTaskManager::addElasticTask(double flopsTask, double interSpawnDelay, double s) {
@@ -201,7 +206,7 @@ void ElasticTaskManager::pollnet(){
   while(keepGoing){
     try{
       int* taskRequest = static_cast<int*>(recvMB->get(999));
-      int i = addElasticTask(1e8, 0, *taskRequest);
+      int i = addElasticTask(processRatio_, 0, *taskRequest);
       triggerOneTimeTask(i);
       XBT_DEBUG("POLLING RECEIVED size %d", *taskRequest);
       sleep_sem->release();

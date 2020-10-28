@@ -84,6 +84,7 @@ class ElasticTaskManager {
     simgrid::s4u::SemaphorePtr sleep_sem;
     bool keepGoing;
     int nextHost_;
+    int64_t processRatio_;
 
   public:
     ElasticTaskManager(std::string name);
@@ -99,6 +100,7 @@ class ElasticTaskManager {
     void simpleChangeTask(size_t id);
     void removeTask(size_t id);
     void removeRatioChanges(size_t id);
+    void setProcessRatio(int64_t pr);
 
     void triggerOneTimeTask(size_t id);
     void triggerOneTimeTask(size_t id, double ratioLoad);
