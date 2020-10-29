@@ -7,25 +7,25 @@
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(s4u_test, "a sample log category");
 
-void return1(void){
+void return1(std::map<std::string, double>* a){
   XBT_DEBUG("DONE FROM CALLBACK");
 }
 
-void returns2(void){
+void returns2(std::map<std::string, double>* a){
   XBT_DEBUG("returns2 sending to s2");
   s4u_Mailbox* m = s4u_Mailbox::by_name("s2");
   int v = 0;
-  m->put(&v, 20000);
+  m->put(a, a->at("size"));
 }
 
-void returns3(void){
+void returns3(std::map<std::string, double>* a){
   XBT_DEBUG("returns3 sending to s3");
   s4u_Mailbox* m = s4u_Mailbox::by_name("s3");
   int v=0;
-  m->put(&v, 20000);
+  m->put(a, a->at("size"));
 }
 
-void returns4(void){
+void returns4(std::map<std::string, double>* a){
   XBT_DEBUG("s4 received message from S3, FINISH");
 }
 
@@ -54,8 +54,10 @@ void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm, int n) {
   while (file >> a)
   {
     simgrid::s4u::this_actor::sleep_until(a);
+    std::map<std::string, double>* a = new std::map<std::string,double>();
+    a->at("size") = 50000;
     int n = 50;
-    mb->put(&n, n);
+    mb->put(a, n);
   }
 
 
@@ -113,8 +115,10 @@ void test2()
   while (file >> a)
   {
     simgrid::s4u::this_actor::sleep_until(a);
-    int n = 50;
-    mb->put(&n, n);
+    //int n = 50;
+    std::map<std::string,double>* n = new std::map<std::string,double>();
+    n->insert(std::pair<std::string,double>("size",50000));
+    mb->put(n, n->at("size"));
   }
 
   XBT_INFO("Done.");

@@ -51,12 +51,12 @@ class TaskDescription : public EvntQ {
     size_t id;
     double flops;
     double interSpawnDelay;
-    size_t nextHost;
     bool repeat = true;
     std::function<void()> outputFunction = []() {};
     bool hasTimestamps = false;
     std::ifstream *ts_file;
     double dSize;
+    double startTime;
 
     TaskDescription(double flops_, double interSpawnDelay_, double date_, double dSize_)
         : EvntQ(date_), flops(flops_), interSpawnDelay(interSpawnDelay_), dSize(dSize_) {
@@ -76,7 +76,7 @@ namespace s4u {
 /** @brief */
 class ElasticTaskManager {
   private:
-    std::function<void()> outputFunction = []() {};
+    std::function<void(std::map<std::string,double>*)> outputFunction = [](std::map<std::string,double>*) {};
     std::vector<simgrid::s4u::Host*> availableHostsList_;
     std::string rcvMailbox_;
     std::vector<TaskDescription> tasks;
@@ -85,6 +85,7 @@ class ElasticTaskManager {
     bool keepGoing;
     int nextHost_;
     int64_t processRatio_;
+    int64_t waitingReqAmount_;
 
   public:
     ElasticTaskManager(std::string name);
@@ -101,10 +102,11 @@ class ElasticTaskManager {
     void removeTask(size_t id);
     void removeRatioChanges(size_t id);
     void setProcessRatio(int64_t pr);
+    int64_t getAmountOfWaitingRequests();
 
     void triggerOneTimeTask(size_t id);
     void triggerOneTimeTask(size_t id, double ratioLoad);
-    void setOutputFunction(std::function<void()> code);
+    void setOutputFunction(std::function<void(std::map<std::string,double>*)> code);
     void setTimestampsFile(size_t id, std::string filename);
 
     void kill();
