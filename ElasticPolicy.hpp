@@ -34,6 +34,9 @@ class ElasticPolicy {
     virtual void run() = 0;
 };
 
+/**
+ * Dumb threshold based policy
+ */
 class ElasticPolicyCPUThreshold: public ElasticPolicy {
   private:
     double upperCPUThresh_;
@@ -41,6 +44,22 @@ class ElasticPolicyCPUThreshold: public ElasticPolicy {
 
   public:
     ElasticPolicyCPUThreshold(double inter, double lowCPUT, double highCPUT);
+    virtual void run();
+};
+
+/**
+ * Reactive only policy taken from
+ * "Efficient Provisioning of Bursty Scientific Workloads on the Cloud Using Adaptive
+ * Elasticity Control"
+ */
+class ElasticPolicyReactive1: public ElasticPolicy {
+  private:
+    double k_;
+    double r_;
+    double mAvg_;
+
+  public:
+    ElasticPolicyReactive1(double interval, double k, double r, double mAvg);
     virtual void run();
 };
 

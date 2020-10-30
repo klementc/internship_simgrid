@@ -22,7 +22,7 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(elastic, "elastic tasks");
 
 // ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
 ElasticTaskManager::ElasticTaskManager(std::string name)
-  : rcvMailbox_(name), nextHost_(0), keepGoing(true), processRatio_(1e7), waitingReqAmount_(0), bootDuration_(0)
+  : rcvMailbox_(name), nextHost_(0), keepGoing(true), processRatio_(1e7), waitingReqAmount_(0), bootDuration_(0), executingReqAmount_(0)
 {
   XBT_DEBUG("%s", rcvMailbox_.c_str());
   sg_host_load_plugin_init();
@@ -199,6 +199,9 @@ void ElasticTaskManager::removeHost(int i){
   }
 }
 
+/**
+ * WARNING: doesn't count booting instances, only active ones
+ */
 unsigned int ElasticTaskManager::getInstanceAmount(){
   return availableHostsList_.size();
 }
@@ -268,13 +271,21 @@ void ElasticTaskManager::run() {
           // receive data from mailbox
           simgrid::s4u::Mailbox* mb = simgrid::s4u::Mailbox::by_name(this_actor::get_host()->get_name()+"_data");
           std::map<std::string, double>* a = static_cast<std::map<std::string, double>*>(mb->get());
+
+          // update counters
+          waitingReqAmount_--;
+          executingReqAmount_++;
+
           this_actor::execute(t->flops);
+
+          executingReqAmount_--;
+
           XBT_DEBUG("Taskend: %f, flops: %f, taskcount: %d, avgload: %f\%, computer flops: %f",
           Engine::get_instance()->get_clock(), t->flops, task_count, sg_host_get_avg_load(s4u::Host::current())*100 ,sg_host_get_computed_flops(s4u::Host::current()));
 
           // one request finished
           XBT_DEBUG("finished request %d -> %d", waitingReqAmount_, waitingReqAmount_-1);
-          waitingReqAmount_--;
+
           // task finished, call output function
           outputFunction(a);
         });
@@ -327,6 +338,10 @@ void ElasticTaskManager::run() {
 
 int64_t ElasticTaskManager::getAmountOfWaitingRequests(){
   return waitingReqAmount_;
+}
+
+int64_t ElasticTaskManager::getAmountOfExecutingRequests(){
+  return executingReqAmount_;
 }
 
 void ElasticTaskManager::setOutputFunction(std::function<void(std::map<std::string,double>*)> f)

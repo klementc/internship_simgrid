@@ -92,6 +92,7 @@ class ElasticTaskManager {
     int nextHost_;
     int64_t processRatio_;
     int64_t waitingReqAmount_;
+    int64_t executingReqAmount_;
     double bootDuration_;
 
   public:
@@ -111,6 +112,7 @@ class ElasticTaskManager {
     void setProcessRatio(int64_t pr);
     void setBootDuration(double bd);
     int64_t getAmountOfWaitingRequests();
+    int64_t getAmountOfExecutingRequests();
 
     void triggerOneTimeTask(size_t id);
     void triggerOneTimeTask(size_t id, double ratioLoad);

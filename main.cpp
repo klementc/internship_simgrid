@@ -84,9 +84,13 @@ void test2()
   simgrid::s4u::Actor::create("ET2", simgrid::s4u::Host::by_name("cb1-2"), [etm2] { etm2->run(); });
   simgrid::s4u::Actor::create("ET3", simgrid::s4u::Host::by_name("cb1-3"), [etm3] { etm3->run(); });
 
-  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol1 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
-  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol2 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
-  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol3 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
+  //simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol1 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
+  //simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol2 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
+  //simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol3 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
+
+  simgrid::s4u::ElasticPolicyReactive1* cpuPol1 = new simgrid::s4u::ElasticPolicyReactive1(60,10,6,1);
+  simgrid::s4u::ElasticPolicyReactive1* cpuPol2 = new simgrid::s4u::ElasticPolicyReactive1(60,10,6,1);
+  simgrid::s4u::ElasticPolicyReactive1* cpuPol3 = new simgrid::s4u::ElasticPolicyReactive1(60,10,6,1);
   for(int i = 1; i < 100; i++) {
     cpuPol1->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(i)));
     cpuPol2->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(100+i)));
@@ -104,14 +108,14 @@ void test2()
   etm2->addHost(simgrid::s4u::Host::by_name("cb1-100"));
   etm3->addHost(simgrid::s4u::Host::by_name("cb1-200"));
 
-  etm1->setProcessRatio(1e8);
+  etm1->setProcessRatio(1e9);
   etm2->setProcessRatio(1e9);
-  etm3->setProcessRatio(2e7);
+  etm3->setProcessRatio(1e9);
 
   // interval between adding a new instance and using it
-  //etm1->setBootDuration(60);
-  //etm2->setBootDuration(120);
-  //etm3->setBootDuration(180);
+  etm1->setBootDuration(50);
+  etm2->setBootDuration(50);
+  etm3->setBootDuration(50);
 
   s4u_Mailbox* mb = s4u_Mailbox::by_name("coucou");
   std::ifstream file;

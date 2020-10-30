@@ -35,8 +35,6 @@ void ElasticPolicyCPUThreshold::run()
     std::vector<double> lv = etm->getCPULoads();
     double avgLoad = std::accumulate( lv.begin(), lv.end(), 0.0) / lv.size();
 
-    XBT_INFO("%f %d %d stats", avgLoad, etm->getInstanceAmount(), etm->getAmountOfWaitingRequests());
-
     if(avgLoad > upperCPUThresh_){
       // if available hosts, add one
       etm->addHost(hostPool_.at(instanceToStartIndex));
@@ -46,5 +44,6 @@ void ElasticPolicyCPUThreshold::run()
       etm->removeHost(0);
     }
 
+    XBT_INFO("%f %d %d %d stats", avgLoad, etm->getInstanceAmount(), etm->getAmountOfWaitingRequests(), etm->getAmountOfExecutingRequests());
   }
 }
