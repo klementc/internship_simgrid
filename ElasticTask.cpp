@@ -22,7 +22,7 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(elastic, "elastic tasks");
 
 // ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
 ElasticTaskManager::ElasticTaskManager(std::string name)
-  : rcvMailbox_(name), nextHost_(0), keepGoing(true), processRatio_(1e7), waitingReqAmount_(0)
+  : rcvMailbox_(name), nextHost_(0), keepGoing(true), processRatio_(1e7), waitingReqAmount_(0), bootDuration_(0)
 {
   XBT_DEBUG("%s", rcvMailbox_.c_str());
   sg_host_load_plugin_init();
@@ -54,7 +54,9 @@ size_t ElasticTaskManager::addElasticTask(double flopsTask, double interSpawnDel
 }
 
 void ElasticTaskManager::addHost(Host *host) {
-  availableHostsList_.push_back(host);
+  BootInstance* bi = new BootInstance(host, simgrid::s4u::Engine::get_clock()+bootDuration_);
+  nextEvtQueue.push(bi);
+  //availableHostsList_.push_back(host);
 }
 
 void ElasticTaskManager::changeRatio(size_t id, double visitsPerSec) {
@@ -77,6 +79,11 @@ void ElasticTaskManager::changeTask(size_t id, double flops) {
     nextEvtQueue.push(newTask);
     sleep_sem->release(); //MSG_sem_release(sleep_sem);
   }
+}
+
+void ElasticTaskManager::setBootDuration(double bd){
+  xbt_assert(bd>=0, "Boot time has to be non negative");
+  bootDuration_ = bd;
 }
 
 // TODO, All these change task method are too similar and messy
@@ -247,7 +254,9 @@ void ElasticTaskManager::run() {
 
       if (RatioChange* t = dynamic_cast<RatioChange*>(currentEvent)) {
         changeRatio(t->id, t->visitsPerSec);
-      } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent)) {
+      }else if(BootInstance* t = dynamic_cast<BootInstance*>(currentEvent)){
+        availableHostsList_.push_back(t->host_);
+      }else if (TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent)) {
         if (availableHostsList_.size() <= nextHost_)
           nextHost_ = 0;
 

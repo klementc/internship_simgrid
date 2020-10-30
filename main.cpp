@@ -108,6 +108,11 @@ void test2()
   etm2->setProcessRatio(1e9);
   etm3->setProcessRatio(2e7);
 
+  // interval between adding a new instance and using it
+  //etm1->setBootDuration(60);
+  //etm2->setBootDuration(120);
+  //etm3->setBootDuration(180);
+
   s4u_Mailbox* mb = s4u_Mailbox::by_name("coucou");
   std::ifstream file;
   file.open("default1TimeStamps.csv");

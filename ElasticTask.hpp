@@ -33,6 +33,12 @@ struct Comparator {
   }
 };
 
+class BootInstance : public EvntQ {
+  public:
+    simgrid::s4u::Host* host_;
+    BootInstance(simgrid::s4u::Host* host, double date):EvntQ(date), host_(host){}
+};
+
 class RatioChange : public EvntQ {
   public:
     size_t id;
@@ -86,6 +92,7 @@ class ElasticTaskManager {
     int nextHost_;
     int64_t processRatio_;
     int64_t waitingReqAmount_;
+    double bootDuration_;
 
   public:
     ElasticTaskManager(std::string name);
@@ -102,6 +109,7 @@ class ElasticTaskManager {
     void removeTask(size_t id);
     void removeRatioChanges(size_t id);
     void setProcessRatio(int64_t pr);
+    void setBootDuration(double bd);
     int64_t getAmountOfWaitingRequests();
 
     void triggerOneTimeTask(size_t id);
