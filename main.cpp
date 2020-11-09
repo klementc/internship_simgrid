@@ -33,7 +33,7 @@ void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm, int n) {
   XBT_INFO("Starting");
   simgrid::s4u::Actor::create("ETM", simgrid::s4u::Host::by_name("cb1-1"), [etm] { etm->run(); });
   // provision the policy with a list of usable hosts
-  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol = new simgrid::s4u::ElasticPolicyCPUThreshold(3,0.7,0.1);
+  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
   for(int i = 1; i < 200; i++) {
     cpuPol->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(i)));
   }
@@ -49,20 +49,20 @@ void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm, int n) {
   s4u_Mailbox* mb = s4u_Mailbox::by_name("coucou");
 
   std::ifstream file;
-  file.open("timestampsExpo2.txt");
+  file.open("default1TimeStamps.csv");
   double a;
   while (file >> a)
   {
     simgrid::s4u::this_actor::sleep_until(a);
-    std::map<std::string, double>* a = new std::map<std::string,double>();
-    a->at("size") = 50000;
-    int n = 50;
-    mb->put(a, n);
+    //int n = 50;
+    std::map<std::string,double>* n = new std::map<std::string,double>();
+    n->insert(std::pair<std::string,double>("size",50000));
+    mb->put(n, n->at("size"));
   }
 
 
   XBT_INFO("after mailbox");
-  simgrid::s4u::this_actor::sleep_for(100);
+  simgrid::s4u::this_actor::sleep_for(3000);
   cpuPol->kill();
   etm->kill();
 
@@ -88,10 +88,10 @@ void test2()
   //simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol2 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
   //simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol3 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
 
-  simgrid::s4u::ElasticPolicyReactive1* cpuPol1 = new simgrid::s4u::ElasticPolicyReactive1(60,10,6,1);
-  simgrid::s4u::ElasticPolicyReactive1* cpuPol2 = new simgrid::s4u::ElasticPolicyReactive1(60,10,6,1);
-  simgrid::s4u::ElasticPolicyReactive1* cpuPol3 = new simgrid::s4u::ElasticPolicyReactive1(60,10,6,1);
-  for(int i = 1; i < 100; i++) {
+  simgrid::s4u::ElasticPolicyReactive1* cpuPol1 = new simgrid::s4u::ElasticPolicyReactive1(120,100,6,1);
+  simgrid::s4u::ElasticPolicyReactive1* cpuPol2 = new simgrid::s4u::ElasticPolicyReactive1(120,10,6,1);
+  simgrid::s4u::ElasticPolicyReactive1* cpuPol3 = new simgrid::s4u::ElasticPolicyReactive1(120,10,6,1);
+  for(int i = 2; i < 100; i++) {
     cpuPol1->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(i)));
     cpuPol2->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(100+i)));
     cpuPol3->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(200+i)));
@@ -108,14 +108,14 @@ void test2()
   etm2->addHost(simgrid::s4u::Host::by_name("cb1-100"));
   etm3->addHost(simgrid::s4u::Host::by_name("cb1-200"));
 
-  etm1->setProcessRatio(1e9);
+  etm1->setProcessRatio(1e8);
   etm2->setProcessRatio(1e9);
-  etm3->setProcessRatio(1e9);
+  etm3->setProcessRatio(5e7);
 
   // interval between adding a new instance and using it
-  etm1->setBootDuration(50);
-  etm2->setBootDuration(50);
-  etm3->setBootDuration(50);
+  etm1->setBootDuration(1);
+  etm2->setBootDuration(1);
+  etm3->setBootDuration(1);
 
   s4u_Mailbox* mb = s4u_Mailbox::by_name("coucou");
   std::ifstream file;
@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
   simgrid::s4u::Engine *e = new simgrid::s4u::Engine(&argc, argv);
   std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm = std::make_shared<simgrid::s4u::ElasticTaskManager>("coucou");
   e->load_platform("dejavu_platform.xml");
-  //simgrid::s4u::Actor::create("main", simgrid::s4u::Host::by_name("cb1-2"), [etm, argv] { eve(etm, std::stoi(argv[1])); });
+  //simgrid::s4u::Actor::create("main", simgrid::s4u::Host::by_name("cb1-2"), [etm, argv] { eve(etm, 0.5); });
   simgrid::s4u::Actor::create("main", simgrid::s4u::Host::by_name("cb1-2"), [etm, argv] { test2(); });
   e->run();
   return 0;

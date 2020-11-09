@@ -79,6 +79,8 @@ class TaskDescription : public EvntQ {
 namespace simgrid {
 namespace s4u {
 
+class TaskInstance;
+
 /** @brief */
 class ElasticTaskManager {
   private:
@@ -86,6 +88,7 @@ class ElasticTaskManager {
     std::vector<simgrid::s4u::Host*> availableHostsList_;
     std::string rcvMailbox_;
     std::vector<TaskDescription> tasks;
+    std::vector<TaskInstance*> tiList;
     std::priority_queue<EvntQ*, std::vector<EvntQ*>, Comparator> nextEvtQueue;
     simgrid::s4u::SemaphorePtr sleep_sem;
     bool keepGoing;
@@ -94,6 +97,7 @@ class ElasticTaskManager {
     int64_t waitingReqAmount_;
     int64_t executingReqAmount_;
     double bootDuration_;
+    simgrid::s4u::SemaphorePtr modif_sem_;
 
   public:
     ElasticTaskManager(std::string name);
@@ -113,6 +117,8 @@ class ElasticTaskManager {
     void setBootDuration(double bd);
     int64_t getAmountOfWaitingRequests();
     int64_t getAmountOfExecutingRequests();
+    void modifExecutingReqAmount(int n);
+    void modifWaitingReqAmount(int n);
 
     void triggerOneTimeTask(size_t id);
     void triggerOneTimeTask(size_t id, double ratioLoad);
@@ -126,6 +132,35 @@ class ElasticTaskManager {
     // basic metrics
     std::vector<double> getCPULoads();
     unsigned int getInstanceAmount();
+};
+
+
+class TaskInstance {
+  private:
+    bool keepGoing_;
+    std::function<void(std::map<std::string,double>*)> outputFunction_ = [](std::map<std::string,double>*) {};
+    ElasticTaskManager* etm_;
+    std::string mbName_;
+    simgrid::s4u::SemaphorePtr sleep_sem_;
+    simgrid::s4u::SemaphorePtr run_sem_;
+
+    simgrid::s4u::SemaphorePtr n_empty_;
+    simgrid::s4u::SemaphorePtr n_full_;
+
+    int maxReqInInst_;
+    std::vector<std::map<std::string,double>*> reqs;
+
+    void pollTasks();
+  public:
+    TaskInstance(ElasticTaskManager* etm, std::string mbName,
+      std::function<void(std::map<std::string,double>*)> outputFunction,
+      int maxReqInst);
+    TaskInstance(ElasticTaskManager* etm, std::string mbName,
+      std::function<void(std::map<std::string,double>*)> outputFunction);
+
+
+    void run();
+    void kill();
 };
 
 class ElasticTask {
