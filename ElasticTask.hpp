@@ -141,11 +141,10 @@ class TaskInstance {
     std::function<void(std::map<std::string,double>*)> outputFunction_ = [](std::map<std::string,double>*) {};
     ElasticTaskManager* etm_;
     std::string mbName_;
-    simgrid::s4u::SemaphorePtr sleep_sem_;
-    simgrid::s4u::SemaphorePtr run_sem_;
 
     simgrid::s4u::SemaphorePtr n_empty_;
     simgrid::s4u::SemaphorePtr n_full_;
+    double bootTime_;
 
     int maxReqInInst_;
     std::vector<std::map<std::string,double>*> reqs;
@@ -154,7 +153,7 @@ class TaskInstance {
   public:
     TaskInstance(ElasticTaskManager* etm, std::string mbName,
       std::function<void(std::map<std::string,double>*)> outputFunction,
-      int maxReqInst);
+      int maxReqInst, double bootTime);
     TaskInstance(ElasticTaskManager* etm, std::string mbName,
       std::function<void(std::map<std::string,double>*)> outputFunction);
 

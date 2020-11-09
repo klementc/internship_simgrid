@@ -1,0 +1,18 @@
+* FIFA experiment
+Timestamps found in tsFIFAClean should be the same as the ones used in the paper
+"Efficient Provisioning of Bursty Scientific Workloads on the Cloud Using
+Adaptive Elasticity Control".
+
+In this paper the authors use the logs between: "21:21:12 on 25 June, 1998 to
+22:44:31 on the same day". This corresponds to timestamps in seconds between
+76881 and 81871.
+
+To get them, I used the tools at [[https://github.com/klementc/WorldCup98][this repository]] to download the dataset. Data
+files used are wc_day61_7.gz wc_day62_1.gz which contains dates including the
+range we are interested in. We extract them using the modified recreate.c file
+to obtain timestamps in seconds instead of the full log and parse it using the
+process.awk file to fetch only timestamps that are within the interval.  
+
+#+CAPTION: This picture shows a histogram of the load from tsFIFAClean.csv (this seems to fit image 4 in the paper)
+#+NAME: fig-histo-load
+[[./hist_load.png]]

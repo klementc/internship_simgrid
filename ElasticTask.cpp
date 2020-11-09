@@ -62,9 +62,8 @@ void ElasticTaskManager::addHost(Host *host) {
   nextEvtQueue.push(bi);
   XBT_INFO("pushed event for date %f",simgrid::s4u::Engine::get_clock()+bootDuration_);
   */
-  XBT_INFO("BOOT IN RUN");
   availableHostsList_.push_back(host);
-  XBT_INFO("created instance: %d", availableHostsList_.size());
+  XBT_DEBUG("created instance: %d", availableHostsList_.size());
   TaskInstance* ti = new TaskInstance(this,rcvMailbox_+"_data", outputFunction);
   tiList.push_back(ti);
   Actor::create("TI"+boost::uuids::to_string(boost::uuids::random_generator()()), host, [&]{ti->run();});
@@ -388,20 +387,16 @@ void ElasticTaskManager::setOutputFunction(std::function<void(std::map<std::stri
 // TaskInstance
 
 TaskInstance::TaskInstance(ElasticTaskManager* etm,  std::string mbName,
-  std::function<void(std::map<std::string,double>*)> outputFunction, int maxReqInInst)
-  : etm_(etm), mbName_(mbName), outputFunction_(outputFunction), keepGoing_(true), maxReqInInst_(maxReqInInst)
+  std::function<void(std::map<std::string,double>*)> outputFunction, int maxReqInInst, double bootTime)
+  : etm_(etm), mbName_(mbName), outputFunction_(outputFunction), keepGoing_(true), maxReqInInst_(maxReqInInst), bootTime_(bootTime)
 {
-  sleep_sem_ = s4u::Semaphore::create(0);
-  run_sem_ = s4u::Semaphore::create(maxReqInInst_);
-
   n_empty_ = s4u::Semaphore::create(maxReqInInst);
   n_full_ = s4u::Semaphore::create(0);
-  for(int i=0;i<maxReqInInst_;i++){run_sem_->acquire();}
 }
 
 TaskInstance::TaskInstance(ElasticTaskManager* etm, std::string mbName,
       std::function<void(std::map<std::string,double>*)> outputFunction)
-  :TaskInstance(etm,mbName,outputFunction,100)
+  :TaskInstance(etm,mbName,outputFunction,100, 0)
   {}
 
 
