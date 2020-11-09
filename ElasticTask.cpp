@@ -426,6 +426,9 @@ void TaskInstance::run()
 {
   simgrid::s4u::ActorPtr poll = simgrid::s4u::Actor::create(mbName_+boost::uuids::to_string(boost::uuids::random_generator()()),s4u::Host::current(),[&]{pollTasks();});
 
+  // boot duration (just sleep so that we don't process any request in the node until bootime elapsed)
+  this_actor::sleep_for(bootTime_);
+
   while(keepGoing_){
     try{
       //int n = run_sem_->acquire_timeout(10);
