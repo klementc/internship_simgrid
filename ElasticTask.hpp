@@ -7,6 +7,11 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <map>
+
+#include <boost/uuid/uuid.hpp>            // uuid class
+#include <boost/uuid/uuid_generators.hpp> // generators
+#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
 
 #include <xbt/base.h>
 #include <xbt/string.hpp>
@@ -41,12 +46,12 @@ class BootInstance : public EvntQ {
 
 class RatioChange : public EvntQ {
   public:
-    size_t id;
+    boost::uuids::uuid id;
     double visitsPerSec;
 
-    RatioChange(size_t id_, double date_, double visitsPerSec_)
+    RatioChange(boost::uuids::uuid id_, double date_, double visitsPerSec_)
       : EvntQ(date_), id(id_), visitsPerSec(visitsPerSec_) {}
-    RatioChange(size_t id_, double visitsPerSec_)  // for the event queue as the date is already known
+    RatioChange(boost::uuids::uuid id_, double visitsPerSec_)  // for the event queue as the date is already known
       : EvntQ(0.0), id(id_), visitsPerSec(visitsPerSec_) {}
     RatioChange(double date_, double visitsPerSec_)  // for the user that doesn't know the ID of the ET
       : EvntQ(date_), visitsPerSec(visitsPerSec_) {}
@@ -54,7 +59,7 @@ class RatioChange : public EvntQ {
 
 class TaskDescription : public EvntQ {
   public:
-    size_t id;
+    boost::uuids::uuid id;
     double flops;
     double interSpawnDelay;
     bool repeat = true;
@@ -87,7 +92,7 @@ class ElasticTaskManager {
     std::function<void(std::map<std::string,double>*)> outputFunction = [](std::map<std::string,double>*) {};
     std::vector<simgrid::s4u::Host*> availableHostsList_;
     std::string rcvMailbox_;
-    std::vector<TaskDescription> tasks;
+    std::map<boost::uuids::uuid, TaskDescription> tasks;
     std::vector<TaskInstance*> tiList;
     std::priority_queue<EvntQ*, std::vector<EvntQ*>, Comparator> nextEvtQueue;
     simgrid::s4u::SemaphorePtr sleep_sem;
@@ -98,21 +103,21 @@ class ElasticTaskManager {
     int64_t executingReqAmount_;
     double bootDuration_;
     simgrid::s4u::SemaphorePtr modif_sem_;
+    boost::uuids::random_generator uuidGen_;
 
   public:
     ElasticTaskManager(std::string name);
 
-    size_t addElasticTask(double flopsTask, double interSpawnDelay);
-    size_t addElasticTask(double flopsTask, double interSpawnDelay, double s);
+    boost::uuids::uuid addElasticTask(double flopsTask, double interSpawnDelay);
+    boost::uuids::uuid addElasticTask(double flopsTask, double interSpawnDelay, double s);
     void pollnet();
-    void addRatioChange(size_t id, double date, double visitsPerSec);
+    void addRatioChange(boost::uuids::uuid id, double date, double visitsPerSec);
     void addHost(Host *host);
     void removeHost(int i);
-    void changeRatio(size_t id, double visitsPerSec);
-    void changeTask(size_t id, double flops);
-    void simpleChangeTask(size_t id);
-    void removeTask(size_t id);
-    void removeRatioChanges(size_t id);
+    void changeRatio(boost::uuids::uuid id, double visitsPerSec);
+    void removeTaskExecs(boost::uuids::uuid id);
+    void removeTask(boost::uuids::uuid id);
+    void removeRatioChanges(boost::uuids::uuid id);
     void setProcessRatio(int64_t pr);
     void setBootDuration(double bd);
     int64_t getAmountOfWaitingRequests();
@@ -120,10 +125,10 @@ class ElasticTaskManager {
     void modifExecutingReqAmount(int n);
     void modifWaitingReqAmount(int n);
 
-    void triggerOneTimeTask(size_t id);
-    void triggerOneTimeTask(size_t id, double ratioLoad);
+    void triggerOneTimeTask(boost::uuids::uuid id);
+    void triggerOneTimeTask(boost::uuids::uuid id, double ratioLoad);
     void setOutputFunction(std::function<void(std::map<std::string,double>*)> code);
-    void setTimestampsFile(size_t id, std::string filename);
+    void setTimestampsFile(boost::uuids::uuid id, std::string filename);
 
     void kill();
     void run();
@@ -164,7 +169,7 @@ class TaskInstance {
 
 class ElasticTask {
   private:
-    size_t id;
+    boost::uuids::uuid id;
     ElasticTaskManager *etm;
   public:
     ElasticTask(double flopsTask, double interSpawnDelay, ElasticTaskManager *etm_);
@@ -174,11 +179,10 @@ class ElasticTask {
 
     void setTriggerRatioVariation(std::vector<RatioChange> fluctuations);
     void setRatioVariation(double interSpawnDelay);
-    void modifyTask(double flops);
     void triggerOneTime();
     void triggerOneTime(double ratioLoad);
     void setTimestampsFile(std::string filename);
-    inline size_t getId(){ return id; }
+    inline boost::uuids::uuid getId(){ return id; }
 };
 
 }}

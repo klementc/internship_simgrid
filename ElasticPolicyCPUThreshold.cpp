@@ -37,7 +37,7 @@ void ElasticPolicyCPUThreshold::run()
 
     if(avgLoad > upperCPUThresh_){
       // if available hosts, add one
-      XBT_INFO("add host %d", instanceToStartIndex);
+      XBT_DEBUG("add host %d", instanceToStartIndex);
       etm->addHost(hostPool_.at(instanceToStartIndex));
       instanceToStartIndex = (instanceToStartIndex+1) % hostPool_.size();
     }else if(avgLoad < lowCPUThresh_ && etm->getInstanceAmount()>1){

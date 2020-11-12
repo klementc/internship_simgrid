@@ -84,13 +84,13 @@ void test2()
   simgrid::s4u::Actor::create("ET2", simgrid::s4u::Host::by_name("cb1-2"), [etm2] { etm2->run(); });
   simgrid::s4u::Actor::create("ET3", simgrid::s4u::Host::by_name("cb1-3"), [etm3] { etm3->run(); });
 
-  //simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol1 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
-  //simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol2 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
-  //simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol3 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
+  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol1 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
+  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol2 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
+  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol3 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
 
-  simgrid::s4u::ElasticPolicyReactive1* cpuPol1 = new simgrid::s4u::ElasticPolicyReactive1(120,100,6,1);
-  simgrid::s4u::ElasticPolicyReactive1* cpuPol2 = new simgrid::s4u::ElasticPolicyReactive1(120,10,6,1);
-  simgrid::s4u::ElasticPolicyReactive1* cpuPol3 = new simgrid::s4u::ElasticPolicyReactive1(120,10,6,1);
+  //simgrid::s4u::ElasticPolicyReactive1* cpuPol1 = new simgrid::s4u::ElasticPolicyReactive1(120,100,6,1);
+  //simgrid::s4u::ElasticPolicyReactive1* cpuPol2 = new simgrid::s4u::ElasticPolicyReactive1(120,10,6,1);
+  //simgrid::s4u::ElasticPolicyReactive1* cpuPol3 = new simgrid::s4u::ElasticPolicyReactive1(120,10,6,1);
   for(int i = 2; i < 100; i++) {
     cpuPol1->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(i)));
     cpuPol2->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(100+i)));
@@ -126,7 +126,7 @@ void test2()
     simgrid::s4u::this_actor::sleep_until(a);
     //int n = 50;
     std::map<std::string,double>* n = new std::map<std::string,double>();
-    n->insert(std::pair<std::string,double>("size",50000));
+    n->insert(std::pair<std::string,double>("size",1));
     mb->put(n, n->at("size"));
   }
 
