@@ -106,7 +106,6 @@ void ElasticTaskManager::removeTaskExecs(boost::uuids::uuid id) {  // remove all
 }
 
 void ElasticTaskManager::removeTask(boost::uuids::uuid id){
-  removeTaskExecs(id);
   tasks.erase(id);
 }
 
@@ -245,6 +244,8 @@ void ElasticTaskManager::run() {
           mbp->put(t, (t->dSize == -1) ? 1 : t->dSize);
         }catch(simgrid::TimeoutException e){}
 	      ++task_count;
+
+        removeTask(t->id_);
 
         nextHost_++;
         nextHost_ = nextHost_ % availableHostsList_.size();
