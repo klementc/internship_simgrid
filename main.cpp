@@ -7,25 +7,23 @@
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(s4u_test, "a sample log category");
 
-void return1(std::map<std::string, double>* a){
+void return1(TaskDescription* a){
   XBT_DEBUG("DONE FROM CALLBACK");
 }
 
-void returns2(std::map<std::string, double>* a){
+void returns2(TaskDescription* a){
   XBT_DEBUG("returns2 sending to s2");
   s4u_Mailbox* m = s4u_Mailbox::by_name("s2");
-  int v = 0;
-  m->put(a, a->at("size"));
+  m->put(a, a->dSize);
 }
 
-void returns3(std::map<std::string, double>* a){
+void returns3(TaskDescription* a){
   XBT_DEBUG("returns3 sending to s3");
   s4u_Mailbox* m = s4u_Mailbox::by_name("s3");
-  int v=0;
-  m->put(a, a->at("size"));
+  m->put(a, a->dSize);
 }
 
-void returns4(std::map<std::string, double>* a){
+void returns4(TaskDescription* a){
   XBT_DEBUG("s4 received message from S3, FINISH");
 }
 
@@ -48,6 +46,7 @@ void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm, int n) {
   XBT_INFO("puishing to mailbox"  );
   s4u_Mailbox* mb = s4u_Mailbox::by_name("coucou");
 
+  boost::uuids::random_generator generator;
   std::ifstream file;
   file.open("default1TimeStamps.csv");
   double a;
@@ -55,9 +54,12 @@ void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm, int n) {
   {
     simgrid::s4u::this_actor::sleep_until(a);
     //int n = 50;
-    std::map<std::string,double>* n = new std::map<std::string,double>();
-    n->insert(std::pair<std::string,double>("size",50000));
-    mb->put(n, n->at("size"));
+    TaskDescription* t = new TaskDescription(generator(), -1, 0);
+    t->dSize=50000;
+    XBT_INFO("sending size %f %s", t->dSize, boost::uuids::to_string(t->id_));
+    //std::map<std::string,double>* n = new std::map<std::string,double>();
+    //n->insert(std::pair<std::string,double>("size",50000));
+    mb->put(t, t->dSize);
   }
 
 
@@ -118,16 +120,19 @@ void test2()
   etm3->setBootDuration(1);
 
   s4u_Mailbox* mb = s4u_Mailbox::by_name("coucou");
+  boost::uuids::random_generator generator;
   std::ifstream file;
   file.open("default1TimeStamps.csv");
   double a;
   while (file >> a)
   {
     simgrid::s4u::this_actor::sleep_until(a);
-    //int n = 50;
-    std::map<std::string,double>* n = new std::map<std::string,double>();
-    n->insert(std::pair<std::string,double>("size",1));
-    mb->put(n, n->at("size"));
+    TaskDescription* t = new TaskDescription(generator(), -1, 0);
+    t->dSize=50000;
+    //XBT_INFO("sending size %f %s", t->dSize, boost::uuids::to_string(t->id_).c_str());
+    //std::map<std::string,double>* n = new std::map<std::string,double>();
+    //n->insert(std::pair<std::string,double>("size",50000));
+    mb->put(t, t->dSize);
   }
 
   XBT_INFO("Done.");

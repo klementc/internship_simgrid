@@ -9,7 +9,7 @@
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(FIFA_log, "logs for the FIFA experiment");
 
-void returnf(std::map<std::string, double>* a){
+void returnf(TaskDescription* a){
   XBT_DEBUG("request served");
   delete a;
 }
@@ -39,6 +39,7 @@ void runFIFA()
 
 
   XBT_INFO("starting to send messages");
+  boost::uuids::random_generator generator;
   s4u_Mailbox* mb = s4u_Mailbox::by_name("coucou");
   std::ifstream file;
   file.open("analysis/FIFAtrace/t.csv");
@@ -50,9 +51,13 @@ void runFIFA()
   {
     if(a > simgrid::s4u::Engine::get_clock())
       simgrid::s4u::this_actor::sleep_until(a);
-    std::map<std::string,double>* n = new std::map<std::string,double>();
-    n->insert(std::pair<std::string,double>("size",1));
-    mb->put(n, n->at("size"));
+
+    TaskDescription* t = new TaskDescription(generator(), -1, 0);
+    t->dSize=1;
+    mb->put(t, t->dSize);
+    //std::map<std::string,double>* n = new std::map<std::string,double>();
+    //n->insert(std::pair<std::string,double>("size",1));
+    //mb->put(n, n->at("size"));
   }
   simgrid::s4u::this_actor::sleep_for(600);
   elasticPol->kill();

@@ -35,10 +35,8 @@ void ElasticTaskManager::setProcessRatio(int64_t pr)
   processRatio_ = pr;
 }
 
-boost::uuids::uuid ElasticTaskManager::addElasticTask(double flopsTask, double interSpawnDelay, double s) {
-  TaskDescription td(flopsTask, interSpawnDelay, Engine::get_instance()->get_clock(), s);
-  boost::uuids::uuid id = uuidGen_();
-  td.id = id;
+boost::uuids::uuid ElasticTaskManager::addElasticTask(boost::uuids::uuid id, double flopsTask, double interSpawnDelay, double s) {
+  TaskDescription td(id, flopsTask, interSpawnDelay, Engine::get_instance()->get_clock(), s);
   tasks.insert({id, td});
 
   if (interSpawnDelay > 0.0) {
@@ -51,8 +49,8 @@ boost::uuids::uuid ElasticTaskManager::addElasticTask(double flopsTask, double i
   return id;
 }
 
-boost::uuids::uuid ElasticTaskManager::addElasticTask(double flopsTask, double interSpawnDelay) {
-  return addElasticTask(flopsTask, interSpawnDelay, -1);
+boost::uuids::uuid ElasticTaskManager::addElasticTask(boost::uuids::uuid id, double flopsTask, double interSpawnDelay) {
+  return addElasticTask(id, flopsTask, interSpawnDelay, -1);
 }
 
 void ElasticTaskManager::addHost(Host *host) {
@@ -96,7 +94,7 @@ void ElasticTaskManager::removeTaskExecs(boost::uuids::uuid id) {  // remove all
     if(strcmp(typeid(nextEvtQueue.top()).name(), "TaskDescription")) {
       newNextEvtQueue.push(nextEvtQueue.top());
     } else if (const TaskDescription* t = dynamic_cast<const TaskDescription*>(nextEvtQueue.top())) {
-      if (t->id != id) {
+      if (t->id_ != id) {
         newNextEvtQueue.push(nextEvtQueue.top());
       } else {
         delete nextEvtQueue.top();
@@ -179,9 +177,6 @@ void ElasticTaskManager::removeHost(int i){
   }
 }
 
-/**
- * WARNING: doesn't count booting instances, only active ones
- */
 unsigned int ElasticTaskManager::getInstanceAmount(){
   return availableHostsList_.size();
 }
@@ -210,10 +205,10 @@ void ElasticTaskManager::pollnet(){
   Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(rcvMailbox_.c_str());
   while(keepGoing){
     try{
-      std::map<std::string, double>* taskRequest = static_cast<std::map<std::string, double>*>(recvMB->get(10));
-      boost::uuids::uuid i = addElasticTask(processRatio_, 0, taskRequest->at("size"));
+      TaskDescription* taskRequest = static_cast<TaskDescription*>(recvMB->get(10));
+      boost::uuids::uuid i = addElasticTask(taskRequest->id_, processRatio_, 0, taskRequest->dSize);
       triggerOneTimeTask(i);
-      XBT_DEBUG("POLLING RECEIVED size %f", taskRequest->find("size")->second);
+      XBT_DEBUG("POLLING RECEIVED size %f %s", taskRequest->dSize, boost::uuids::to_string(taskRequest->id_).c_str());
       //delete taskRequest;
       sleep_sem->release();
     }catch(simgrid::TimeoutException){}
@@ -231,30 +226,23 @@ void ElasticTaskManager::run() {
   unsigned long long task_count = 0;
   simgrid::s4u::Actor::create(rcvMailbox_+"polling",s4u::Host::current(),[&]{pollnet();});
   while(1) {
-    //XBT_DEBUG("starting loop, event queue size: %d, %d tasks", nextEvtQueue.size(), tasks.size());
-
-
     // execute events that need be executed now
     while(!nextEvtQueue.empty() && nextEvtQueue.top()->date <= Engine::get_instance()->get_clock()) {
-      //XBT_INFO("In run: %d, nextEvtQueue: %d, netxEvt date: %lf",
-      //  tasks.size(), nextEvtQueue.size(), nextEvtQueue.top()->date);
+      XBT_DEBUG("In run: %d, nextEvtQueue: %d, netxEvt date: %lf",
+        tasks.size(), nextEvtQueue.size(), nextEvtQueue.top()->date);
       EvntQ *currentEvent = nextEvtQueue.top();
       nextEvtQueue.pop();
 
       if (RatioChange* t = dynamic_cast<RatioChange*>(currentEvent)) {
         changeRatio(t->id, t->visitsPerSec);
-      }else if(BootInstance* t = dynamic_cast<BootInstance*>(currentEvent)){
-        //
-      }else if (TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent)) {
+      } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent)) {
         if (availableHostsList_.size() <= nextHost_)
           nextHost_ = 0;
 	      XBT_DEBUG("create actor");
         simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(rcvMailbox_+"_data");
-        std::map<std::string, double>* a = new std::map<std::string, double>();
-        a->insert(std::pair<std::string, double>("size",t->dSize));
-        a->insert(std::pair<std::string, double>("flops",processRatio_));
+
         try{
-        mbp->put(a, (t->dSize == -1) ? 1 : t->dSize);
+          mbp->put(t, (t->dSize == -1) ? 1 : t->dSize);
         }catch(simgrid::TimeoutException e){}
 	      ++task_count;
 
@@ -321,7 +309,7 @@ int64_t ElasticTaskManager::getAmountOfExecutingRequests(){
   return executingReqAmount_;
 }
 
-void ElasticTaskManager::setOutputFunction(std::function<void(std::map<std::string,double>*)> f)
+void ElasticTaskManager::setOutputFunction(std::function<void(TaskDescription*)> f)
 {
   outputFunction = f;
 }
@@ -330,7 +318,7 @@ void ElasticTaskManager::setOutputFunction(std::function<void(std::map<std::stri
 // TaskInstance
 
 TaskInstance::TaskInstance(ElasticTaskManager* etm,  std::string mbName,
-  std::function<void(std::map<std::string,double>*)> outputFunction, int maxReqInInst, double bootTime)
+  std::function<void(TaskDescription*)> outputFunction, int maxReqInInst, double bootTime)
   : etm_(etm), mbName_(mbName), outputFunction_(outputFunction), keepGoing_(true), maxReqInInst_(maxReqInInst), bootTime_(bootTime)
 {
   n_empty_ = s4u::Semaphore::create(maxReqInInst);
@@ -338,7 +326,7 @@ TaskInstance::TaskInstance(ElasticTaskManager* etm,  std::string mbName,
 }
 
 TaskInstance::TaskInstance(ElasticTaskManager* etm, std::string mbName,
-      std::function<void(std::map<std::string,double>*)> outputFunction)
+      std::function<void(TaskDescription*)> outputFunction)
   :TaskInstance(etm,mbName,outputFunction,100, 0)
   {}
 
@@ -356,8 +344,10 @@ void TaskInstance::pollTasks()
     if(!(n==0))
       continue;
     try{
-      std::map<std::string, double>* taskRequest = static_cast<std::map<std::string, double>*>(mbp->get(5));
-      reqs.push_back(taskRequest);
+      TaskDescription* taskRequest = static_cast<TaskDescription*>(mbp->get(5));
+      TaskDescription* tr = new TaskDescription(*taskRequest);
+      delete taskRequest;
+      reqs.push_back(tr);
       //XBT_INFO("instance received a request, queue size: %d", reqs.size());
       n_full_->release();
       //run_sem_->release();
@@ -367,7 +357,7 @@ void TaskInstance::pollTasks()
 
 void TaskInstance::run()
 {
-  simgrid::s4u::ActorPtr poll = simgrid::s4u::Actor::create(mbName_+boost::uuids::to_string(boost::uuids::random_generator()()),s4u::Host::current(),[&]{pollTasks();});
+  simgrid::s4u::ActorPtr poll = simgrid::s4u::Actor::create(mbName_+boost::uuids::to_string(uuidGen_()),s4u::Host::current(),[&]{pollTasks();});
 
   // boot duration (just sleep so that we don't process any request in the node until bootime elapsed)
   this_actor::sleep_for(bootTime_);
@@ -384,17 +374,16 @@ void TaskInstance::run()
         continue;
       }
       // receive data from mailbox
-      std::map<std::string, double>* a = reqs.at(0);// = static_cast<std::map<std::string, double>*>(recMb_->get(10));
+      TaskDescription* a = reqs.at(0);// = static_cast<std::map<std::string, double>*>(recMb_->get(10));
       reqs.erase(reqs.begin());
       //XBT_INFO("received req %f %f", a->at("flops"), a->at("size"));
       // update counters
 
-      double nFl = a->at("flops");
-      Actor::create("exec"+boost::uuids::to_string(boost::uuids::random_generator()()), this_actor::get_host(), [this, nFl, a] {
+      Actor::create("exec"+boost::uuids::to_string(uuidGen_()), this_actor::get_host(), [this, a] {
         etm_->modifWaitingReqAmount(-1);
         etm_->modifExecutingReqAmount(1);
 
-        this_actor::execute(nFl);
+        this_actor::execute(a->flops);
         etm_->modifExecutingReqAmount(-1);
         n_empty_->release();
 
@@ -412,7 +401,7 @@ void TaskInstance::kill()
 
 
 // ELASTICTASK ---------------------------------------------------------------------------------------------------------
-
+/*
 ElasticTask::ElasticTask(double flopsTask, double interSpawnDelay, ElasticTaskManager *etm_) {
   etm = etm_;
   id = etm->addElasticTask(flopsTask, interSpawnDelay);
@@ -454,3 +443,4 @@ void ElasticTask::triggerOneTime(double ratioLoad) {
 void ElasticTask::setTimestampsFile(std::string filename) {
   etm->setTimestampsFile(id, filename);
 }
+*/

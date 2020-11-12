@@ -38,12 +38,6 @@ struct Comparator {
   }
 };
 
-class BootInstance : public EvntQ {
-  public:
-    simgrid::s4u::Host* host_;
-    BootInstance(simgrid::s4u::Host* host, double date):EvntQ(date), host_(host){}
-};
-
 class RatioChange : public EvntQ {
   public:
     boost::uuids::uuid id;
@@ -59,7 +53,7 @@ class RatioChange : public EvntQ {
 
 class TaskDescription : public EvntQ {
   public:
-    boost::uuids::uuid id;
+    boost::uuids::uuid id_;
     double flops;
     double interSpawnDelay;
     bool repeat = true;
@@ -69,16 +63,16 @@ class TaskDescription : public EvntQ {
     double dSize;
     double startTime;
 
-    TaskDescription(double flops_, double interSpawnDelay_, double date_, double dSize_)
-        : EvntQ(date_), flops(flops_), interSpawnDelay(interSpawnDelay_), dSize(dSize_) {
+    TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_, double date_, double dSize_)
+        : EvntQ(date_), id_(id), flops(flops_), interSpawnDelay(interSpawnDelay_), dSize(dSize_) {
       ts_file = new std::ifstream;
     }
 
-    TaskDescription(double flops_, double interSpawnDelay_, double date_)
-        : TaskDescription(flops_, interSpawnDelay_, date_, -1) {
+    TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_, double date_)
+        : TaskDescription(id, flops_, interSpawnDelay_, date_, -1) {
     }
-    TaskDescription(double flops_, double interSpawnDelay_)
-      : TaskDescription(flops_, interSpawnDelay_, 0.0) {}
+    TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_)
+      : TaskDescription(id, flops_, interSpawnDelay_, 0.0) {}
 };
 
 namespace simgrid {
@@ -89,7 +83,7 @@ class TaskInstance;
 /** @brief */
 class ElasticTaskManager {
   private:
-    std::function<void(std::map<std::string,double>*)> outputFunction = [](std::map<std::string,double>*) {};
+    std::function<void(TaskDescription*)> outputFunction = [](TaskDescription*) {};
     std::vector<simgrid::s4u::Host*> availableHostsList_;
     std::string rcvMailbox_;
     std::map<boost::uuids::uuid, TaskDescription> tasks;
@@ -108,8 +102,8 @@ class ElasticTaskManager {
   public:
     ElasticTaskManager(std::string name);
 
-    boost::uuids::uuid addElasticTask(double flopsTask, double interSpawnDelay);
-    boost::uuids::uuid addElasticTask(double flopsTask, double interSpawnDelay, double s);
+    boost::uuids::uuid addElasticTask(boost::uuids::uuid id, double flopsTask, double interSpawnDelay);
+    boost::uuids::uuid addElasticTask(boost::uuids::uuid id, double flopsTask, double interSpawnDelay, double s);
     void pollnet();
     void addRatioChange(boost::uuids::uuid id, double date, double visitsPerSec);
     void addHost(Host *host);
@@ -127,7 +121,7 @@ class ElasticTaskManager {
 
     void triggerOneTimeTask(boost::uuids::uuid id);
     void triggerOneTimeTask(boost::uuids::uuid id, double ratioLoad);
-    void setOutputFunction(std::function<void(std::map<std::string,double>*)> code);
+    void setOutputFunction(std::function<void(TaskDescription*)> code);
     void setTimestampsFile(boost::uuids::uuid id, std::string filename);
 
     void kill();
@@ -143,30 +137,32 @@ class ElasticTaskManager {
 class TaskInstance {
   private:
     bool keepGoing_;
-    std::function<void(std::map<std::string,double>*)> outputFunction_ = [](std::map<std::string,double>*) {};
+    std::function<void(TaskDescription*)> outputFunction_ = [](TaskDescription*) {};
     ElasticTaskManager* etm_;
     std::string mbName_;
 
     simgrid::s4u::SemaphorePtr n_empty_;
     simgrid::s4u::SemaphorePtr n_full_;
     double bootTime_;
+    boost::uuids::random_generator uuidGen_;
 
     int maxReqInInst_;
-    std::vector<std::map<std::string,double>*> reqs;
+    std::vector<TaskDescription*> reqs;
 
     void pollTasks();
   public:
     TaskInstance(ElasticTaskManager* etm, std::string mbName,
-      std::function<void(std::map<std::string,double>*)> outputFunction,
+      std::function<void(TaskDescription*)> outputFunction,
       int maxReqInst, double bootTime);
     TaskInstance(ElasticTaskManager* etm, std::string mbName,
-      std::function<void(std::map<std::string,double>*)> outputFunction);
+      std::function<void(TaskDescription*)> outputFunction);
 
 
     void run();
     void kill();
 };
 
+/*
 class ElasticTask {
   private:
     boost::uuids::uuid id;
@@ -184,7 +180,7 @@ class ElasticTask {
     void setTimestampsFile(std::string filename);
     inline boost::uuids::uuid getId(){ return id; }
 };
-
+*/
 }}
 
 #endif //ELASTICTASK_HPP
