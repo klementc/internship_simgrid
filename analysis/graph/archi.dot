@@ -1,0 +1,5 @@
+digraph D {
+  rankdir="LR"
+  S1 -> {S2A, S2B} -> {S3}
+
+}

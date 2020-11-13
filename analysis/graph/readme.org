@@ -1,0 +1,34 @@
+* Graph experiment
+
+In this experiment, we try to analyze the performance of our system using a
+DAG structure.
+
+[[./archi.png]]
+
+Here we can see that service S1 sends messages to both S2A and S2B. Then S3 acts
+as a "barrier" and waits for the answer from both S2A and S2B to come for a give
+request (each requests have an UUID) before executing it.
+
+We use the same load as in the simple and simple3services experiments.
+
+* Same S2A and S2B compute load
+
+[[./Rplot_same_2nd_flop.png]]
+
+We observe the exact same as simple3services, except that we have an additional
+service. Because we have no network congestion, and no machine limitations, we
+have the same durations etc...
+
+* Different S2A and S2B compute load
+
+[[./Rplot_diff_2nd_flop.png]]
+
+Here we can see S2A is the same as previously however S2B requires to compute
+more flops (twice as much). Thus it has twice as many instances.
+What would be interesting is to limit the maximum amount of instances to see how
+it impacts the service rate of S3.
+ 
+* Different load and limited amount of instances
+
+**TODO**
+

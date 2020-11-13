@@ -85,7 +85,11 @@ class ElasticTaskManager {
   private:
     std::function<void(TaskDescription*)> outputFunction = [](TaskDescription*) {};
     std::vector<simgrid::s4u::Host*> availableHostsList_;
-    std::string rcvMailbox_;
+    std::string serviceName_;
+    std::vector<std::string> incMailboxes_;
+    // used for requests to wait for all dependencies to be received within a graph node
+    // (respect precedence constraints and don't execute a task before all it's data arrived)
+    std::map<boost::uuids::uuid, std::vector<TaskDescription>> tempData;
     std::map<boost::uuids::uuid, TaskDescription> tasks;
     std::vector<TaskInstance*> tiList;
     std::priority_queue<EvntQ*, std::vector<EvntQ*>, Comparator> nextEvtQueue;
@@ -100,11 +104,12 @@ class ElasticTaskManager {
     boost::uuids::random_generator uuidGen_;
 
   public:
+    ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes);
     ElasticTaskManager(std::string name);
 
     boost::uuids::uuid addElasticTask(boost::uuids::uuid id, double flopsTask, double interSpawnDelay);
     boost::uuids::uuid addElasticTask(boost::uuids::uuid id, double flopsTask, double interSpawnDelay, double s);
-    void pollnet();
+    void pollnet(std::string mbName);
     void addRatioChange(boost::uuids::uuid id, double date, double visitsPerSec);
     void addHost(Host *host);
     void removeHost(int i);

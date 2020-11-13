@@ -21,14 +21,19 @@ using namespace s4u;
 XBT_LOG_NEW_DEFAULT_CATEGORY(elastic, "elastic tasks");
 
 // ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
-ElasticTaskManager::ElasticTaskManager(std::string name)
-  : rcvMailbox_(name), nextHost_(0), keepGoing(true), processRatio_(1e7), waitingReqAmount_(0), bootDuration_(0), executingReqAmount_(0)
+ElasticTaskManager::ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes)
+  : serviceName_(name), incMailboxes_(incMailboxes), nextHost_(0),
+    keepGoing(true), processRatio_(1e7), waitingReqAmount_(0),
+    bootDuration_(0), executingReqAmount_(0)
 {
-  XBT_DEBUG("%s", rcvMailbox_.c_str());
+  XBT_DEBUG("Creating TaskManager %s", serviceName_.c_str());
   sg_host_load_plugin_init();
   sleep_sem = s4u::Semaphore::create(0);
   modif_sem_ = s4u::Semaphore::create(1);
 }
+ElasticTaskManager::ElasticTaskManager(std::string name)
+  : ElasticTaskManager(name, std::vector<std::string>(1, name))
+{}
 
 void ElasticTaskManager::setProcessRatio(int64_t pr)
 {
@@ -56,7 +61,7 @@ boost::uuids::uuid ElasticTaskManager::addElasticTask(boost::uuids::uuid id, dou
 void ElasticTaskManager::addHost(Host *host) {
   availableHostsList_.push_back(host);
   XBT_DEBUG("created instance: %d", availableHostsList_.size());
-  TaskInstance* ti = new TaskInstance(this,rcvMailbox_+"_data", outputFunction);
+  TaskInstance* ti = new TaskInstance(this,serviceName_+"_data", outputFunction);
   tiList.push_back(ti);
   Actor::create("TI"+boost::uuids::to_string(boost::uuids::random_generator()()), host, [&]{ti->run();});
 }
@@ -198,13 +203,34 @@ void ElasticTaskManager::kill() {
   }
 }
 
-void ElasticTaskManager::pollnet(){
-  Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(rcvMailbox_.c_str());
+void ElasticTaskManager::pollnet(std::string mboxName){
+  Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(mboxName.c_str());
   while(keepGoing){
     try{
       TaskDescription* taskRequest = static_cast<TaskDescription*>(recvMB->get(10));
+
+      //???????????????????????????????????????????????????????????????????????????????
+      // TODO which size and compute to put when multiple inputs???????????????????????
+      //???????????????????????????????????????????????????????????????????????????????
       boost::uuids::uuid i = addElasticTask(taskRequest->id_, processRatio_, 0, taskRequest->dSize);
-      triggerOneTimeTask(i);
+
+      if(incMailboxes_.size() == 1)
+        triggerOneTimeTask(i);
+      else
+      {
+        std::vector<TaskDescription> v =
+          (tempData.find(taskRequest->id_)!=tempData.end()) ?
+            tempData.find(taskRequest->id_)->second : std::vector<TaskDescription>();
+
+        v.push_back(*taskRequest);
+        tempData.insert(std::pair<boost::uuids::uuid,std::vector<TaskDescription>>(taskRequest->id_, v));
+
+        if(v.size() == incMailboxes_.size())
+          triggerOneTimeTask(i);
+          // remove data
+          tempData.erase(taskRequest->id_);
+      }
+
       XBT_DEBUG("POLLING RECEIVED size %f %s", taskRequest->dSize, boost::uuids::to_string(taskRequest->id_).c_str());
       sleep_sem->release();
     }catch(simgrid::TimeoutException){}
@@ -218,9 +244,14 @@ void ElasticTaskManager::pollnet(){
  */
 void ElasticTaskManager::run() {
   // mailbox for incoming requests from other services
-  Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(rcvMailbox_.c_str());
   unsigned long long task_count = 0;
-  simgrid::s4u::Actor::create(rcvMailbox_+"polling",s4u::Host::current(),[&]{pollnet();});
+
+  for(auto s : incMailboxes_) {
+    Mailbox* rec = simgrid::s4u::Mailbox::by_name(s.c_str());
+    simgrid::s4u::Actor::create(serviceName_+"_"+s+"polling",s4u::Host::current(),[&]{pollnet(s);});
+  }
+  //Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(rcvMailbox_.c_str());
+  //simgrid::s4u::Actor::create(rcvMailbox_+"polling",s4u::Host::current(),[&]{pollnet();});
   while(1) {
     // execute events that need be executed now
     while(!nextEvtQueue.empty() && nextEvtQueue.top()->date <= Engine::get_instance()->get_clock()) {
@@ -235,7 +266,7 @@ void ElasticTaskManager::run() {
         if (availableHostsList_.size() <= nextHost_)
           nextHost_ = 0;
 	      XBT_DEBUG("create actor");
-        simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(rcvMailbox_+"_data");
+        simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(serviceName_+"_data");
 
         try{
           mbp->put(t, (t->dSize == -1) ? 1 : t->dSize);
