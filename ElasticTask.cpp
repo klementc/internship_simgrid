@@ -214,10 +214,10 @@ void ElasticTaskManager::pollnet(std::string mboxName){
       //???????????????????????????????????????????????????????????????????????????????
       boost::uuids::uuid i = addElasticTask(taskRequest->id_, processRatio_, 0, taskRequest->dSize);
 
-      if(incMailboxes_.size() == 1)
+      if(incMailboxes_.size() == 1) {
         triggerOneTimeTask(i);
-      else
-      {
+        sleep_sem->release();
+      } else {
         std::vector<TaskDescription> v =
           (tempData.find(taskRequest->id_)!=tempData.end()) ?
             tempData.find(taskRequest->id_)->second : std::vector<TaskDescription>();
@@ -225,14 +225,14 @@ void ElasticTaskManager::pollnet(std::string mboxName){
         v.push_back(*taskRequest);
         tempData.insert(std::pair<boost::uuids::uuid,std::vector<TaskDescription>>(taskRequest->id_, v));
 
-        if(v.size() == incMailboxes_.size())
+        if(v.size() == incMailboxes_.size()) {
           triggerOneTimeTask(i);
           // remove data
           tempData.erase(taskRequest->id_);
+          XBT_DEBUG("POLLING RECEIVED size %f %s", taskRequest->dSize, boost::uuids::to_string(taskRequest->id_).c_str());
+          sleep_sem->release();
+        }
       }
-
-      XBT_DEBUG("POLLING RECEIVED size %f %s", taskRequest->dSize, boost::uuids::to_string(taskRequest->id_).c_str());
-      sleep_sem->release();
     }catch(simgrid::TimeoutException){}
   }
 }
@@ -249,6 +249,7 @@ void ElasticTaskManager::run() {
   for(auto s : incMailboxes_) {
     Mailbox* rec = simgrid::s4u::Mailbox::by_name(s.c_str());
     simgrid::s4u::Actor::create(serviceName_+"_"+s+"polling",s4u::Host::current(),[&]{pollnet(s);});
+    XBT_INFO("polling on mailbox %s", s.c_str());
   }
   //Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(rcvMailbox_.c_str());
   //simgrid::s4u::Actor::create(rcvMailbox_+"polling",s4u::Host::current(),[&]{pollnet();});

@@ -10,12 +10,12 @@
 XBT_LOG_NEW_DEFAULT_CATEGORY(Graph_log, "logs for the Graph experiment");
 
 void return2a(TaskDescription* a){
-  s4u_Mailbox* m = s4u_Mailbox::by_name("s3");
+  s4u_Mailbox* m = s4u_Mailbox::by_name("s3a");
   m->put(a, a->dSize);
 }
 
 void return2b(TaskDescription* a){
-  s4u_Mailbox* m = s4u_Mailbox::by_name("s3");
+  s4u_Mailbox* m = s4u_Mailbox::by_name("s3b");
   m->put(a, a->dSize);
 }
 
@@ -38,7 +38,10 @@ void run()
   std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm1 = std::make_shared<simgrid::s4u::ElasticTaskManager>("s1");
   std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm2a = std::make_shared<simgrid::s4u::ElasticTaskManager>("s2A");
   std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm2b = std::make_shared<simgrid::s4u::ElasticTaskManager>("s2B");
-  std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm3 = std::make_shared<simgrid::s4u::ElasticTaskManager>("s3");
+  std::vector<std::string> v = std::vector<std::string>();
+  v.push_back("s3a");
+  v.push_back("s3b");
+  std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm3 = std::make_shared<simgrid::s4u::ElasticTaskManager>("s3", v);
   etm1->setOutputFunction(return1);
   etm2a->setOutputFunction(return2a);
   etm2b->setOutputFunction(return2b);
@@ -76,7 +79,7 @@ void run()
 
   etm1->setProcessRatio(1e8);
   etm2a->setProcessRatio(1e9);
-  etm2b->setProcessRatio(2e9);
+  etm2b->setProcessRatio(1e9);
   etm3->setProcessRatio(5e7);
 
   // interval between adding a new instance and using it
