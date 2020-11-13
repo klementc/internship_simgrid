@@ -162,25 +162,6 @@ class TaskInstance {
     void kill();
 };
 
-/*
-class ElasticTask {
-  private:
-    boost::uuids::uuid id;
-    ElasticTaskManager *etm;
-  public:
-    ElasticTask(double flopsTask, double interSpawnDelay, ElasticTaskManager *etm_);
-    ElasticTask(double flopsTask, ElasticTaskManager *etm_);
-    ElasticTask(double flopsTask, std::vector<RatioChange> fluctuations, ElasticTaskManager *etm_);
-    ~ElasticTask();
-
-    void setTriggerRatioVariation(std::vector<RatioChange> fluctuations);
-    void setRatioVariation(double interSpawnDelay);
-    void triggerOneTime();
-    void triggerOneTime(double ratioLoad);
-    void setTimestampsFile(std::string filename);
-    inline boost::uuids::uuid getId(){ return id; }
-};
-*/
 }}
 
 #endif //ELASTICTASK_HPP

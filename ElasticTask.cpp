@@ -129,7 +129,7 @@ void ElasticTaskManager::triggerOneTimeTask(boost::uuids::uuid id) {
   newTask->repeat = false;
   newTask->date = 0.0;
   nextEvtQueue.push(newTask);
-    // one more pending request
+  // one more pending request
   modifWaitingReqAmount(1);
   sleep_sem->release();
 }
@@ -182,9 +182,7 @@ unsigned int ElasticTaskManager::getInstanceAmount(){
 std::vector<double> ElasticTaskManager::getCPULoads(){
   std::vector<double> v;
   for (int i=0; i<availableHostsList_.size();i++){
-    //v.push_back(sg_host_get_average_load(availableHostsList_.at(i)));
     v.push_back(sg_host_get_current_load(availableHostsList_.at(i)));
-    //sg_host_load_reset(availableHostsList_.at(i));
   }
   return v;
 }
@@ -208,7 +206,6 @@ void ElasticTaskManager::pollnet(){
       boost::uuids::uuid i = addElasticTask(taskRequest->id_, processRatio_, 0, taskRequest->dSize);
       triggerOneTimeTask(i);
       XBT_DEBUG("POLLING RECEIVED size %f %s", taskRequest->dSize, boost::uuids::to_string(taskRequest->id_).c_str());
-      //delete taskRequest;
       sleep_sem->release();
     }catch(simgrid::TimeoutException){}
   }
@@ -245,7 +242,8 @@ void ElasticTaskManager::run() {
         }catch(simgrid::TimeoutException e){}
 	      ++task_count;
 
-        removeTask(t->id_);
+        if(! t->repeat)
+          removeTask(t->id_);
 
         nextHost_++;
         nextHost_ = nextHost_ % availableHostsList_.size();
@@ -267,8 +265,6 @@ void ElasticTaskManager::run() {
             }
             nextEvtQueue.push(t);
           }
-        } else{
-          //removeTask(t->id);
         }
       } else {
         std::cout << "wut";
@@ -337,11 +333,7 @@ void TaskInstance::pollTasks()
 {
   simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(mbName_);
   while(keepGoing_) {
-
-    //if(reqs.size()>=maxReqInInst_)
-    //  sleep_sem_->acquire();
     int n = n_empty_->acquire_timeout(10);
-   // XBT_INFO("recn: %d",n);
     if(!(n==0))
       continue;
     try{
@@ -349,9 +341,8 @@ void TaskInstance::pollTasks()
       TaskDescription* tr = new TaskDescription(*taskRequest);
       delete taskRequest;
       reqs.push_back(tr);
-      //XBT_INFO("instance received a request, queue size: %d", reqs.size());
+      XBT_DEBUG("instance received a request, queue size: %d", reqs.size());
       n_full_->release();
-      //run_sem_->release();
     }catch(TimeoutException e){}
   }
 }
@@ -365,9 +356,7 @@ void TaskInstance::run()
 
   while(keepGoing_){
     try{
-      //int n = run_sem_->acquire_timeout(10);
       int n = n_full_->acquire_timeout(10);
-      //XBT_INFO("usemn: %d",n);
       if(!(n==0))
         continue;
 
@@ -377,8 +366,7 @@ void TaskInstance::run()
       // receive data from mailbox
       TaskDescription* a = reqs.at(0);// = static_cast<std::map<std::string, double>*>(recMb_->get(10));
       reqs.erase(reqs.begin());
-      //XBT_INFO("received req %f %f", a->at("flops"), a->at("size"));
-      // update counters
+      XBT_DEBUG("instance received req %f %f", a->flops, a->dSize);
 
       Actor::create("exec"+boost::uuids::to_string(uuidGen_()), this_actor::get_host(), [this, a] {
         etm_->modifWaitingReqAmount(-1);
@@ -399,49 +387,3 @@ void TaskInstance::kill()
 {
   keepGoing_ = false;
 }
-
-
-// ELASTICTASK ---------------------------------------------------------------------------------------------------------
-/*
-ElasticTask::ElasticTask(double flopsTask, double interSpawnDelay, ElasticTaskManager *etm_) {
-  etm = etm_;
-  id = etm->addElasticTask(flopsTask, interSpawnDelay);
-}
-
-ElasticTask::ElasticTask(double flopsTask, ElasticTaskManager *etm_) {
-  etm = etm_;
-  id = etm->addElasticTask(flopsTask, 0.0);
-}
-
-ElasticTask::ElasticTask(double flopsTask, std::vector<RatioChange> fluctuations,
-                         ElasticTaskManager *etm_) {
-  etm = etm_;
-  id = etm->addElasticTask(flopsTask, 0.0);
-  setTriggerRatioVariation(fluctuations);
-}
-
-void ElasticTask::setTriggerRatioVariation(std::vector<RatioChange> fluctuations) {
-  etm->removeRatioChanges(id);
-  for(std::vector<RatioChange>::iterator it = fluctuations.begin(); it != fluctuations.end(); ++it) {
-    etm->addRatioChange(id, (*it).date, (*it).visitsPerSec);
-  }
-}
-
-void ElasticTask::setRatioVariation(double interSpawnDelay) {
-  etm->removeRatioChanges(id);
-  etm->changeRatio(id, interSpawnDelay);
-}
-
-void ElasticTask::triggerOneTime() {
-  etm->triggerOneTimeTask(id);
-}
-
-void ElasticTask::triggerOneTime(double ratioLoad) {
-  etm->triggerOneTimeTask(id, ratioLoad);
-}
-
-
-void ElasticTask::setTimestampsFile(std::string filename) {
-  etm->setTimestampsFile(id, filename);
-}
-*/
