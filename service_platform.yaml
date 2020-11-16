@@ -1,0 +1,36 @@
+services:
+  service1:
+    managerNode: cb1-1
+    initNodes:
+      - cb1-1
+    mailboxesIn:
+      - service1
+    mailboxesOut:
+      - service2
+    processRatio: 1e9
+    dataRatio: 1
+    instanceBootDuration: 2
+
+policies:
+  cpuPol1:
+    type: ElasticPolicyCPUThreshold
+    params:
+      - 10
+      - 0.2
+      - 0.95
+    services:
+      - service1
+    executingNode: cb1-1
+    nodePool:
+      - cb1-1
+      - cb1-2
+      - cb1-3
+      - cb1-4
+      - cb1-5
+      - cb1-6
+      - cb1-7
+      - cb1-8
+
+timestamps:
+  filePath: default1TimeStamps.csv
+  mailboxIn: service1
