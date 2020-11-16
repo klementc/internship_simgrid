@@ -102,6 +102,7 @@ class ElasticTaskManager {
     double bootDuration_;
     simgrid::s4u::SemaphorePtr modif_sem_;
     boost::uuids::random_generator uuidGen_;
+    double dataSizeRatio_;
 
   public:
     ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes);
@@ -123,6 +124,8 @@ class ElasticTaskManager {
     int64_t getAmountOfExecutingRequests();
     void modifExecutingReqAmount(int n);
     void modifWaitingReqAmount(int n);
+    void setDataSizeRatio(double r);
+    double getDataSizeRatio();
 
     void triggerOneTimeTask(boost::uuids::uuid id);
     void triggerOneTimeTask(boost::uuids::uuid id, double ratioLoad);

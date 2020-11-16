@@ -24,7 +24,7 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(elastic, "elastic tasks");
 ElasticTaskManager::ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes)
   : serviceName_(name), incMailboxes_(incMailboxes), nextHost_(0),
     keepGoing(true), processRatio_(1e7), waitingReqAmount_(0),
-    bootDuration_(0), executingReqAmount_(0)
+    bootDuration_(0), executingReqAmount_(0), dataSizeRatio_(1)
 {
   XBT_DEBUG("Creating TaskManager %s", serviceName_.c_str());
   sg_host_load_plugin_init();
@@ -203,6 +203,14 @@ void ElasticTaskManager::kill() {
   }
 }
 
+void ElasticTaskManager::setDataSizeRatio(double r) {
+  dataSizeRatio_ = r;
+}
+
+double ElasticTaskManager::getDataSizeRatio() {
+  return dataSizeRatio_;
+}
+
 void ElasticTaskManager::pollnet(std::string mboxName){
   Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(mboxName.c_str());
   while(keepGoing){
@@ -371,6 +379,7 @@ void TaskInstance::pollTasks()
     try{
       TaskDescription* taskRequest = static_cast<TaskDescription*>(mbp->get(5));
       TaskDescription* tr = new TaskDescription(*taskRequest);
+      tr->dSize = tr->dSize*etm_->getDataSizeRatio();
       delete taskRequest;
       reqs.push_back(tr);
       XBT_DEBUG("instance received a request, queue size: %d", reqs.size());
