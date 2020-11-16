@@ -1,4 +1,5 @@
 import yaml
+from graphviz import Digraph
 
 
 class yamlDesc():
@@ -7,6 +8,14 @@ class yamlDesc():
       self.graphDesc = yaml.load(f, Loader=yaml.FullLoader)
       self.serviceList = [e for e in self.graphDesc["services"]]
       self.polList = [e for e in self.graphDesc["policies"]]
+
+  def genDot(self):
+    f = Digraph('graph services', filename='graph.gv')
+    f.attr(rankdir='LR')
+    for e in self.graphDesc["services"]:
+      for g in self.graphDesc["services"][e]["mailboxesOut"]:
+        f.edge(e, g)
+    f.render(filename='graph.dot')
 
   def retFunName(self, name):
     return "return"+name
@@ -146,3 +155,4 @@ y = yamlDesc("service_platform.yaml")
 #print(y.generateRun())
 
 print(y.genFullCode())
+y.genDot()
