@@ -24,7 +24,8 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(elastic, "elastic tasks");
 ElasticTaskManager::ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes)
   : serviceName_(name), incMailboxes_(incMailboxes), nextHost_(0),
     keepGoing(true), processRatio_(1e7), waitingReqAmount_(0),
-    bootDuration_(0), executingReqAmount_(0), dataSizeRatio_(1)
+    bootDuration_(0), executingReqAmount_(0), dataSizeRatio_(1),
+    counterExecSlot_(0), parallelTasksPerInst_(100)
 {
   XBT_DEBUG("Creating TaskManager %s", serviceName_.c_str());
   sg_host_load_plugin_init();
@@ -38,6 +39,15 @@ ElasticTaskManager::ElasticTaskManager(std::string name)
 void ElasticTaskManager::setProcessRatio(int64_t pr)
 {
   processRatio_ = pr;
+}
+
+void ElasticTaskManager::setParallelTasksPerInst(int s) {
+  xbt_assert(s>0, "Instances cannot execute a negative amount of tasks in parallel");
+  parallelTasksPerInst_ = s;
+}
+
+int ElasticTaskManager::getParallelTasksPerInst() {
+  return parallelTasksPerInst_;
 }
 
 boost::uuids::uuid ElasticTaskManager::addElasticTask(boost::uuids::uuid id, double flopsTask, double interSpawnDelay, double s) {
@@ -61,7 +71,7 @@ boost::uuids::uuid ElasticTaskManager::addElasticTask(boost::uuids::uuid id, dou
 void ElasticTaskManager::addHost(Host *host) {
   availableHostsList_.push_back(host);
   XBT_DEBUG("created instance: %d", availableHostsList_.size());
-  TaskInstance* ti = new TaskInstance(this,serviceName_+"_data", outputFunction);
+  TaskInstance* ti = new TaskInstance(this,serviceName_+"_data", outputFunction, parallelTasksPerInst_);
   tiList.push_back(ti);
   Actor::create("TI"+boost::uuids::to_string(boost::uuids::random_generator()()), host, [&]{ti->run();});
 }
@@ -351,6 +361,15 @@ void ElasticTaskManager::setOutputFunction(std::function<void(TaskDescription*)>
   outputFunction = f;
 }
 
+double ElasticTaskManager::reqPerSec() {
+  double tot =0;
+  for (auto i : tiList) {
+    simgrid::s4u::Host* a = i->getRunningHost();
+    if(a)
+      tot+=(a->get_pstate_speed(a->get_pstate())*a->get_core_count())/processRatio_;
+  }
+  return tot;
+}
 
 // TaskInstance
 
@@ -363,8 +382,8 @@ TaskInstance::TaskInstance(ElasticTaskManager* etm,  std::string mbName,
 }
 
 TaskInstance::TaskInstance(ElasticTaskManager* etm, std::string mbName,
-      std::function<void(TaskDescription*)> outputFunction)
-  :TaskInstance(etm,mbName,outputFunction,100, 0)
+      std::function<void(TaskDescription*)> outputFunction, int par)
+  :TaskInstance(etm,mbName,outputFunction,par, 0)
   {}
 
 
@@ -390,6 +409,7 @@ void TaskInstance::pollTasks()
 
 void TaskInstance::run()
 {
+  host_ = this_actor::get_host();
   simgrid::s4u::ActorPtr poll = simgrid::s4u::Actor::create(mbName_+boost::uuids::to_string(uuidGen_()),s4u::Host::current(),[&]{pollTasks();});
 
   // boot duration (just sleep so that we don't process any request in the node until bootime elapsed)
@@ -415,6 +435,7 @@ void TaskInstance::run()
 
         this_actor::execute(a->flops);
         etm_->modifExecutingReqAmount(-1);
+        etm_->setCounterExecSlot(etm_->getCounterExecSlot()+1);
         n_empty_->release();
 
         outputFunction_(a);

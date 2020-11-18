@@ -103,6 +103,8 @@ class ElasticTaskManager {
     simgrid::s4u::SemaphorePtr modif_sem_;
     boost::uuids::random_generator uuidGen_;
     double dataSizeRatio_;
+    int counterExecSlot_;
+    int parallelTasksPerInst_;
 
   public:
     ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes);
@@ -126,6 +128,8 @@ class ElasticTaskManager {
     void modifWaitingReqAmount(int n);
     void setDataSizeRatio(double r);
     double getDataSizeRatio();
+    void setParallelTasksPerInst(int s);
+    int getParallelTasksPerInst();
 
     void triggerOneTimeTask(boost::uuids::uuid id);
     void triggerOneTimeTask(boost::uuids::uuid id, double ratioLoad);
@@ -135,10 +139,13 @@ class ElasticTaskManager {
     void kill();
     void run();
 
-
     // basic metrics
     std::vector<double> getCPULoads();
     unsigned int getInstanceAmount();
+    inline int getCounterExecSlot(){return counterExecSlot_;}
+    inline void setCounterExecSlot(int v){counterExecSlot_=v;}
+    inline void resetCounterExecSlot(){counterExecSlot_=0;}
+    double reqPerSec();
 };
 
 
@@ -156,6 +163,7 @@ class TaskInstance {
 
     int maxReqInInst_;
     std::vector<TaskDescription*> reqs;
+    simgrid::s4u::Host* host_;
 
     void pollTasks();
   public:
@@ -163,11 +171,13 @@ class TaskInstance {
       std::function<void(TaskDescription*)> outputFunction,
       int maxReqInst, double bootTime);
     TaskInstance(ElasticTaskManager* etm, std::string mbName,
-      std::function<void(TaskDescription*)> outputFunction);
+      std::function<void(TaskDescription*)> outputFunction,
+      int maxReqInst);
 
 
     void run();
     void kill();
+    inline simgrid::s4u::Host* getRunningHost(){return host_;};
 };
 
 }}
