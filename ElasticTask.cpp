@@ -201,6 +201,7 @@ std::vector<double> ElasticTaskManager::getCPULoads(){
   std::vector<double> v;
   for (int i=0; i<availableHostsList_.size();i++){
     v.push_back(sg_host_get_current_load(availableHostsList_.at(i)));
+    //XBT_INFO("load: %s %f", availableHostsList_.at(i)->get_name().c_str(),sg_host_get_current_load(availableHostsList_.at(i)));
   }
   return v;
 }
@@ -434,7 +435,7 @@ void TaskInstance::run()
       Actor::create("exec"+boost::uuids::to_string(uuidGen_()), this_actor::get_host(), [this, a] {
         etm_->modifWaitingReqAmount(-1);
         etm_->modifExecutingReqAmount(1);
-
+        //XBT_INFO("load %f %f", this_actor::get_host()->get_load(),sg_host_get_current_load(this_actor::get_host()));
         this_actor::execute(a->flops);
         etm_->modifExecutingReqAmount(-1);
         etm_->setCounterExecSlot(etm_->getCounterExecSlot()+1);

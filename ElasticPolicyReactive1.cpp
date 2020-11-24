@@ -36,13 +36,19 @@ void ElasticPolicyReactive1::run()
     double E = etm->getAmountOfExecutingRequests();
 
     double L = E + (B/r_);
-    double R = etm->getInstanceAmount()*mAvg_;
+    double R = etm->getInstanceAmount()*mAvg_*getUpdateInterval();
 
     // TODO compute mAvg
 
     double D = L - R;
 
-    double nReactive = D/mAvg_;
+    double nReactive = D/(mAvg_*getUpdateInterval());
+
+    std::vector<double> lv = etm->getCPULoads();
+    double avgLoad = std::accumulate( lv.begin(), lv.end(), 0.0) / lv.size();
+    XBT_INFO("%f %d %d %d %d %f stats", avgLoad, etm->getInstanceAmount(), etm->getAmountOfWaitingRequests(),
+      etm->getAmountOfExecutingRequests(), etm->getCounterExecSlot(), etm->reqPerSec()*getUpdateInterval());
+    etm->resetCounterExecSlot();
 
     if(nReactive > 0 && D > k_){
       int newI = std::min(nReactive, (double)(hostPool_.size()-etm->getInstanceAmount()));
@@ -57,9 +63,9 @@ void ElasticPolicyReactive1::run()
       }
     }
 
-    std::vector<double> lv = etm->getCPULoads();
-    double avgLoad = std::accumulate( lv.begin(), lv.end(), 0.0) / lv.size();
-    XBT_INFO("%f %d %d %d stats", avgLoad, etm->getInstanceAmount(), etm->getAmountOfWaitingRequests(), etm->getAmountOfExecutingRequests());
+    //std::vector<double> lv = etm->getCPULoads();
+    //double avgLoad = std::accumulate( lv.begin(), lv.end(), 0.0) / lv.size();
+    //XBT_INFO("%f %d %d %d stats", avgLoad, etm->getInstanceAmount(), etm->getAmountOfWaitingRequests(), etm->getAmountOfExecutingRequests());
 
   }
 }

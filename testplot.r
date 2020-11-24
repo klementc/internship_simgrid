@@ -70,7 +70,7 @@ grid.arrange(gh,gi,gl,gm,gn)
 
 data2 <- read.csv("./analysis/FIFAtrace/t.csv")
 
-gh <- ggplot(data2, aes(x=timestamps))+geom_histogram(binwidth=10)
+gh <- ggplot(data2, aes(x=timestamps))+geom_histogram(binwidth=1)
 plot(gh)
 
 
@@ -79,19 +79,22 @@ d <- read.csv("./test.csv")
 gi <- ggplot(d, aes(x=timestamp, y=nInstances))+
   geom_point(size=1)+
   geom_line(color="blue")+
-  facet_wrap("policy", scales="free")
+  facet_wrap("policy", scales="free")+
+  expand_limits(y = 0)
 plot(gi)
 
 gl <- ggplot(d, aes(x=timestamp, y=load))+
   geom_point(size=.5)+
   geom_line(color="red", size=.5)+
-  facet_wrap("policy", scales="fixed")
+  facet_wrap("policy", scales="fixed")+
+  expand_limits(y = 0)
 plot(gl)
 
 gm <- ggplot(d, aes(x=timestamp, y=(waitingReq)))+
   geom_point(size=.5)+
   geom_line(color="green", size=.5)+
-  facet_wrap("policy", scales="free", )
+  facet_wrap("policy", scales="free", )+
+  expand_limits(y = 0)
 plot(gm)
 
 
@@ -101,12 +104,12 @@ plot(gm)
 #   facet_wrap("policy", scales="free", )
 # plot(gm)
 
-#data$cap <- (data$nInstances*8)*10
-#data$totr <- data$executingReq+data$execInSlot
+d$ta <- (d$execInSlot)/60
+d$tb <- d$parPerInst/60
 gn <- ggplot(NULL, aes())+
-  geom_line(data=d, aes(y=execInSlot,x=timestamp), color = "red") +
-  geom_line(data=d, aes(y=parPerInst,x=timestamp), color = "blue") +
-  geom_histogram(data=data2,aes(x=timestamps),binwidth=10, alpha=.5)
+  geom_line(data=d, aes(y=ta,x=timestamp), color = "red",size=2,alpha=.5) +
+  geom_line(data=d, aes(y=tb,x=timestamp), color = "blue") +
+  geom_histogram(data=data2,aes(x=timestamps),binwidth=1, alpha=.5)
 plot(gn)
 
 grid.arrange(gh,gi,gl,gm,gn)

@@ -31,7 +31,7 @@ void eve(std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm, int n) {
   XBT_INFO("Starting");
   simgrid::s4u::Actor::create("ETM", simgrid::s4u::Host::by_name("cb1-1"), [etm] { etm->run(); });
   // provision the policy with a list of usable hosts
-  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
+  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol = new simgrid::s4u::ElasticPolicyCPUThreshold(30,0.7,0.1);
   for(int i = 1; i < 200; i++) {
     cpuPol->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(i)));
   }

@@ -34,7 +34,9 @@ void ElasticPolicyCPUThreshold::run()
 
     std::vector<double> lv = etm->getCPULoads();
     double avgLoad = std::accumulate( lv.begin(), lv.end(), 0.0) / lv.size();
-
+    std::string s = "";
+    for(auto v: lv) s+= std::to_string(v)+" ";
+    //XBT_INFO("%s", s.c_str());
     XBT_INFO("%f %d %d %d %d %f stats", avgLoad, etm->getInstanceAmount(), etm->getAmountOfWaitingRequests(),
       etm->getAmountOfExecutingRequests(), etm->getCounterExecSlot(), etm->reqPerSec()*getUpdateInterval());
 
