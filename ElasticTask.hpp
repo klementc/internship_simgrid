@@ -115,7 +115,7 @@ class ElasticTaskManager {
     void pollnet(std::string mbName);
     void addRatioChange(boost::uuids::uuid id, double date, double visitsPerSec);
     void addHost(Host *host);
-    void removeHost(int i);
+    Host* removeHost(int i);
     void changeRatio(boost::uuids::uuid id, double visitsPerSec);
     void removeTaskExecs(boost::uuids::uuid id);
     void removeTask(boost::uuids::uuid id);

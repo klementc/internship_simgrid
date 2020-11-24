@@ -181,14 +181,17 @@ void ElasticTaskManager::setTimestampsFile(boost::uuids::uuid id, std::string fi
   sleep_sem->release();
 }
 
-void ElasticTaskManager::removeHost(int i){
+Host* ElasticTaskManager::removeHost(int i){
+  Host* h;
   if(i<availableHostsList_.size()){
+    h =  availableHostsList_.at(i);
     availableHostsList_.erase(availableHostsList_.begin()+i);
     tiList.at(i)->kill();
     tiList.erase(tiList.begin()+i);
   }else{
     XBT_INFO("Cannot remove element at position %d, overflow", i);
   }
+  return h;
 }
 
 unsigned int ElasticTaskManager::getInstanceAmount(){
@@ -206,7 +209,6 @@ std::vector<double> ElasticTaskManager::getCPULoads(){
  * Will stop run()'s infinite loop
  */
 void ElasticTaskManager::kill() {
-  XBT_INFO("!!!!!!!!!!!SIZE %d", tasks.size());
   keepGoing = false;
   for(int i=0;i<tiList.size();i++){
     tiList.at(i)->kill();
