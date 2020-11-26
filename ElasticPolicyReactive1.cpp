@@ -9,7 +9,13 @@
 
 using namespace simgrid;
 using namespace s4u;
-
+/**
+ * Policy trying to reproduce Algorithm2 of the following paper
+ * https://dl.acm.org/doi/pdf/10.1145/2287036.2287044?casa_token=ZavTCgDn1dcAAAAA:LA2SJsvCSk1CKFUT0Y_6r5Ho6VaoI0FOhMvh0lQpnRXVaFpsafjh7XntWafzh4wjwvFm591K68l0Ww
+ *
+ * It consists of a reactive only policy computing the amount of nodes required
+ * by using the amount of queued requests
+ */
 XBT_LOG_NEW_DEFAULT_CATEGORY(elasticPolicyReactive1, "Elastic tasks policy manager");
 
 ElasticPolicyReactive1::ElasticPolicyReactive1(double interval, double k, double r, double mAvg)
@@ -44,10 +50,11 @@ void ElasticPolicyReactive1::run()
 
     double nReactive = D/(mAvg_*getUpdateInterval());
 
+    int execInSlot=etm->getCounterExecSlot();
     std::vector<double> lv = etm->getCPULoads();
     double avgLoad = std::accumulate( lv.begin(), lv.end(), 0.0) / lv.size();
     XBT_INFO("%f %d %d %d %d %f stats", avgLoad, etm->getInstanceAmount(), etm->getAmountOfWaitingRequests(),
-      etm->getAmountOfExecutingRequests(), etm->getCounterExecSlot(), etm->reqPerSec()*getUpdateInterval());
+      etm->getAmountOfExecutingRequests(), execInSlot, etm->reqPerSec()*getUpdateInterval());
     etm->resetCounterExecSlot();
 
     if(nReactive > 0 && D > k_){
@@ -62,6 +69,9 @@ void ElasticPolicyReactive1::run()
         etm->removeHost(0);
       }
     }
+    XBT_INFO("%f %d %d %d %d %f stats", avgLoad, etm->getInstanceAmount(), etm->getAmountOfWaitingRequests(),
+      etm->getAmountOfExecutingRequests(), execInSlot, etm->reqPerSec()*getUpdateInterval());
+    etm->resetCounterExecSlot();
 
     //std::vector<double> lv = etm->getCPULoads();
     //double avgLoad = std::accumulate( lv.begin(), lv.end(), 0.0) / lv.size();

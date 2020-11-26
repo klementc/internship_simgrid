@@ -182,6 +182,7 @@ void ElasticTaskManager::setTimestampsFile(boost::uuids::uuid id, std::string fi
 }
 
 Host* ElasticTaskManager::removeHost(int i){
+  xbt_assert(availableHostsList_.size()>1, "Cannot have 0 instances");
   Host* h;
   if(i<availableHostsList_.size()){
     h =  availableHostsList_.at(i);
@@ -200,8 +201,10 @@ unsigned int ElasticTaskManager::getInstanceAmount(){
 std::vector<double> ElasticTaskManager::getCPULoads(){
   std::vector<double> v;
   for (int i=0; i<availableHostsList_.size();i++){
-    v.push_back(sg_host_get_current_load(availableHostsList_.at(i)));
+    //v.push_back(sg_host_get_current_load(availableHostsList_.at(i)));
     //XBT_INFO("load: %s %f", availableHostsList_.at(i)->get_name().c_str(),sg_host_get_current_load(availableHostsList_.at(i)));
+    v.push_back(sg_host_get_avg_load(availableHostsList_.at(i)));
+    sg_host_load_reset(availableHostsList_.at(i));
   }
   return v;
 }

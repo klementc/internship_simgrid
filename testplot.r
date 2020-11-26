@@ -77,7 +77,7 @@ plot(gh)
 d <- read.csv("./test.csv")
 
 gi <- ggplot(d, aes(x=timestamp, y=nInstances))+
-  geom_point(size=1)+
+  #geom_point(size=1)+
   geom_line(color="blue")+
   facet_wrap("policy", scales="free")+
   expand_limits(y = 0)
@@ -112,4 +112,4 @@ gn <- ggplot(NULL, aes())+
   geom_histogram(data=data2,aes(x=timestamps),binwidth=1, alpha=.5)
 plot(gn)
 
-grid.arrange(gh,gi,gl,gm,gn)
+grid.arrange(gi,gl,gm,gn)

@@ -63,6 +63,23 @@ class ElasticPolicyReactive1: public ElasticPolicy {
     virtual void run();
 };
 
+/**
+ * Hybrid policy taken from
+ * "Efficient Provisioning of Bursty Scientific Workloads on the Cloud Using Adaptive
+ * Elasticity Control"
+ */
+class ElasticPolicyHybrid1: public ElasticPolicy {
+  private:
+    double k_;
+    double r_;
+    double mAvg_;
+
+  public:
+    ElasticPolicyHybrid1(double interval, double k, double r, double mAvg);
+    virtual void run();
+    void deploy(int nInst, ElasticTaskManager* etm);
+};
+
 }
 }
 

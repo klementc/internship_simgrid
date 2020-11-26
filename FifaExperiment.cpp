@@ -23,8 +23,9 @@ void runFIFA()
 
   simgrid::s4u::Actor::create("ETM", simgrid::s4u::Host::by_name("cb1-1"), [etm]{etm->run();});
 
-  //simgrid::s4u::ElasticPolicyCPUThreshold* elasticPol = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.95,0.5);
+  //simgrid::s4u::ElasticPolicyCPUThreshold* elasticPol = new simgrid::s4u::ElasticPolicyCPUThreshold(60,0.95,0.5);
   simgrid::s4u::ElasticPolicyReactive1* elasticPol = new simgrid::s4u::ElasticPolicyReactive1(60,5,1,100);
+  //simgrid::s4u::ElasticPolicyHybrid1* elasticPol = new simgrid::s4u::ElasticPolicyHybrid1(60,5,1,50);
   for(int i=3 ; i<100 ; i++) {
     elasticPol->addHost(simgrid::s4u::Host::by_name("cb1-"+std::to_string(i)));
   }
@@ -35,6 +36,7 @@ void runFIFA()
   etm->addHost(simgrid::s4u::Host::by_name("cb1-2"));
   //etm->setProcessRatio(5e8);
   etm->setProcessRatio(1e7);
+  //etm->setProcessRatio(9e6);
   etm->setBootDuration(60);
 
 
