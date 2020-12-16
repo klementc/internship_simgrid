@@ -3,6 +3,8 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <yaml-cpp/yaml.h>
+#include <jaegertracing/Tracer.h>
 #include <simgrid/s4u/Host.hpp>
 #include "simgrid/s4u/Engine.hpp"
 #include "simgrid/s4u/Comm.hpp"
@@ -20,6 +22,17 @@ using namespace s4u;
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(elastic, "elastic tasks");
 
+void setUpTracer(const char* configFilePath, std::string name)
+{
+    auto configYAML = YAML::LoadFile(configFilePath);
+    auto config = jaegertracing::Config::parse(configYAML);
+    auto tracer = jaegertracing::Tracer::make(
+        name, config, jaegertracing::logging::consoleLogger());
+    opentracing::Tracer::InitGlobal(
+        std::static_pointer_cast<opentracing::Tracer>(tracer));
+}
+
+
 // ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
 ElasticTaskManager::ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes)
   : serviceName_(name), incMailboxes_(incMailboxes), nextHost_(0),
@@ -31,6 +44,8 @@ ElasticTaskManager::ElasticTaskManager(std::string name, std::vector<std::string
   sg_host_load_plugin_init();
   sleep_sem = s4u::Semaphore::create(0);
   modif_sem_ = s4u::Semaphore::create(1);
+
+  setUpTracer("config.yml", serviceName_.c_str());
 }
 ElasticTaskManager::ElasticTaskManager(std::string name)
   : ElasticTaskManager(name, std::vector<std::string>(1, name))
@@ -290,7 +305,7 @@ void ElasticTaskManager::run() {
       } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent)) {
         if (availableHostsList_.size() <= nextHost_)
           nextHost_ = 0;
-	      XBT_DEBUG("create actor");
+	      XBT_INFO("create actor %d", t->parentSpans.size());
         simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(serviceName_+"_data");
 
         try{
@@ -403,10 +418,11 @@ void TaskInstance::pollTasks()
       continue;
     try{
       TaskDescription* taskRequest = static_cast<TaskDescription*>(mbp->get(5));
-      TaskDescription* tr = new TaskDescription(*taskRequest);
-      tr->dSize = tr->dSize*etm_->getDataSizeRatio();
-      delete taskRequest;
-      reqs.push_back(tr);
+      //TaskDescription* tr = new TaskDescription(*taskRequest);
+      taskRequest->dSize = taskRequest->dSize*etm_->getDataSizeRatio();
+      XBT_INFO("SIZE: %d", taskRequest->parentSpans.size());
+      //delete taskRequest;
+      reqs.push_back(taskRequest);
       XBT_DEBUG("instance received a request, queue size: %d", reqs.size());
       n_full_->release();
     }catch(TimeoutException e){}
@@ -436,6 +452,17 @@ void TaskInstance::run()
       XBT_DEBUG("instance received req %f %f", a->flops, a->dSize);
 
       Actor::create("exec"+boost::uuids::to_string(uuidGen_()), this_actor::get_host(), [this, a] {
+
+        auto t1 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
+        XBT_INFO("start %d %d", t1, a->parentSpans.size());
+        std::unique_ptr<opentracing::v3::Span> span = (a->parentSpans.size()>0) ?
+          opentracing::Tracer::Global()->StartSpan(
+            etm_->getServiceName(), { opentracing::v3::StartTimestamp(t1), opentracing::ChildOf(&a->parentSpans.at(a->parentSpans.size()-1)->get()->context()) }) :
+            opentracing::Tracer::Global()->StartSpan(
+            etm_->getServiceName(), {opentracing::v3::StartTimestamp(t1)});
+
+        a->parentSpans.push_back(&span);
+
         etm_->modifWaitingReqAmount(-1);
         etm_->modifExecutingReqAmount(1);
         //XBT_INFO("load %f %f", this_actor::get_host()->get_load(),sg_host_get_current_load(this_actor::get_host()));
@@ -444,7 +471,11 @@ void TaskInstance::run()
         etm_->setCounterExecSlot(etm_->getCounterExecSlot()+1);
         n_empty_->release();
 
+        XBT_INFO("s %d %d", t1, a->parentSpans.size());
         outputFunction_(a);
+        auto t2 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
+        //XBT_INFO("%d %d", t1, t2);
+        span->Finish({opentracing::v3::FinishTimestamp( t2)});
       });
     }catch(Exception e){}
   }

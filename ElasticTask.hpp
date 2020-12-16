@@ -13,6 +13,8 @@
 #include <boost/uuid/uuid_generators.hpp> // generators
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
 
+#include <jaegertracing/Tracer.h>
+
 #include <xbt/base.h>
 #include <xbt/string.hpp>
 #include <xbt/signal.hpp>
@@ -62,6 +64,7 @@ class TaskDescription : public EvntQ {
     std::ifstream *ts_file;
     double dSize;
     double startTime;
+    std::vector<std::unique_ptr<opentracing::v3::Span>*> parentSpans;
 
     TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_, double date_, double dSize_)
         : EvntQ(date_), id_(id), flops(flops_), interSpawnDelay(interSpawnDelay_), dSize(dSize_) {
@@ -107,6 +110,7 @@ class ElasticTaskManager {
     int parallelTasksPerInst_;
 
   public:
+    std::string parentName;
     ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes);
     ElasticTaskManager(std::string name);
 
@@ -145,6 +149,7 @@ class ElasticTaskManager {
     inline int getCounterExecSlot(){return counterExecSlot_;}
     inline void setCounterExecSlot(int v){counterExecSlot_=v;}
     inline void resetCounterExecSlot(){counterExecSlot_=0;}
+    inline std::string getServiceName(){return serviceName_;}
     double reqPerSec();
 };
 
