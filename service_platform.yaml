@@ -7,7 +7,18 @@ services:
       - service1
     mailboxesOut:
       - service2
-    processRatio: 1e9
+    processRatio: 5e7
+    dataRatio: 1
+    instanceBootDuration: 2
+  service2:
+    managerNode: cb1-100
+    initNodes:
+      - cb1-100
+    mailboxesIn:
+      - service2
+    mailboxesOut:
+      - service3
+    processRatio: 1e7
     dataRatio: 1
     instanceBootDuration: 2
 
@@ -30,6 +41,32 @@ policies:
       - cb1-6
       - cb1-7
       - cb1-8
+      - cb1-9
+      - cb1-10
+      - cb1-11
+      - cb1-12
+      - cb1-13
+      - cb1-14
+      - cb1-15
+      - cb1-16
+  cpuPol2:
+    type: ElasticPolicyCPUThreshold
+    params:
+      - 10
+      - 0.2
+      - 0.95
+    services:
+      - service2
+    executingNode: cb1-100
+    nodePool:
+      - cb1-101
+      - cb1-102
+      - cb1-103
+      - cb1-104
+      - cb1-105
+      - cb1-106
+      - cb1-107
+      - cb1-108
 
 timestamps:
   filePath: default1TimeStamps.csv

@@ -64,6 +64,7 @@ class TaskDescription : public EvntQ {
     std::ifstream *ts_file;
     double dSize;
     double startTime;
+
     std::vector<std::unique_ptr<opentracing::v3::Span>*> parentSpans;
 
     TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_, double date_, double dSize_)
@@ -114,6 +115,7 @@ class ElasticTaskManager {
     ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes);
     ElasticTaskManager(std::string name);
 
+    boost::uuids::uuid addElasticTask(TaskDescription td);
     boost::uuids::uuid addElasticTask(boost::uuids::uuid id, double flopsTask, double interSpawnDelay);
     boost::uuids::uuid addElasticTask(boost::uuids::uuid id, double flopsTask, double interSpawnDelay, double s);
     void pollnet(std::string mbName);

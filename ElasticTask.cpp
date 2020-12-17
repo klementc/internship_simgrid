@@ -65,10 +65,20 @@ int ElasticTaskManager::getParallelTasksPerInst() {
   return parallelTasksPerInst_;
 }
 
+/*test*/
+boost::uuids::uuid ElasticTaskManager::addElasticTask(TaskDescription td){
+  TaskDescription t(td);
+  t.flops = processRatio_;
+  //XBT_INFO("task, flops: %lf %lf", t.flops, td.flops);
+  tasks.insert({t.id_, t});
+
+  return t.id_;
+}
+/*test*/
+
 boost::uuids::uuid ElasticTaskManager::addElasticTask(boost::uuids::uuid id, double flopsTask, double interSpawnDelay, double s) {
   TaskDescription td(id, flopsTask, interSpawnDelay, Engine::get_instance()->get_clock(), s);
   tasks.insert({id, td});
-
   if (interSpawnDelay > 0.0) {
     // one more pending request
     modifWaitingReqAmount(1);
@@ -251,7 +261,7 @@ void ElasticTaskManager::pollnet(std::string mboxName){
       //???????????????????????????????????????????????????????????????????????????????
       // TODO which size and compute to put when multiple inputs???????????????????????
       //???????????????????????????????????????????????????????????????????????????????
-      boost::uuids::uuid i = addElasticTask(taskRequest->id_, processRatio_, 0, taskRequest->dSize);
+      boost::uuids::uuid i = addElasticTask(*taskRequest);//addElasticTask(taskRequest->id_, processRatio_, 0, taskRequest->dSize);
 
       if(incMailboxes_.size() == 1) {
         triggerOneTimeTask(i);
@@ -305,7 +315,7 @@ void ElasticTaskManager::run() {
       } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent)) {
         if (availableHostsList_.size() <= nextHost_)
           nextHost_ = 0;
-	      XBT_INFO("create actor %d", t->parentSpans.size());
+	      //XBT_INFO("create actor %d", t->parentSpans.size());
         simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(serviceName_+"_data");
 
         try{
@@ -420,7 +430,7 @@ void TaskInstance::pollTasks()
       TaskDescription* taskRequest = static_cast<TaskDescription*>(mbp->get(5));
       //TaskDescription* tr = new TaskDescription(*taskRequest);
       taskRequest->dSize = taskRequest->dSize*etm_->getDataSizeRatio();
-      XBT_INFO("SIZE: %d", taskRequest->parentSpans.size());
+      //XBT_INFO("SIZE: %d", taskRequest->parentSpans.size());
       //delete taskRequest;
       reqs.push_back(taskRequest);
       XBT_DEBUG("instance received a request, queue size: %d", reqs.size());
@@ -454,14 +464,16 @@ void TaskInstance::run()
       Actor::create("exec"+boost::uuids::to_string(uuidGen_()), this_actor::get_host(), [this, a] {
 
         auto t1 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
-        XBT_INFO("start %d %d", t1, a->parentSpans.size());
-        std::unique_ptr<opentracing::v3::Span> span = (a->parentSpans.size()>0) ?
-          opentracing::Tracer::Global()->StartSpan(
-            etm_->getServiceName(), { opentracing::v3::StartTimestamp(t1), opentracing::ChildOf(&a->parentSpans.at(a->parentSpans.size()-1)->get()->context()) }) :
-            opentracing::Tracer::Global()->StartSpan(
-            etm_->getServiceName(), {opentracing::v3::StartTimestamp(t1)});
-
-        a->parentSpans.push_back(&span);
+        //XBT_INFO("SSSSSSSSSSSS start %d %d", t1, a->parentSpans.size());
+        auto span = a->parentSpans.size()==0?
+          opentracing::Tracer::Global()->StartSpan( etm_->getServiceName(),
+            {opentracing::v3::StartTimestamp(t1)}) :
+          opentracing::Tracer::Global()->StartSpan( etm_->getServiceName(),
+            {opentracing::v3::StartTimestamp(t1), opentracing::v3::ChildOf(&a->parentSpans.at(a->parentSpans.size()-1)->get()->context())});
+        span->Log({ {"nbInst:", etm_->getInstanceAmount()},{"waitingReqAtStart:", etm_->getAmountOfWaitingRequests()},{"alreadyExecutingAtStart:", etm_->getAmountOfExecutingRequests()},{"startExec", Engine::get_instance()->get_clock()}});
+        std::unique_ptr<opentracing::v3::Span>* t = new std::unique_ptr<opentracing::v3::Span>();
+        *t = std::move(span);
+        a->parentSpans.push_back(t);
 
         etm_->modifWaitingReqAmount(-1);
         etm_->modifExecutingReqAmount(1);
@@ -471,11 +483,12 @@ void TaskInstance::run()
         etm_->setCounterExecSlot(etm_->getCounterExecSlot()+1);
         n_empty_->release();
 
-        XBT_INFO("s %d %d", t1, a->parentSpans.size());
-        outputFunction_(a);
+        //XBT_INFO("s %d %d", t1, a->parentSpans.size());
         auto t2 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
-        //XBT_INFO("%d %d", t1, t2);
-        span->Finish({opentracing::v3::FinishTimestamp( t2)});
+        t->get()->Log({{"endExec", Engine::get_instance()->get_clock()}});
+        outputFunction_(a);
+        //XBT_INFO("%d %d", t1, t2)
+        //span->Finish({opentracing::v3::FinishTimestamp( t2)});
       });
     }catch(Exception e){}
   }
