@@ -109,6 +109,7 @@ class ElasticTaskManager {
     double dataSizeRatio_;
     int counterExecSlot_;
     int parallelTasksPerInst_;
+    std::shared_ptr<opentracing::v3::Tracer> tracer_;
 
   public:
     std::string parentName;
@@ -136,6 +137,7 @@ class ElasticTaskManager {
     double getDataSizeRatio();
     void setParallelTasksPerInst(int s);
     int getParallelTasksPerInst();
+    std::shared_ptr<opentracing::v3::Tracer> getTracer();
 
     void triggerOneTimeTask(boost::uuids::uuid id);
     void triggerOneTimeTask(boost::uuids::uuid id, double ratioLoad);

@@ -22,14 +22,25 @@ using namespace s4u;
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(elastic, "elastic tasks");
 
-void setUpTracer(const char* configFilePath, std::string name)
+void setUpTracerGlob(const char* configFilePath, std::string name)
 {
+  XBT_INFO("set up jaeger tracer for %s", name.c_str());
     auto configYAML = YAML::LoadFile(configFilePath);
     auto config = jaegertracing::Config::parse(configYAML);
     auto tracer = jaegertracing::Tracer::make(
         name, config, jaegertracing::logging::consoleLogger());
     opentracing::Tracer::InitGlobal(
         std::static_pointer_cast<opentracing::Tracer>(tracer));
+}
+
+std::shared_ptr<opentracing::v3::Tracer> setUpTracer(const char* configFilePath, std::string name)
+{
+  XBT_INFO("set up jaeger tracer for %s", name.c_str());
+    auto configYAML = YAML::LoadFile(configFilePath);
+    auto config = jaegertracing::Config::parse(configYAML);
+    auto tracer = jaegertracing::Tracer::make(
+        name, config, jaegertracing::logging::consoleLogger());
+    return tracer;
 }
 
 
@@ -45,7 +56,7 @@ ElasticTaskManager::ElasticTaskManager(std::string name, std::vector<std::string
   sleep_sem = s4u::Semaphore::create(0);
   modif_sem_ = s4u::Semaphore::create(1);
 
-  setUpTracer("config.yml", serviceName_.c_str());
+  tracer_ = setUpTracer("config.yml", serviceName_.c_str());
 }
 ElasticTaskManager::ElasticTaskManager(std::string name)
   : ElasticTaskManager(name, std::vector<std::string>(1, name))
@@ -392,6 +403,11 @@ void ElasticTaskManager::setOutputFunction(std::function<void(TaskDescription*)>
   outputFunction = f;
 }
 
+std::shared_ptr<opentracing::v3::Tracer> ElasticTaskManager::getTracer()
+{
+  return tracer_;
+}
+
 double ElasticTaskManager::reqPerSec() {
   double tot =0;
   for (auto i : tiList) {
@@ -466,9 +482,9 @@ void TaskInstance::run()
         auto t1 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
         //XBT_INFO("SSSSSSSSSSSS start %d %d", t1, a->parentSpans.size());
         auto span = a->parentSpans.size()==0?
-          opentracing::Tracer::Global()->StartSpan( etm_->getServiceName(),
+          etm_->getTracer().get()->StartSpan( etm_->getServiceName(),
             {opentracing::v3::StartTimestamp(t1)}) :
-          opentracing::Tracer::Global()->StartSpan( etm_->getServiceName(),
+          etm_->getTracer().get()->StartSpan( etm_->getServiceName(),
             {opentracing::v3::StartTimestamp(t1), opentracing::v3::ChildOf(&a->parentSpans.at(a->parentSpans.size()-1)->get()->context())});
         span->Log({ {"nbInst:", etm_->getInstanceAmount()},{"waitingReqAtStart:", etm_->getAmountOfWaitingRequests()},{"alreadyExecutingAtStart:", etm_->getAmountOfExecutingRequests()},{"startExec", Engine::get_instance()->get_clock()}});
         std::unique_ptr<opentracing::v3::Span>* t = new std::unique_ptr<opentracing::v3::Span>();
