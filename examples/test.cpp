@@ -16,7 +16,7 @@ void returnservice2(TaskDescription* td) {
 	for (auto it = td->parentSpans.rbegin(); it != td->parentSpans.rend(); ++it)
   {
     auto t2 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(simgrid::s4u::Engine::get_instance()->get_clock()*1000));
-    //(*it)->get()->Log({{"end",t2.count()}});
+    (*it)->get()->Log({{"end",t2.count()}});
     (*it)->get()->Finish({opentracing::v3::FinishTimestamp(t2)});
 
   }
