@@ -13,8 +13,6 @@
 #include <boost/uuid/uuid_generators.hpp> // generators
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
 
-#include <jaegertracing/Tracer.h>
-
 #include <xbt/base.h>
 #include <xbt/string.hpp>
 #include <xbt/signal.hpp>
@@ -22,6 +20,8 @@
 #include "simgrid/msg.h"
 #include <simgrid/simix.h>
 #include <simgrid/s4u/Actor.hpp>
+
+#include "ElasticConfig.hpp"
 
 class EvntQ {
   public:
@@ -65,7 +65,9 @@ class TaskDescription : public EvntQ {
     double dSize;
     double startTime;
 
+#ifdef USE_JAEGERTRACING
     std::vector<std::unique_ptr<opentracing::v3::Span>*> parentSpans;
+#endif
 
     TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_, double date_, double dSize_)
         : EvntQ(date_), id_(id), flops(flops_), interSpawnDelay(interSpawnDelay_), dSize(dSize_) {
@@ -109,7 +111,11 @@ class ElasticTaskManager {
     double dataSizeRatio_;
     int counterExecSlot_;
     int parallelTasksPerInst_;
+#ifdef USE_JAEGERTRACING
     std::shared_ptr<opentracing::v3::Tracer> tracer_;
+#endif
+    // for async send to taskInstances
+    std::vector<simgrid::s4u::CommPtr> pending_comms;
 
   public:
     std::string parentName;
@@ -137,8 +143,9 @@ class ElasticTaskManager {
     double getDataSizeRatio();
     void setParallelTasksPerInst(int s);
     int getParallelTasksPerInst();
+#ifdef USE_JAEGERTRACING
     std::shared_ptr<opentracing::v3::Tracer> getTracer();
-
+#endif
     void triggerOneTimeTask(boost::uuids::uuid id);
     void triggerOneTimeTask(boost::uuids::uuid id, double ratioLoad);
     void setOutputFunction(std::function<void(TaskDescription*)> code);

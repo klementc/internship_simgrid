@@ -3,8 +3,6 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <yaml-cpp/yaml.h>
-#include <jaegertracing/Tracer.h>
 #include <simgrid/s4u/Host.hpp>
 #include "simgrid/s4u/Engine.hpp"
 #include "simgrid/s4u/Comm.hpp"
@@ -22,6 +20,7 @@ using namespace s4u;
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(elastic, "elastic tasks");
 
+#ifdef USE_JAEGERTRACING
 void setUpTracerGlob(const char* configFilePath, std::string name)
 {
   XBT_INFO("set up jaeger tracer for %s", name.c_str());
@@ -42,7 +41,7 @@ std::shared_ptr<opentracing::v3::Tracer> setUpTracer(const char* configFilePath,
         name, config, jaegertracing::logging::consoleLogger());
     return tracer;
 }
-
+#endif
 
 // ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
 ElasticTaskManager::ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes)
@@ -56,7 +55,9 @@ ElasticTaskManager::ElasticTaskManager(std::string name, std::vector<std::string
   sleep_sem = s4u::Semaphore::create(0);
   modif_sem_ = s4u::Semaphore::create(1);
 
+#ifdef USE_JAEGERTRACING
   tracer_ = setUpTracer("config.yml", serviceName_.c_str());
+#endif
 }
 ElasticTaskManager::ElasticTaskManager(std::string name)
   : ElasticTaskManager(name, std::vector<std::string>(1, name))
@@ -245,14 +246,47 @@ std::vector<double> ElasticTaskManager::getCPULoads(){
   return v;
 }
 
-/**
- * Will stop run()'s infinite loop
- */
-void ElasticTaskManager::kill() {
-  keepGoing = false;
-  for(int i=0;i<tiList.size();i++){
-    tiList.at(i)->kill();
+void ElasticTaskManager::modifExecutingReqAmount(int n){
+  modif_sem_->acquire();
+  executingReqAmount_+=n;
+  xbt_assert(executingReqAmount_>=0,"cannot have less than 0 executing requests");
+  modif_sem_->release();
+}
+
+void ElasticTaskManager::modifWaitingReqAmount(int n){
+  modif_sem_->acquire();
+  waitingReqAmount_+=n;
+  xbt_assert(waitingReqAmount_>=0,"cannot have less than 0 waiting requests");
+  modif_sem_->release();
+}
+
+int64_t ElasticTaskManager::getAmountOfWaitingRequests(){
+  return waitingReqAmount_;
+}
+
+int64_t ElasticTaskManager::getAmountOfExecutingRequests(){
+  return executingReqAmount_;
+}
+
+void ElasticTaskManager::setOutputFunction(std::function<void(TaskDescription*)> f)
+{
+  outputFunction = f;
+}
+#ifdef USE_JAEGERTRACING
+std::shared_ptr<opentracing::v3::Tracer> ElasticTaskManager::getTracer()
+{
+  return tracer_;
+}
+#endif
+
+double ElasticTaskManager::reqPerSec() {
+  double tot =0;
+  for (auto i : tiList) {
+    simgrid::s4u::Host* a = i->getRunningHost();
+    if(a)
+      tot+=(a->get_pstate_speed(a->get_pstate())*a->get_core_count())/processRatio_;
   }
+  return tot;
 }
 
 void ElasticTaskManager::setDataSizeRatio(double r) {
@@ -261,6 +295,16 @@ void ElasticTaskManager::setDataSizeRatio(double r) {
 
 double ElasticTaskManager::getDataSizeRatio() {
   return dataSizeRatio_;
+}
+
+/**
+ * Will stop run()'s infinite loop
+ */
+void ElasticTaskManager::kill() {
+  keepGoing = false;
+  for(int i=0;i<tiList.size();i++){
+    tiList.at(i)->kill();
+  }
 }
 
 void ElasticTaskManager::pollnet(std::string mboxName){
@@ -303,7 +347,6 @@ void ElasticTaskManager::pollnet(std::string mboxName){
  * on one of the provided hosts
  */
 void ElasticTaskManager::run() {
-  // mailbox for incoming requests from other services
   unsigned long long task_count = 0;
 
   for(auto s : incMailboxes_) {
@@ -311,8 +354,7 @@ void ElasticTaskManager::run() {
     simgrid::s4u::Actor::create(serviceName_+"_"+s+"polling",s4u::Host::current(),[&]{pollnet(s);});
     XBT_INFO("polling on mailbox %s", s.c_str());
   }
-  //Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(rcvMailbox_.c_str());
-  //simgrid::s4u::Actor::create(rcvMailbox_+"polling",s4u::Host::current(),[&]{pollnet();});
+
   while(1) {
     // execute events that need be executed now
     while(!nextEvtQueue.empty() && nextEvtQueue.top()->date <= Engine::get_instance()->get_clock()) {
@@ -326,7 +368,6 @@ void ElasticTaskManager::run() {
       } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent)) {
         if (availableHostsList_.size() <= nextHost_)
           nextHost_ = 0;
-	      //XBT_INFO("create actor %d", t->parentSpans.size());
         simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(serviceName_+"_data");
 
         try{
@@ -376,44 +417,3 @@ void ElasticTaskManager::run() {
   }
 }
 
-void ElasticTaskManager::modifExecutingReqAmount(int n){
-  modif_sem_->acquire();
-  executingReqAmount_+=n;
-  xbt_assert(executingReqAmount_>=0,"cannot have less than 0 executing requests");
-  modif_sem_->release();
-}
-
-void ElasticTaskManager::modifWaitingReqAmount(int n){
-  modif_sem_->acquire();
-  waitingReqAmount_+=n;
-  xbt_assert(waitingReqAmount_>=0,"cannot have less than 0 waiting requests");
-  modif_sem_->release();
-}
-
-int64_t ElasticTaskManager::getAmountOfWaitingRequests(){
-  return waitingReqAmount_;
-}
-
-int64_t ElasticTaskManager::getAmountOfExecutingRequests(){
-  return executingReqAmount_;
-}
-
-void ElasticTaskManager::setOutputFunction(std::function<void(TaskDescription*)> f)
-{
-  outputFunction = f;
-}
-
-std::shared_ptr<opentracing::v3::Tracer> ElasticTaskManager::getTracer()
-{
-  return tracer_;
-}
-
-double ElasticTaskManager::reqPerSec() {
-  double tot =0;
-  for (auto i : tiList) {
-    simgrid::s4u::Host* a = i->getRunningHost();
-    if(a)
-      tot+=(a->get_pstate_speed(a->get_pstate())*a->get_core_count())/processRatio_;
-  }
-  return tot;
-}

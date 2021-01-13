@@ -3,8 +3,6 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <yaml-cpp/yaml.h>
-#include <jaegertracing/Tracer.h>
 #include <simgrid/s4u/Host.hpp>
 #include "simgrid/s4u/Engine.hpp"
 #include "simgrid/s4u/Comm.hpp"
@@ -79,7 +77,7 @@ void TaskInstance::run()
       XBT_DEBUG("instance received req %f %f", a->flops, a->dSize);
 
       Actor::create("exec"+boost::uuids::to_string(uuidGen_()), this_actor::get_host(), [this, a] {
-
+#ifdef USE_JAEGERTRACING
         auto t1 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
         //XBT_INFO("SSSSSSSSSSSS start %d %d", t1, a->parentSpans.size());
         auto span = a->parentSpans.size()==0?
@@ -91,6 +89,7 @@ void TaskInstance::run()
         std::unique_ptr<opentracing::v3::Span>* t = new std::unique_ptr<opentracing::v3::Span>();
         *t = std::move(span);
         a->parentSpans.push_back(t);
+#endif /*USE_JAEGERTRACING*/
 
         etm_->modifWaitingReqAmount(-1);
         etm_->modifExecutingReqAmount(1);
@@ -99,13 +98,14 @@ void TaskInstance::run()
         etm_->modifExecutingReqAmount(-1);
         etm_->setCounterExecSlot(etm_->getCounterExecSlot()+1);
         n_empty_->release();
-
+#ifdef USE_JAEGERTRACING
         //XBT_INFO("s %d %d", t1, a->parentSpans.size());
         auto t2 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
         t->get()->Log({{"endExec", Engine::get_instance()->get_clock()}});
         outputFunction_(a);
         //XBT_INFO("%d %d", t1, t2)
         //span->Finish({opentracing::v3::FinishTimestamp( t2)});
+#endif
       });
     }catch(Exception e){}
   }

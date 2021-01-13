@@ -2,8 +2,10 @@
 #include <simgrid/s4u/Host.hpp>
 #include <simgrid/s4u/Mailbox.hpp>
 #include <simgrid/s4u/Engine.hpp>
+#include <simgrid/s4u/Comm.hpp>
 #include "ElasticPolicy.hpp"
 #include "ElasticTask.hpp"
+
 XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
 
 void returnservice1(TaskDescription* td) {
@@ -13,6 +15,7 @@ void returnservice1(TaskDescription* td) {
 }
 void returnservice2(TaskDescription* td) {
 	XBT_DEBUG("Return function of service service2");
+#ifdef USE_JAEGERTRACING
 	for (auto it = td->parentSpans.rbegin(); it != td->parentSpans.rend(); ++it)
   {
     auto t2 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(simgrid::s4u::Engine::get_instance()->get_clock()*1000));
@@ -20,6 +23,7 @@ void returnservice2(TaskDescription* td) {
     (*it)->get()->Finish({opentracing::v3::FinishTimestamp(t2)});
 
   }
+#endif /*USE_JAEGERTRACING*/
 	//s4u_Mailbox* mservice3 = s4u_Mailbox::by_name("service3");
 	//mservice3->put(td, td->dSize);
 }
@@ -81,12 +85,14 @@ std::ifstream file;
 double a;
 file.open("default1TimeStamps.csv");
 std::string s; file>>s;
+std::vector<simgrid::s4u::CommPtr> pending_comms;
 while (file >> a) {
 if(a > simgrid::s4u::Engine::get_clock())
 	simgrid::s4u::this_actor::sleep_until(a);
 TaskDescription* t = new TaskDescription(generator(), -1, 0);
 t->dSize=1;
-mb->put(t, t->dSize);
+simgrid::s4u::CommPtr comm = mb->put_async(t, t->dSize);
+pending_comms.push_back(comm);
 }
 // kill policies and ETMs
 XBT_INFO("Done. Killing policies and etms");
