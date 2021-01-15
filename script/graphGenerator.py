@@ -48,17 +48,20 @@ class yamlDesc():
       s+="v"+name+".push_back(\""+mb+"\");\n"
 
     s += "std::shared_ptr<simgrid::s4u::ElasticTaskManager> "+self.etmName(name)+" = std::make_shared<simgrid::s4u::ElasticTaskManager>(\""+self.etmName(name)+"\",v"+name+");\n"
-    s += "simgrid::s4u::Actor::create(\""+self.etmName(name)+"_a\", simgrid::s4u::Host::by_name(\""+serviceDesc["managerNode"]+"\"), ["+self.etmName(name)+"] { "+self.etmName(name)+"->run(); });\n"
-
-    # add initial hosts
-    for host in serviceDesc["initNodes"]:
-      s+=self.etmName(name)+"->addHost(simgrid::s4u::Host::by_name(\""+host+"\"));\n"
 
     # set service properties
     s+=self.etmName(name)+"->setProcessRatio("+str(serviceDesc["processRatio"])+");\n"
     s+=self.etmName(name)+"->setOutputFunction("+self.retFunName(name)+");\n"
     s+=self.etmName(name)+"->setBootDuration("+str(serviceDesc["instanceBootDuration"])+");\n"
     s+=self.etmName(name)+"->setDataSizeRatio("+str(serviceDesc["dataRatio"])+");\n"
+
+    s += "simgrid::s4u::Actor::create(\""+self.etmName(name)+"_a\", simgrid::s4u::Host::by_name(\""+serviceDesc["managerNode"]+"\"), ["+self.etmName(name)+"] { "+self.etmName(name)+"->run(); });\n"
+
+    # add initial hosts
+    for host in serviceDesc["initNodes"]:
+      s+=self.etmName(name)+"->addHost(simgrid::s4u::Host::by_name(\""+host+"\"));\n"
+
+
 
     return s+"\n"
 
