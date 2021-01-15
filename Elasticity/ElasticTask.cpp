@@ -81,7 +81,6 @@ int ElasticTaskManager::getParallelTasksPerInst() {
 boost::uuids::uuid ElasticTaskManager::addElasticTask(TaskDescription td){
   TaskDescription t(td);
   t.flops = processRatio_;
-  //XBT_INFO("task, flops: %lf %lf", t.flops, td.flops);
   tasks.insert({t.id_, t});
 
   return t.id_;
@@ -311,13 +310,13 @@ void ElasticTaskManager::pollnet(std::string mboxName){
   Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(mboxName.c_str());
   while(keepGoing){
     try{
-      TaskDescription* taskRequest = static_cast<TaskDescription*>(recvMB->get(10));
+      TaskDescription* taskRequest = static_cast<TaskDescription*>(recvMB->get());
 
       //???????????????????????????????????????????????????????????????????????????????
       // TODO which size and compute to put when multiple inputs???????????????????????
       //???????????????????????????????????????????????????????????????????????????????
       boost::uuids::uuid i = addElasticTask(*taskRequest);//addElasticTask(taskRequest->id_, processRatio_, 0, taskRequest->dSize);
-
+      XBT_DEBUG("POLLING RECEIVED size %f %s", taskRequest->dSize, boost::uuids::to_string(taskRequest->id_).c_str());
       if(incMailboxes_.size() == 1) {
         triggerOneTimeTask(i);
         sleep_sem->release();
@@ -333,11 +332,10 @@ void ElasticTaskManager::pollnet(std::string mboxName){
           triggerOneTimeTask(i);
           // remove data
           tempData.erase(taskRequest->id_);
-          XBT_DEBUG("POLLING RECEIVED size %f %s", taskRequest->dSize, boost::uuids::to_string(taskRequest->id_).c_str());
           sleep_sem->release();
         }
       }
-    }catch(simgrid::TimeoutException){}
+    }catch(simgrid::TimeoutException){continue;}
   }
 }
 
@@ -372,7 +370,7 @@ void ElasticTaskManager::run() {
 
         try{
           mbp->put(t, (t->dSize == -1) ? 1 : t->dSize);
-        }catch(simgrid::TimeoutException e){}
+        }catch(simgrid::TimeoutException e){XBT_INFO("WTFFF %s", e.what());}
 	      ++task_count;
 
         if(! t->repeat)

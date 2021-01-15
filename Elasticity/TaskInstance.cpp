@@ -38,15 +38,13 @@ void TaskInstance::pollTasks()
 {
   simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(mbName_);
   while(keepGoing_) {
-    int n = n_empty_->acquire_timeout(10);
+    int n = n_empty_->acquire_timeout(1000);
     if(!(n==0))
       continue;
     try{
-      TaskDescription* taskRequest = static_cast<TaskDescription*>(mbp->get(5));
+      TaskDescription* taskRequest = static_cast<TaskDescription*>(mbp->get());
       //TaskDescription* tr = new TaskDescription(*taskRequest);
       taskRequest->dSize = taskRequest->dSize*etm_->getDataSizeRatio();
-      //XBT_INFO("SIZE: %d", taskRequest->parentSpans.size());
-      //delete taskRequest;
       reqs.push_back(taskRequest);
       XBT_DEBUG("instance received a request, queue size: %d", reqs.size());
       n_full_->release();
@@ -64,7 +62,7 @@ void TaskInstance::run()
 
   while(keepGoing_){
     try{
-      int n = n_full_->acquire_timeout(10);
+      int n = n_full_->acquire_timeout(1000);
       if(!(n==0))
         continue;
 
@@ -74,7 +72,7 @@ void TaskInstance::run()
       // receive data from mailbox
       TaskDescription* a = reqs.at(0);// = static_cast<std::map<std::string, double>*>(recMb_->get(10));
       reqs.erase(reqs.begin());
-      XBT_DEBUG("instance received req %f %f", a->flops, a->dSize);
+//      XBT_DEBUG("instance received req %f %f", a->flops, a->dSize);
 
       Actor::create("exec"+boost::uuids::to_string(uuidGen_()), this_actor::get_host(), [this, a] {
 #ifdef USE_JAEGERTRACING
@@ -93,19 +91,17 @@ void TaskInstance::run()
 
         etm_->modifWaitingReqAmount(-1);
         etm_->modifExecutingReqAmount(1);
-        //XBT_INFO("load %f %f", this_actor::get_host()->get_load(),sg_host_get_current_load(this_actor::get_host()));
         this_actor::execute(a->flops);
         etm_->modifExecutingReqAmount(-1);
         etm_->setCounterExecSlot(etm_->getCounterExecSlot()+1);
         n_empty_->release();
 #ifdef USE_JAEGERTRACING
-        //XBT_INFO("s %d %d", t1, a->parentSpans.size());
         auto t2 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
         t->get()->Log({{"endExec", Engine::get_instance()->get_clock()}});
-        outputFunction_(a);
-        //XBT_INFO("%d %d", t1, t2)
         //span->Finish({opentracing::v3::FinishTimestamp( t2)});
 #endif
+        XBT_DEBUG("FINISHED EXECUTION %lf", a->flops);
+        outputFunction_(a);
       });
     }catch(Exception e){}
   }
