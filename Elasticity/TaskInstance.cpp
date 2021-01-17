@@ -98,7 +98,8 @@ void TaskInstance::run()
 #ifdef USE_JAEGERTRACING
         auto t2 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
         t->get()->Log({{"endExec", Engine::get_instance()->get_clock()}});
-        //span->Finish({opentracing::v3::FinishTimestamp( t2)});
+        //XBT_INFO("%d %d", t1, t2)
+        //t->Finish({opentracing::v3::FinishTimestamp( t2)});
 #endif
         XBT_DEBUG("FINISHED EXECUTION %lf", a->flops);
         outputFunction_(a);

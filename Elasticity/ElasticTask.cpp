@@ -308,7 +308,48 @@ void ElasticTaskManager::kill() {
 
 void ElasticTaskManager::pollnet(std::string mboxName){
   Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(mboxName.c_str());
+
+  int parComSize = 10;
+
+  //std::vector<CommPtr> commV(parComSize);
+  std::vector<simgrid::s4u::CommPtr> commV;
+  //std::vector<void*> taskV(parComSize);
+  void* taskV[parComSize];
+
+  for(int i=0;i<parComSize;i++){
+    commV.push_back(recvMB->get_async(&taskV[i]));
+  }
+
+
   while(keepGoing){
+    //XBT_INFO("ASYNC REC");
+    int newMsgPos = simgrid::s4u::Comm::wait_any(&commV);
+    //XBT_INFO("RECEIVED");
+    TaskDescription* taskRequest = static_cast<TaskDescription*>(taskV[newMsgPos]);
+
+    boost::uuids::uuid i = addElasticTask(*taskRequest);//addElasticTask(taskRequest->id_, processRatio_, 0, taskRequest->dSize);
+    XBT_INFO("POLLING RECEIVED size %f %s", taskRequest->dSize, boost::uuids::to_string(taskRequest->id_).c_str());
+    if(incMailboxes_.size() == 1) {
+      triggerOneTimeTask(i);
+      sleep_sem->release();
+    } else {
+      std::vector<TaskDescription> v =
+        (tempData.find(taskRequest->id_)!=tempData.end()) ?
+          tempData.find(taskRequest->id_)->second : std::vector<TaskDescription>();
+
+      v.push_back(*taskRequest);
+      tempData.insert(std::pair<boost::uuids::uuid,std::vector<TaskDescription>>(taskRequest->id_, v));
+
+      if(v.size() == incMailboxes_.size()) {
+        triggerOneTimeTask(i);
+        // remove data
+        tempData.erase(taskRequest->id_);
+        sleep_sem->release();
+      }
+    }
+    commV.erase(commV.begin() + newMsgPos);
+    commV.push_back(recvMB->get_async(&taskV[commV.size()]));
+    /*
     try{
       TaskDescription* taskRequest = static_cast<TaskDescription*>(recvMB->get());
 
@@ -316,7 +357,7 @@ void ElasticTaskManager::pollnet(std::string mboxName){
       // TODO which size and compute to put when multiple inputs???????????????????????
       //???????????????????????????????????????????????????????????????????????????????
       boost::uuids::uuid i = addElasticTask(*taskRequest);//addElasticTask(taskRequest->id_, processRatio_, 0, taskRequest->dSize);
-      XBT_DEBUG("POLLING RECEIVED size %f %s", taskRequest->dSize, boost::uuids::to_string(taskRequest->id_).c_str());
+      XBT_INFO("POLLING RECEIVED size %f %s", taskRequest->dSize, boost::uuids::to_string(taskRequest->id_).c_str());
       if(incMailboxes_.size() == 1) {
         triggerOneTimeTask(i);
         sleep_sem->release();
@@ -335,7 +376,7 @@ void ElasticTaskManager::pollnet(std::string mboxName){
           sleep_sem->release();
         }
       }
-    }catch(simgrid::TimeoutException){continue;}
+    }catch(simgrid::TimeoutException){continue;}*/
   }
 }
 
@@ -368,10 +409,19 @@ void ElasticTaskManager::run() {
           nextHost_ = 0;
         simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(serviceName_+"_data");
 
+        /* Async version
+        TODO: clean pending vector
+        */
+        simgrid::s4u::CommPtr comm = mbp->put_async(t, (t->dSize == -1) ? 1 : t->dSize);
+        pending_comms.push_back(comm);
+
+        /* Sync version
+        problem: when having latencies on links, blocking put causes problems
         try{
           mbp->put(t, (t->dSize == -1) ? 1 : t->dSize);
-        }catch(simgrid::TimeoutException e){XBT_INFO("WTFFF %s", e.what());}
-	      ++task_count;
+        }catch(simgrid::TimeoutException e){}
+	      */
+       ++task_count;
 
         if(! t->repeat)
           removeTask(t->id_);
