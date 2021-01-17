@@ -92,7 +92,7 @@ boost::uuids::uuid ElasticTaskManager::addElasticTask(boost::uuids::uuid id, dou
   tasks.insert({id, td});
   if (interSpawnDelay > 0.0) {
     // one more pending request
-    modifWaitingReqAmount(1);
+    //modifWaitingReqAmount(1); ???
     nextEvtQueue.push(&(tasks.find(id)->second));
     XBT_DEBUG("tasks: %d nextEvtQueue: %d", tasks.size(),nextEvtQueue.size());
     sleep_sem->release();
@@ -176,6 +176,7 @@ void ElasticTaskManager::removeRatioChanges(boost::uuids::uuid id) {
 }
 
 void ElasticTaskManager::triggerOneTimeTask(boost::uuids::uuid id) {
+
   TaskDescription *newTask = new TaskDescription(tasks.find(id)->second);
   newTask->repeat = false;
   newTask->date = 0.0;
@@ -253,6 +254,7 @@ void ElasticTaskManager::modifExecutingReqAmount(int n){
 }
 
 void ElasticTaskManager::modifWaitingReqAmount(int n){
+  //XBT_INFO("CALLED: OLD %d NEW %d", waitingReqAmount_, n);
   modif_sem_->acquire();
   waitingReqAmount_+=n;
   xbt_assert(waitingReqAmount_>=0,"cannot have less than 0 waiting requests");
@@ -309,26 +311,25 @@ void ElasticTaskManager::kill() {
 void ElasticTaskManager::pollnet(std::string mboxName){
   Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(mboxName.c_str());
 
-  int parComSize = 10;
+  int parComSize = 20;
 
   //std::vector<CommPtr> commV(parComSize);
   std::vector<simgrid::s4u::CommPtr> commV;
   //std::vector<void*> taskV(parComSize);
-  void* taskV[parComSize];
-
+  //void* taskV[parComSize];
+  void* taskV;
   for(int i=0;i<parComSize;i++){
-    commV.push_back(recvMB->get_async(&taskV[i]));
+    commV.push_back(recvMB->get_async(&taskV));
   }
 
 
   while(keepGoing){
-    //XBT_INFO("ASYNC REC");
+
     int newMsgPos = simgrid::s4u::Comm::wait_any(&commV);
-    //XBT_INFO("RECEIVED");
-    TaskDescription* taskRequest = static_cast<TaskDescription*>(taskV[newMsgPos]);
+    TaskDescription* taskRequest = static_cast<TaskDescription*>(taskV);
 
     boost::uuids::uuid i = addElasticTask(*taskRequest);//addElasticTask(taskRequest->id_, processRatio_, 0, taskRequest->dSize);
-    XBT_INFO("POLLING RECEIVED size %f %s", taskRequest->dSize, boost::uuids::to_string(taskRequest->id_).c_str());
+    //XBT_INFO("POLLING RECEIVED size %f %s", taskRequest->dSize, boost::uuids::to_string(taskRequest->id_).c_str());
     if(incMailboxes_.size() == 1) {
       triggerOneTimeTask(i);
       sleep_sem->release();
@@ -348,8 +349,8 @@ void ElasticTaskManager::pollnet(std::string mboxName){
       }
     }
     commV.erase(commV.begin() + newMsgPos);
-    commV.push_back(recvMB->get_async(&taskV[commV.size()]));
-    /*
+    commV.push_back(recvMB->get_async(&taskV));
+/*
     try{
       TaskDescription* taskRequest = static_cast<TaskDescription*>(recvMB->get());
 
@@ -357,7 +358,7 @@ void ElasticTaskManager::pollnet(std::string mboxName){
       // TODO which size and compute to put when multiple inputs???????????????????????
       //???????????????????????????????????????????????????????????????????????????????
       boost::uuids::uuid i = addElasticTask(*taskRequest);//addElasticTask(taskRequest->id_, processRatio_, 0, taskRequest->dSize);
-      XBT_INFO("POLLING RECEIVED size %f %s", taskRequest->dSize, boost::uuids::to_string(taskRequest->id_).c_str());
+      //XBT_INFO("POLLING RECEIVED size %f %s", taskRequest->dSize, boost::uuids::to_string(taskRequest->id_).c_str());
       if(incMailboxes_.size() == 1) {
         triggerOneTimeTask(i);
         sleep_sem->release();
@@ -376,7 +377,8 @@ void ElasticTaskManager::pollnet(std::string mboxName){
           sleep_sem->release();
         }
       }
-    }catch(simgrid::TimeoutException){continue;}*/
+    }catch(simgrid::TimeoutException){continue;}
+    */
   }
 }
 

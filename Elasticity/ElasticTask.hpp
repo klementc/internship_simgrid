@@ -180,6 +180,7 @@ class TaskInstance {
     int maxReqInInst_;
     std::vector<TaskDescription*> reqs;
     simgrid::s4u::Host* host_;
+    std::vector<simgrid::s4u::CommPtr> commV;
 
     void pollTasks();
   public:
