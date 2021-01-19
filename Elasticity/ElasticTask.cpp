@@ -313,10 +313,7 @@ void ElasticTaskManager::pollnet(std::string mboxName){
 
   int parComSize = 20;
 
-  //std::vector<CommPtr> commV(parComSize);
   std::vector<simgrid::s4u::CommPtr> commV;
-  //std::vector<void*> taskV(parComSize);
-  //void* taskV[parComSize];
   void* taskV;
   for(int i=0;i<parComSize;i++){
     commV.push_back(recvMB->get_async(&taskV));
@@ -350,35 +347,6 @@ void ElasticTaskManager::pollnet(std::string mboxName){
     }
     commV.erase(commV.begin() + newMsgPos);
     commV.push_back(recvMB->get_async(&taskV));
-/*
-    try{
-      TaskDescription* taskRequest = static_cast<TaskDescription*>(recvMB->get());
-
-      //???????????????????????????????????????????????????????????????????????????????
-      // TODO which size and compute to put when multiple inputs???????????????????????
-      //???????????????????????????????????????????????????????????????????????????????
-      boost::uuids::uuid i = addElasticTask(*taskRequest);//addElasticTask(taskRequest->id_, processRatio_, 0, taskRequest->dSize);
-      //XBT_INFO("POLLING RECEIVED size %f %s", taskRequest->dSize, boost::uuids::to_string(taskRequest->id_).c_str());
-      if(incMailboxes_.size() == 1) {
-        triggerOneTimeTask(i);
-        sleep_sem->release();
-      } else {
-        std::vector<TaskDescription> v =
-          (tempData.find(taskRequest->id_)!=tempData.end()) ?
-            tempData.find(taskRequest->id_)->second : std::vector<TaskDescription>();
-
-        v.push_back(*taskRequest);
-        tempData.insert(std::pair<boost::uuids::uuid,std::vector<TaskDescription>>(taskRequest->id_, v));
-
-        if(v.size() == incMailboxes_.size()) {
-          triggerOneTimeTask(i);
-          // remove data
-          tempData.erase(taskRequest->id_);
-          sleep_sem->release();
-        }
-      }
-    }catch(simgrid::TimeoutException){continue;}
-    */
   }
 }
 

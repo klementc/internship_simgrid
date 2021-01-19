@@ -143,9 +143,15 @@ class ElasticTaskManager {
     double getDataSizeRatio();
     void setParallelTasksPerInst(int s);
     int getParallelTasksPerInst();
+
 #ifdef USE_JAEGERTRACING
+    /**
+     * Obtain the tracer creater for jaeger interception
+     * Only used if the jaegertracing option is ON
+     */
     std::shared_ptr<opentracing::v3::Tracer> getTracer();
 #endif
+
     void triggerOneTimeTask(boost::uuids::uuid id);
     void triggerOneTimeTask(boost::uuids::uuid id, double ratioLoad);
     void setOutputFunction(std::function<void(TaskDescription*)> code);
@@ -174,6 +180,7 @@ class TaskInstance {
 
     simgrid::s4u::SemaphorePtr n_empty_;
     simgrid::s4u::SemaphorePtr n_full_;
+    simgrid::s4u::SemaphorePtr n_bl_;
     double bootTime_;
     boost::uuids::random_generator uuidGen_;
 
@@ -182,7 +189,12 @@ class TaskInstance {
     simgrid::s4u::Host* host_;
     std::vector<simgrid::s4u::CommPtr> commV;
 
+    std::vector<simgrid::s4u::ExecPtr> pending_execs;
+    std::map<simgrid::s4u::ExecPtr, TaskDescription*> execMap_;
+
     void pollTasks();
+    void pollEndOfTasks();
+
   public:
     TaskInstance(ElasticTaskManager* etm, std::string mbName,
       std::function<void(TaskDescription*)> outputFunction,
