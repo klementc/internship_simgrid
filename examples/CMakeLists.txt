@@ -31,3 +31,6 @@ TARGET_LINK_LIBRARIES(graph Elasticity simgrid ${EXTRA_LIBS})
 
 ADD_EXECUTABLE( main main.cpp )
 TARGET_LINK_LIBRARIES(main Elasticity simgrid ${EXTRA_LIBS})
+
+ADD_EXECUTABLE( dataSourceTest DataSourceTest.cpp )
+TARGET_LINK_LIBRARIES(dataSourceTest Elasticity simgrid ${EXTRA_LIBS})

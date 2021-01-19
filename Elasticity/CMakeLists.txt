@@ -15,6 +15,6 @@ if(USE_JAEGERTRACING)
 endif()
 
 
-add_library(Elasticity ElasticTask.cpp ElasticPolicyCPUThreshold.cpp ElasticPolicyHybrid1.cpp ElasticPolicyReactive1.cpp TaskInstance.cpp)
+add_library(Elasticity ElasticTask.cpp DataSource.cpp ElasticPolicyCPUThreshold.cpp ElasticPolicyHybrid1.cpp ElasticPolicyReactive1.cpp TaskInstance.cpp)
 
 TARGET_LINK_LIBRARIES(Elasticity ${EXTRA_LIBS})
