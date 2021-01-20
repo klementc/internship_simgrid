@@ -40,19 +40,6 @@ struct Comparator {
   }
 };
 
-class RatioChange : public EvntQ {
-  public:
-    boost::uuids::uuid id;
-    double visitsPerSec;
-
-    RatioChange(boost::uuids::uuid id_, double date_, double visitsPerSec_)
-      : EvntQ(date_), id(id_), visitsPerSec(visitsPerSec_) {}
-    RatioChange(boost::uuids::uuid id_, double visitsPerSec_)  // for the event queue as the date is already known
-      : EvntQ(0.0), id(id_), visitsPerSec(visitsPerSec_) {}
-    RatioChange(double date_, double visitsPerSec_)  // for the user that doesn't know the ID of the ET
-      : EvntQ(date_), visitsPerSec(visitsPerSec_) {}
-};
-
 class TaskDescription : public EvntQ {
   public:
     boost::uuids::uuid id_;
@@ -61,7 +48,6 @@ class TaskDescription : public EvntQ {
     bool repeat = true;
     std::function<void()> outputFunction = []() {};
     bool hasTimestamps = false;
-    std::ifstream *ts_file;
     double dSize;
     double startTime;
 
@@ -71,7 +57,6 @@ class TaskDescription : public EvntQ {
 
     TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_, double date_, double dSize_)
         : EvntQ(date_), id_(id), flops(flops_), interSpawnDelay(interSpawnDelay_), dSize(dSize_) {
-      ts_file = new std::ifstream;
     }
 
     TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_, double date_)
@@ -126,13 +111,10 @@ class ElasticTaskManager {
     boost::uuids::uuid addElasticTask(boost::uuids::uuid id, double flopsTask, double interSpawnDelay);
     boost::uuids::uuid addElasticTask(boost::uuids::uuid id, double flopsTask, double interSpawnDelay, double s);
     void pollnet(std::string mbName);
-    void addRatioChange(boost::uuids::uuid id, double date, double visitsPerSec);
     void addHost(Host *host);
     Host* removeHost(int i);
-    void changeRatio(boost::uuids::uuid id, double visitsPerSec);
     void removeTaskExecs(boost::uuids::uuid id);
     void removeTask(boost::uuids::uuid id);
-    void removeRatioChanges(boost::uuids::uuid id);
     void setProcessRatio(int64_t pr);
     void setBootDuration(double bd);
     int64_t getAmountOfWaitingRequests();
@@ -144,18 +126,9 @@ class ElasticTaskManager {
     void setParallelTasksPerInst(int s);
     int getParallelTasksPerInst();
 
-#ifdef USE_JAEGERTRACING
-    /**
-     * Obtain the tracer creater for jaeger interception
-     * Only used if the jaegertracing option is ON
-     */
-    std::shared_ptr<opentracing::v3::Tracer> getTracer();
-#endif
-
     void triggerOneTimeTask(boost::uuids::uuid id);
     void triggerOneTimeTask(boost::uuids::uuid id, double ratioLoad);
     void setOutputFunction(std::function<void(TaskDescription*)> code);
-    void setTimestampsFile(boost::uuids::uuid id, std::string filename);
 
     void kill();
     void run();
@@ -168,6 +141,14 @@ class ElasticTaskManager {
     inline void resetCounterExecSlot(){counterExecSlot_=0;}
     inline std::string getServiceName(){return serviceName_;}
     double reqPerSec();
+
+#ifdef USE_JAEGERTRACING
+    /**
+     * Obtain the tracer creater for jaeger interception
+     * Only used if the jaegertracing option is ON
+     */
+    std::shared_ptr<opentracing::v3::Tracer> getTracer();
+#endif
 };
 
 

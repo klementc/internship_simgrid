@@ -112,31 +112,10 @@ void ElasticTaskManager::addHost(Host *host) {
   Actor::create("TI"+boost::uuids::to_string(boost::uuids::random_generator()()), host, [&]{ti->run();});
 }
 
-void ElasticTaskManager::changeRatio(boost::uuids::uuid id, double visitsPerSec) {
-  removeTaskExecs(id);
-  tasks.find(id)->second.interSpawnDelay = visitsPerSec;
-  tasks.find(id)->second.date = Engine::get_instance()->get_clock();
-  if(visitsPerSec > 0.0) {
-    TaskDescription *newTask = new TaskDescription(tasks.find(id)->second);
-    nextEvtQueue.push(newTask);
-    sleep_sem->release();
-  }
-}
 
 void ElasticTaskManager::setBootDuration(double bd){
   xbt_assert(bd>=0, "Boot time has to be non negative");
   bootDuration_ = bd;
-}
-
-/**
- * Modify the arrival rate of one of the tasks from date
- */
-void ElasticTaskManager::addRatioChange(boost::uuids::uuid id, double date, double visitsPerSec) {
-  RatioChange *rC = new RatioChange(id, date, visitsPerSec);
-  nextEvtQueue.push(rC);
-  if (date < nextEvtQueue.top()->date) {
-    sleep_sem->release();
-  }
 }
 
 void ElasticTaskManager::removeTaskExecs(boost::uuids::uuid id) {  // remove all even non repeat
@@ -160,21 +139,6 @@ void ElasticTaskManager::removeTask(boost::uuids::uuid id){
   tasks.erase(id);
 }
 
-void ElasticTaskManager::removeRatioChanges(boost::uuids::uuid id) {
-  std::priority_queue<EvntQ*, std::vector<EvntQ*>, Comparator> newNextEvtQueue;
-  while(!nextEvtQueue.empty()) {
-    if(strcmp(typeid(nextEvtQueue.top()).name(), "RatioChange")) {
-      newNextEvtQueue.push(nextEvtQueue.top());
-    } else if (const RatioChange* t = dynamic_cast<const RatioChange*>(nextEvtQueue.top())) {
-      if (t->id != id) {
-        newNextEvtQueue.push(nextEvtQueue.top());
-      }
-    }
-    nextEvtQueue.pop();
-  }
-  nextEvtQueue = newNextEvtQueue;
-}
-
 void ElasticTaskManager::triggerOneTimeTask(boost::uuids::uuid id) {
 
   TaskDescription *newTask = new TaskDescription(tasks.find(id)->second);
@@ -194,27 +158,6 @@ void ElasticTaskManager::triggerOneTimeTask(boost::uuids::uuid id, double ratioL
   nextEvtQueue.push(newTask);
     // one more pending request
   modifWaitingReqAmount(1);
-  sleep_sem->release();
-}
-
-/**
- * Import timestamps (one timestamp per line) from a file
- */
-void ElasticTaskManager::setTimestampsFile(boost::uuids::uuid id, std::string filename) {
-  tasks.find(id)->second.repeat = false;
-  tasks.find(id)->second.ts_file->open(filename);
-  removeTaskExecs(id);
-  std::string timestamp;
-  if(tasks.find(id)->second.ts_file->is_open()) {
-    if(!tasks.find(id)->second.ts_file->eof()) {
-      std::getline(*(tasks.find(id)->second.ts_file), timestamp);
-      tasks.find(id)->second.date = std::stod(timestamp);
-      TaskDescription *newTask = new TaskDescription(tasks.find(id)->second);
-      nextEvtQueue.push(newTask);
-    } else {
-      tasks.find(id)->second.ts_file->close();
-    }
-  }
   sleep_sem->release();
 }
 
@@ -372,56 +315,31 @@ void ElasticTaskManager::run() {
       EvntQ *currentEvent = nextEvtQueue.top();
       nextEvtQueue.pop();
 
-      if (RatioChange* t = dynamic_cast<RatioChange*>(currentEvent)) {
-        changeRatio(t->id, t->visitsPerSec);
-      } else if (TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent)) {
-        if (availableHostsList_.size() <= nextHost_)
-          nextHost_ = 0;
-        simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(serviceName_+"_data");
+      TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent);
+      if (availableHostsList_.size() <= nextHost_)
+        nextHost_ = 0;
+      simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(serviceName_+"_data");
 
-        /* Async version
-        TODO: clean pending vector
-        */
-        simgrid::s4u::CommPtr comm = mbp->put_async(t, (t->dSize == -1) ? 1 : t->dSize);
-        pending_comms.push_back(comm);
+      /* Async version
+      TODO: clean pending vector
+      */
+      simgrid::s4u::CommPtr comm = mbp->put_async(t, (t->dSize == -1) ? 1 : t->dSize);
+      pending_comms.push_back(comm);
 
-        /* Sync version
-        problem: when having latencies on links, blocking put causes problems
-        try{
-          mbp->put(t, (t->dSize == -1) ? 1 : t->dSize);
-        }catch(simgrid::TimeoutException e){}
-	      */
-       ++task_count;
+      ++task_count;
 
-        if(! t->repeat)
-          removeTask(t->id_);
+      if(! t->repeat)
+        removeTask(t->id_);
 
-        nextHost_++;
-        nextHost_ = nextHost_ % availableHostsList_.size();
+      nextHost_++;
+      nextHost_ = nextHost_ % availableHostsList_.size();
 
         // add next event to the queue (date defined through interspawndelay or file timestamps)
         if (t->repeat) {
           t->date = Engine::get_instance()->get_clock() + (1 / t->interSpawnDelay);
           nextEvtQueue.push(t);
-        } else if (t->ts_file->is_open()) {
-          if (t->ts_file->eof()) {
-            t->ts_file->close();
-          } else {
-            std::string timestamp;
-            std::getline(*(t->ts_file), timestamp);
-            try {
-              t->date = std::stod(timestamp);
-            } catch(const std::invalid_argument& e) {
-              //std::cout << "exception for stod(timestamp)" << std::endl;
-            }
-            nextEvtQueue.push(t);
-          }
         }
-      } else {
-        std::cout << "wut";
-        exit(0);  // Shouldn't happen
       }
-    }
     if(!keepGoing) {
       break;
     }
