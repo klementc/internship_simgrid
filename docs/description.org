@@ -1,0 +1,68 @@
+* Application overview
+
+A microservice application = a DAG
+
+- node: a service. Its properties are
+  - computationnal cost per task request (in flops). The amount of work to
+    perform at each call of the service
+  - input from which task requests are incoming
+  - output(s) to which the output is sent
+  - the size of the output packet (used to represent filtering, or other
+    operations on data)
+  - the amount of instances that can execute tasks (see below)
+  - can be attached to an elasticity policy to dynamically change the amount of instances
+- edge: communication between 2 services
+  - just a tunnel between 2 nodes, in practice it goes through network links
+    whose properties are their bandwidth, latency and network protocol (wifi and
+    wired in SG)
+
+* Structure
+
+Simplified class diagram:
+[[./classDiagram.png]]
+
+- ElasticTaskManager (ETM): polls all requests to a service, and then dispatches the
+  requests to one of the taskInstances
+  - pollnet: receive requests on input mailbox
+  - addhost: create a new task instance on provided host
+  - remove host: remove ""
+  - setProcessRatio: amount of flops to execute for each request
+  - bootduration: time between addHost, and ability to execute for a taskInstance
+  - trigger: add a new request to the request queue
+  - setoutputfunction: (used to pass to instances), the function to be called
+    once an execution finished (usually to send the output to the input box
+    of the next service)
+  - getCPUUsage, getqueuesize, getamountofexecutingrequest ... : perf metrics
+    for output, or elastic policy
+- TaskInstance (TI): Polls requests from the taskManager and execute the requests it fetches
+  - polltask: async reception of task requests from the ETM (at most
+    maxReqInInst executing request at any time). Receives the request and starts
+    an async_exec
+  - pollendoftasks: fetches finished execs, and call the output function,
+    allowing for a new request to be started
+- TaskDescription: Object passed from one service to another, contains the
+  required infos for the next service to know infos about the request (id, size,
+  jaeger spans ...). Lot of useless data in there that will be removed later
+  (due to the transition between simon's code and mine)
+- DataSource: Used to send taskRequests to ETMs. Several implementations
+  possible: dataSourcePeriodic, dataSourceFromTimeStamp,
+  dataSourceRandomDistribution ...
+  - getNextReqTS: implementation specific: next trigger timestamp
+  - getNextReqSize: same but for the size of data to be sent
+  - run() / suspend()
+- ElasticPolicy: Attaches to one or more ETM and keeps track on their usage to
+  adapt the amount of instances
+  - run()
+
+* Example
+
+[[./example.png]]
+
+- In the first view, edges represent communication between services. In the
+  second one, edges are mailbox transfers, and go through network links.
+- ETM1 and ETM2 can also be controled by an ElasticPolicy to adjust the amount
+  of instances.
+- each square is a separate actor and can be placed on different nodes (put 0
+  latency between the ETM and instances if you want a transparent distribution
+  directly to the instances in simulation results)
+
