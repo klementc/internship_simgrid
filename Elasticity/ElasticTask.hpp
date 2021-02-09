@@ -113,8 +113,6 @@ class ElasticTaskManager {
     void pollnet(std::string mbName);
     void addHost(Host *host);
     Host* removeHost(int i);
-    void removeTaskExecs(boost::uuids::uuid id);
-    void removeTask(boost::uuids::uuid id);
     void setProcessRatio(int64_t pr);
     void setBootDuration(double bd);
     int64_t getAmountOfWaitingRequests();
@@ -124,10 +122,9 @@ class ElasticTaskManager {
     void setDataSizeRatio(double r);
     double getDataSizeRatio();
     void setParallelTasksPerInst(int s);
-    int getParallelTasksPerInst();
 
-    void triggerOneTimeTask(boost::uuids::uuid id);
-    void triggerOneTimeTask(boost::uuids::uuid id, double ratioLoad);
+    void trigger(TaskDescription* td);
+    void trigger(TaskDescription* td, double ratioLoad);
     void setOutputFunction(std::function<void(TaskDescription*)> code);
 
     void kill();

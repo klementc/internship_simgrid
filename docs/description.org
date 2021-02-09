@@ -1,20 +1,67 @@
 * Application overview
 
-A microservice application = a DAG
+** Goal
+   Fog applications can be very useful, especially when it comes to reducing
+   network contention and improving user experience through reduced latencies by
+   processing/filtering/analyzing data as close to the user as possible.
 
-- node: a service. Its properties are
-  - computationnal cost per task request (in flops). The amount of work to
-    perform at each call of the service
-  - input from which task requests are incoming
-  - output(s) to which the output is sent
-  - the size of the output packet (used to represent filtering, or other
-    operations on data)
-  - the amount of instances that can execute tasks (see below)
-  - can be attached to an elasticity policy to dynamically change the amount of instances
-- edge: communication between 2 services
-  - just a tunnel between 2 nodes, in practice it goes through network links
-    whose properties are their bandwidth, latency and network protocol (wifi and
-    wired in SG)
+   Lot of studies aim at studying fog applications (ex: bruno donassolo's phd) in
+   real testbeds. In these cases, despite the efforts of the authors,
+   deploying and observing such applications still remains a non-trivial task (in
+   addition to the resource requirements). 
+
+   Other study fog applications through simulation: ifogsim (based on cloudsim),
+   fognetsim++, PAFI, YAFS, fogtorchII.
+   These work provide ways of modeling a fog application, and simulate them, but
+   most don't allow for "large" simulations (validations are performed on
+   platforms with at most a few tens of nodes) in addition to a lack of
+   validation of the underlying network modeling for most of them (either
+   because communications are not taking into account many existing things
+   such as tcp adapative mechanisms, or because they are based on network
+   simulators that proved to have limited realism). 
+
+   Our goal is to propose a tool for evaluating and prototyping fog
+   applications, modeled as microservices. We want a tool that can scale to
+   large infrastructure and applications, allows the study of dynamic
+   mechanisms such as elasticity on heterogeneous infrastructures. We also want
+   this tool to be precise when it comes to network communication models. This
+   is achieved through the use of simgrid, which has proven its realism for
+   wired network communications (and partly for WiFi networking).
+
+   Using this tool and simgrid models we could look at:
+   - QoS of microservices
+   - fog implications on application performance (latency, service times in each service,..)
+   - the energical impact of various elasticity policies (node model, wired and
+     wifi energy models)
+   - (mode for industry) the resource requirements of an application before
+     putting it in production by performing load tests (hence need for precise
+     network models)
+   - ...
+
+** Concepts
+   Same approach as most papers studying fog applications take (see for example
+   [[https://ieeexplore.ieee.org/abstract/document/8014366?casa_token=Q8bDqL-Ae2AAAAAA:H52xkR9_38YKSC-21RdtxtS4sJ_SdETST1Fi-n_-uXZE4Zy2y9eG55laNuHVaASdgQRVWwQ_QZs][fogtorch]] )
+
+   A microservice application = a DAG
+
+   - node: a service. Its properties are
+     - computationnal cost per task request (in flops). The amount of work to
+       perform at each call of the service
+     - input from which task requests are incoming
+     - output(s) to which the output is sent
+     - the size of the output packet (used to represent filtering, or other
+       operations on data)
+     - the amount of instances that can execute tasks (see below)
+     - can be attached to an elasticity policy to dynamically change the amount of instances
+   - edge: communication between 2 services
+     - just a tunnel between 2 nodes, in practice it goes through network links
+       whose properties are their bandwidth, latency and network protocol (wifi and
+       wired in SG)
+
+     Services and instances are deployed on Simgrid hosts. Edges represent one or a
+     set of network links task requests have to go through. By setting appropriate
+     links and host properties, you can study "fog" kind of application scenarios
+     (or other infrastructures where microservices can be used).
 
 * Structure
 
@@ -22,7 +69,8 @@ Simplified class diagram:
 [[./classDiagram.png]]
 
 - ElasticTaskManager (ETM): polls all requests to a service, and then dispatches the
-  requests to one of the taskInstances
+  requests to one of the taskInstances. When it has several input mailbox, it
+  waits for one message from each of them (with the same request id) before execution
   - pollnet: receive requests on input mailbox
   - addhost: create a new task instance on provided host
   - remove host: remove ""
@@ -66,3 +114,17 @@ Simplified class diagram:
   latency between the ETM and instances if you want a transparent distribution
   directly to the instances in simulation results)
 
+  The code of this example can be found under [[../examples/testDoc.cpp]]
+
+** Results visualization
+
+Run jaeger (easiest is jaeger-allinone docker) and got to your browser at
+localhost:16686
+
+Requests are timestamped starting from 1st january 2000, so make sure to modify
+the time range in your request.
+
+[[./example_output.png]]
+
+In this Figure you can observe the load variation's impact on request service
+time. Then you can look for each request at the time spent in each service.

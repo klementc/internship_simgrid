@@ -65,19 +65,17 @@ ElasticTaskManager::ElasticTaskManager(std::string name)
 
 void ElasticTaskManager::setProcessRatio(int64_t pr)
 {
+  XBT_DEBUG("new process ration: %d -> %d", processRatio_, pr);
   processRatio_ = pr;
 }
 
 void ElasticTaskManager::setParallelTasksPerInst(int s) {
   xbt_assert(s>0, "Instances cannot execute a negative amount of tasks in parallel");
+  XBT_DEBUG("new max amount of parallel tasks per instance: %d -> %d", parallelTasksPerInst_, s);
   parallelTasksPerInst_ = s;
 }
 
-int ElasticTaskManager::getParallelTasksPerInst() {
-  return parallelTasksPerInst_;
-}
-
-/*test*/
+/*
 boost::uuids::uuid ElasticTaskManager::addElasticTask(TaskDescription td){
   TaskDescription t(td);
   t.flops = processRatio_;
@@ -85,7 +83,7 @@ boost::uuids::uuid ElasticTaskManager::addElasticTask(TaskDescription td){
 
   return t.id_;
 }
-/*test*/
+
 
 boost::uuids::uuid ElasticTaskManager::addElasticTask(boost::uuids::uuid id, double flopsTask, double interSpawnDelay, double s) {
   TaskDescription td(id, flopsTask, interSpawnDelay, Engine::get_instance()->get_clock(), s);
@@ -103,6 +101,7 @@ boost::uuids::uuid ElasticTaskManager::addElasticTask(boost::uuids::uuid id, dou
 boost::uuids::uuid ElasticTaskManager::addElasticTask(boost::uuids::uuid id, double flopsTask, double interSpawnDelay) {
   return addElasticTask(id, flopsTask, interSpawnDelay, -1);
 }
+*/
 
 void ElasticTaskManager::addHost(Host *host) {
   availableHostsList_.push_back(host);
@@ -118,44 +117,20 @@ void ElasticTaskManager::setBootDuration(double bd){
   bootDuration_ = bd;
 }
 
-void ElasticTaskManager::removeTaskExecs(boost::uuids::uuid id) {  // remove all even non repeat
-  std::priority_queue<EvntQ*, std::vector<EvntQ*>, Comparator> newNextEvtQueue;
-  while(!nextEvtQueue.empty()) {
-    if(strcmp(typeid(nextEvtQueue.top()).name(), "TaskDescription")) {
-      newNextEvtQueue.push(nextEvtQueue.top());
-    } else if (const TaskDescription* t = dynamic_cast<const TaskDescription*>(nextEvtQueue.top())) {
-      if (t->id_ != id) {
-        newNextEvtQueue.push(nextEvtQueue.top());
-      } else {
-        delete nextEvtQueue.top();
-      }
-    }
-    nextEvtQueue.pop();
-  }
-  nextEvtQueue = newNextEvtQueue;
-}
+void ElasticTaskManager::trigger(TaskDescription* td) {
 
-void ElasticTaskManager::removeTask(boost::uuids::uuid id){
-  tasks.erase(id);
-}
-
-void ElasticTaskManager::triggerOneTimeTask(boost::uuids::uuid id) {
-
-  TaskDescription *newTask = new TaskDescription(tasks.find(id)->second);
-  newTask->repeat = false;
-  newTask->date = 0.0;
-  nextEvtQueue.push(newTask);
+  //TaskDescription *newTask = new TaskDescription(td);
+  td->date = Engine::get_instance()->get_clock();
+  nextEvtQueue.push(td);
   // one more pending request
   modifWaitingReqAmount(1);
   sleep_sem->release();
 }
 
-void ElasticTaskManager::triggerOneTimeTask(boost::uuids::uuid id, double ratioLoad) {  // TODO, network load to add
-  TaskDescription *newTask = new TaskDescription(tasks.find(id)->second);
-  newTask->repeat = false;
-  newTask->flops = newTask->flops * ratioLoad;
-  newTask->date = 0.0;
-  nextEvtQueue.push(newTask);
+void ElasticTaskManager::trigger(TaskDescription* td, double ratioLoad) {  // TODO, network load to add
+  //TaskDescription *newTask = new TaskDescription(td);
+  td->date = Engine::get_instance()->get_clock();
+  nextEvtQueue.push(td);
     // one more pending request
   modifWaitingReqAmount(1);
   sleep_sem->release();
@@ -267,11 +242,13 @@ void ElasticTaskManager::pollnet(std::string mboxName){
 
     int newMsgPos = simgrid::s4u::Comm::wait_any(&commV);
     TaskDescription* taskRequest = static_cast<TaskDescription*>(taskV);
+    //set amount of computation for the instance
+    taskRequest->flops = processRatio_;
 
-    boost::uuids::uuid i = addElasticTask(*taskRequest);//addElasticTask(taskRequest->id_, processRatio_, 0, taskRequest->dSize);
+    // boost::uuids::uuid i = addElasticTask(*taskRequest);//addElasticTask(taskRequest->id_, processRatio_, 0, taskRequest->dSize);
     //XBT_INFO("POLLING RECEIVED size %f %s", taskRequest->dSize, boost::uuids::to_string(taskRequest->id_).c_str());
     if(incMailboxes_.size() == 1) {
-      triggerOneTimeTask(i);
+      trigger(taskRequest);
       sleep_sem->release();
     } else {
       std::vector<TaskDescription> v =
@@ -282,7 +259,7 @@ void ElasticTaskManager::pollnet(std::string mboxName){
       tempData.insert(std::pair<boost::uuids::uuid,std::vector<TaskDescription>>(taskRequest->id_, v));
 
       if(v.size() == incMailboxes_.size()) {
-        triggerOneTimeTask(i);
+        trigger(taskRequest);
         // remove data
         tempData.erase(taskRequest->id_);
         sleep_sem->release();
@@ -308,10 +285,17 @@ void ElasticTaskManager::run() {
   }
 
   while(1) {
+        for(std::vector<simgrid::s4u::CommPtr>::iterator it = pending_comms.begin()
+      ; it != pending_comms.end();) {
+        if((*it)->test())
+          it = pending_comms.erase(it);
+        else
+          it++;
+    }
     // execute events that need be executed now
     while(!nextEvtQueue.empty() && nextEvtQueue.top()->date <= Engine::get_instance()->get_clock()) {
-      XBT_DEBUG("In run: %d, nextEvtQueue: %d, netxEvt date: %lf",
-        tasks.size(), nextEvtQueue.size(), nextEvtQueue.top()->date);
+      //XBT_INFO("In run: nextEvtQueue: %d, netxEvt date: %lf",
+      //  nextEvtQueue.size(), nextEvtQueue.top()->date);
       EvntQ *currentEvent = nextEvtQueue.top();
       nextEvtQueue.pop();
 
@@ -328,17 +312,9 @@ void ElasticTaskManager::run() {
 
       ++task_count;
 
-      if(! t->repeat)
-        removeTask(t->id_);
-
       nextHost_++;
       nextHost_ = nextHost_ % availableHostsList_.size();
 
-        // add next event to the queue (date defined through interspawndelay or file timestamps)
-        if (t->repeat) {
-          t->date = Engine::get_instance()->get_clock() + (1 / t->interSpawnDelay);
-          nextEvtQueue.push(t);
-        }
       }
     if(!keepGoing) {
       break;

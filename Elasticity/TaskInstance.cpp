@@ -87,6 +87,10 @@ void TaskInstance::pollEndOfTasks()
   //  if(! pending_execs.at(index)->test()){XBT_INFO("NOT FINISHSED");}
     pending_execs.erase(pending_execs.begin()+index);
 
+    /* set size for future transmissions
+      * used to model the size of the processed data (either bigger or smaller)
+    */
+   a->dSize *= etm_->getDataSizeRatio();
     simgrid::s4u::ActorPtr poll = simgrid::s4u::Actor::create(mbName_+"outputf"+boost::uuids::to_string(uuidGen_()),s4u::Host::current(),[&]{outputFunction_(a);});
     if(keepGoing_)n_empty_->release();
   }
@@ -131,38 +135,9 @@ void TaskInstance::run()
         etm_->modifExecutingReqAmount(1);
         simgrid::s4u::ExecPtr execP = this_actor::exec_async(a->flops);
         pending_execs.push_back(execP);
-        execMap_.insert(std::pair<simgrid::s4u::ExecPtr, TaskDescription*>(execP, new TaskDescription(*a)));
+        execMap_.insert(std::pair<simgrid::s4u::ExecPtr, TaskDescription*>(execP, a));
         n_bl_->release();
-      /*
-      Actor::create("exec"+boost::uuids::to_string(uuidGen_()), this_actor::get_host(), [this, a] {
 
-#ifdef USE_JAEGERTRACING
-        auto t1 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
-        auto span = a->parentSpans.size()==0?
-          etm_->getTracer().get()->StartSpan( etm_->getServiceName(),
-            {opentracing::v3::StartTimestamp(t1)}) :
-          etm_->getTracer().get()->StartSpan( etm_->getServiceName(),
-            {opentracing::v3::StartTimestamp(t1), opentracing::v3::ChildOf(&a->parentSpans.at(a->parentSpans.size()-1)->get()->context())});
-        span->Log({ {"nbInst:", etm_->getInstanceAmount()},{"waitingReqAtStart:", etm_->getAmountOfWaitingRequests()},{"alreadyExecutingAtStart:", etm_->getAmountOfExecutingRequests()},{"startExec", Engine::get_instance()->get_clock()}});
-        std::unique_ptr<opentracing::v3::Span>* t = new std::unique_ptr<opentracing::v3::Span>();
-        *t = std::move(span);
-        a->parentSpans.push_back(t);
-#endif
-
-        etm_->modifWaitingReqAmount(-1);
-        etm_->modifExecutingReqAmount(1);
-        this_actor::execute(a->flops);
-        etm_->modifExecutingReqAmount(-1);
-        etm_->setCounterExecSlot(etm_->getCounterExecSlot()+1);
-        n_empty_->release();
-
-#ifdef USE_JAEGERTRACING
-        auto t2 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
-        t->get()->Log({{"endExec", Engine::get_instance()->get_clock()}});
-#endif
-        outputFunction_(a);
-      });
-      */
     }catch(Exception e){}
   }
 
