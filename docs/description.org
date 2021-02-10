@@ -14,8 +14,8 @@
    fognetsim++, PAFI, YAFS, fogtorchII.
    These work provide ways of modeling a fog application, and simulate them, but
    most don't allow for "large" simulations (validations are performed on
-   platforms with at most a few tens of nodes) in addition to a lack of
-   validation of the underlying network modeling for most of them (either
+   platforms with at most a few tens of nodes) in addition to the lack of a proper
+   validation of the underlying network models for most of them (either
    because communications are not taking into account many existing things
    such as tcp adapative mechanisms, or because they are based on network
    simulators that proved to have limited realism). 
@@ -102,6 +102,32 @@ Simplified class diagram:
   adapt the amount of instances
   - run()
 
+** In practice
+
+As shown in the example's code (see below), you need to do the following to
+deploy your microservice application:
+- create 1 ElasticTaskManager for each service you want to create.
+  - specify the input(s) of your service, as well as the function called when a
+    request is finished (if you want to chain your service with one or more
+    other services, send the requests in this function)
+  - specify the properties of your service: dataRatio between input and output
+    data size, amount of computation performed when a request is executed, boot
+    duration of instances,
+  - add the hosts you want to start instances on
+- if you need, create an elastic policy (we could do more dynamic things, but to
+  control the app later than what we have for now)
+  - one policy manages the amount of instances deployed for each service. You
+    give it a pool of hosts, and the policy depending on its implementation will
+    add/remove instances
+- create data sources
+  - easier than doing it manually every time, you just need to implement or use
+    already existing data sources so that any host can send task requests to the
+    application.
+
+Once all of those are created, create actors launching them (run() method). 
+
+
+
 * Example
 
 [[./example.png]]
@@ -118,7 +144,7 @@ Simplified class diagram:
 
 ** Results visualization
 
-Run jaeger (easiest is jaeger-allinone docker) and got to your browser at
+Run jaeger (easiest is jaeger-allinone docker) and go to your browser at
 localhost:16686
 
 Requests are timestamped starting from 1st january 2000, so make sure to modify
