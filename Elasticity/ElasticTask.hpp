@@ -49,18 +49,31 @@ class TaskDescription : public EvntQ {
     std::function<void()> outputFunction = []() {};
     bool hasTimestamps = false;
     double dSize;
-    double startTime;
+    double startExec;
+    double queueArrival;
+    double instArrival;
+    double endExec;
+    // to enable multi routes (the important part will be in the output function, responible
+    //for sending to output mailboxes depending ont the request type)
+    std::string requestType;
+    // if ack needed (ex: waiting for data from a DB before sending a request to the next service)
+    // then in the output function: push a mb name on the stack, send requests to the services you want an ack for
+    // those services in their return function will pop the mb from the stack and send an ack
+    // then the original service, after receiving the ACK, can send a req to the next services
+    // THUS, an important thing to note is that the routing part is dependent on the implenentation of the output services functions
+    std::stack<std::string> ackStack;
+    std::vector<double> flopsPerServ;
 
 #ifdef USE_JAEGERTRACING
     std::vector<std::unique_ptr<opentracing::v3::Span>*> parentSpans;
 #endif
 
-    TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_, double date_, double dSize_)
-        : EvntQ(date_), id_(id), flops(flops_), interSpawnDelay(interSpawnDelay_), dSize(dSize_) {
+    TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_, double date_, double dSize_, std::string requestType_)
+        : EvntQ(date_), id_(id), flops(flops_), interSpawnDelay(interSpawnDelay_), dSize(dSize_), requestType(requestType_) {
     }
 
     TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_, double date_)
-        : TaskDescription(id, flops_, interSpawnDelay_, date_, -1) {
+        : TaskDescription(id, flops_, interSpawnDelay_, date_, -1, "default") {
     }
     TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_)
       : TaskDescription(id, flops_, interSpawnDelay_, 0.0) {}

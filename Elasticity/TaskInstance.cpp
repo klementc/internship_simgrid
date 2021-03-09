@@ -50,7 +50,7 @@ void TaskInstance::pollTasks()
   while(keepGoing_) {
     int newMsgPos = simgrid::s4u::Comm::wait_any(&commV);
     TaskDescription* taskRequest = static_cast<TaskDescription*>(taskV);
-
+    taskRequest->instArrival = simgrid::s4u::Engine::get_clock();
     commV.erase(commV.begin() + newMsgPos);
     commV.push_back(mbp->get_async(&taskV));
     // we wait until there is a slot to execute a task before putting the request in the slot
@@ -75,7 +75,7 @@ void TaskInstance::pollEndOfTasks()
     int index = simgrid::s4u::Exec::wait_any(&pending_execs);
     // finished one exec, call output function and allow for a new execution
     TaskDescription* a = execMap_.find(pending_execs.at(index))->second;
-
+    a->endExec = simgrid::s4u::Engine::get_clock();
     etm_->modifExecutingReqAmount(-1);
     etm_->setCounterExecSlot(etm_->getCounterExecSlot()+1);
 
@@ -116,6 +116,7 @@ void TaskInstance::run()
       }
       // receive data from mailbox
       TaskDescription* a = reqs.at(0);
+      a->startExec = simgrid::s4u::Engine::get_clock();
       reqs.erase(reqs.begin());
       XBT_DEBUG("instance received req %f %f", a->flops, a->dSize);
 

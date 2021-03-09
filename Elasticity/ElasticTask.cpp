@@ -244,7 +244,8 @@ void ElasticTaskManager::pollnet(std::string mboxName){
     TaskDescription* taskRequest = static_cast<TaskDescription*>(taskV);
     //set amount of computation for the instance
     taskRequest->flops = processRatio_;
-
+    taskRequest->queueArrival = simgrid::s4u::Engine::get_clock();
+    taskRequest->flopsPerServ.push_back(this->processRatio_);
     // boost::uuids::uuid i = addElasticTask(*taskRequest);//addElasticTask(taskRequest->id_, processRatio_, 0, taskRequest->dSize);
     //XBT_INFO("POLLING RECEIVED size %f %s", taskRequest->dSize, boost::uuids::to_string(taskRequest->id_).c_str());
     if(incMailboxes_.size() == 1) {
