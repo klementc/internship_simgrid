@@ -6,6 +6,7 @@
 #include "ElasticPolicy.hpp"
 #include "ElasticTask.hpp"
 #include "DataSource.hpp"
+
 #include <memory>
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
@@ -21,6 +22,7 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
  * Redirects the output of etm1 to the second service
  */
 void returnservice1(TaskDescription* td) {
+  XBT_INFO("output service 1 queueArrival: %f instArrival: %f startExec: %f endExec: %f s1cost: %f\n", td->queueArrival, td->instArrival, td->startExec, td->endExec, td->flopsPerServ.at(0));
 	XBT_DEBUG("Return function of service service1");
 	s4u_Mailbox* mservice2 = s4u_Mailbox::by_name("service2");
 	mservice2->put(td, td->dSize);
@@ -45,37 +47,23 @@ XBT_DEBUG("CLOSE SPANS");
 	// here you can put the msg to a sink if desired
 }
 
-void run() {
-  /**
-   * 2 ETMs (ETMs represent a service, with the manager that handles instances)
-   *  - ETM1 "etmservice1":
-   *    - 1 input mailbox for task polling named "service1"
-   *    - 1 task = 1e7 flops (0.01s on a 1GF machine as the default one here)
-   *    - the instance is supposed to be operational after 2 seconds
-   *    - the output size will be the same as the input: used to model filtering and such after data processing
-   *  - ETM2:
-   *    - 1 input mailbox "service2"
-   *    - 5e6 flops per task execution
-   *    - output size = input size
-   *    - 1 second boot time
-   */
-
+void run(int servFlops, std::string tsFile, int parDeg) {
+  std::cout << "Service with " << servFlops << " flops" << std::endl;
   /* ETM1 */
   std::vector<std::string> vservice1 = std::vector<std::string>();
   vservice1.push_back("service1");
   std::shared_ptr<simgrid::s4u::ElasticTaskManager> etmservice1 = std::make_shared<simgrid::s4u::ElasticTaskManager>("etmservice1",vservice1);
 
   etmservice1->setOutputFunction(returnservice1);
+  etmservice1->setParallelTasksPerInst(parDeg);
   simgrid::s4u::Actor::create("etmservice1_a", simgrid::s4u::Host::by_name("cb1-1"), [etmservice1] { etmservice1->run(); });
   /* 3 instances (not using an elastic policy here, see other examples) */
   etmservice1->addHost(simgrid::s4u::Host::by_name("cb1-2"));
-  etmservice1->addHost(simgrid::s4u::Host::by_name("cb1-3"));
-  etmservice1->addHost(simgrid::s4u::Host::by_name("cb1-4"));
-  etmservice1->setProcessRatio(1e7);
-  etmservice1->setBootDuration(2);
+  etmservice1->setProcessRatio(servFlops);
+  etmservice1->setBootDuration(0);
   etmservice1->setDataSizeRatio(1);
 
-  /* ETM2 */
+  /* ETM2 (sink)*/
   std::vector<std::string> vservice2 = std::vector<std::string>();
   vservice2.push_back("service2");
   std::shared_ptr<simgrid::s4u::ElasticTaskManager> etmservice2 = std::make_shared<simgrid::s4u::ElasticTaskManager>("etmservice2",vservice2);
@@ -83,37 +71,41 @@ void run() {
   simgrid::s4u::Actor::create("etmservice2_a", simgrid::s4u::Host::by_name("cb1-100"), [etmservice2] { etmservice2->run(); });
   /* 2 instances */
   etmservice2->addHost(simgrid::s4u::Host::by_name("cb1-101"));
-  etmservice2->addHost(simgrid::s4u::Host::by_name("cb1-102"));
-  etmservice2->setProcessRatio(5e6);
-  etmservice2->setBootDuration(1);
+  etmservice2->setProcessRatio(1);
+  etmservice2->setBootDuration(0);
   etmservice2->setDataSizeRatio(1);
 
 
   /*
     * Create data source
-    * the data source will send requests to the first service
-    * through its mailbox (service1) every .5 second, and each
-    * request has size 10KB
-    * Of course you can create as many data sources as you want
-    * (and not necessarily with a fixed period)
-    *
   */
-  DataSourceFixedInterval* ds = new DataSourceFixedInterval("service1", .5, 10000);
+  //DataSourceFixedInterval* ds = new DataSourceFixedInterval("service1", .5, 10000);
+  //DataSourceTSFile* ds = new DataSourceTSFile("service1", "default5TimeStamps.csv", 1000);
+  DataSourceTSFile* ds = new DataSourceTSFile("service1", tsFile, 1000);
 	simgrid::s4u::ActorPtr dataS = simgrid::s4u::Actor::create("snd", simgrid::s4u::Host::by_name("cb1-1"), [&]{ds->run();});
 
   // kill policies and ETMs
-  simgrid::s4u::this_actor::sleep_for(300);
+  simgrid::s4u::this_actor::sleep_for(299.9);
   XBT_INFO("Done. Killing policies and etms");
-  dataS->kill();
+  ds->suspend();
+  // TODO NECESSARY???????
+  //dataS->kill();
+
+
   etmservice1->kill();
   etmservice2->kill();
 }
 
 
 int main(int argc, char* argv[]) {
+  	if(argc <= 4){
+		std::cout << "required parameters:  <platform-file> <serviceflops> <tsFile> <parDeg>" << std::endl;
+		exit(1);
+	}
 	simgrid::s4u::Engine* e = new simgrid::s4u::Engine(&argc, argv);
 	e->load_platform(argv[1]);
-	simgrid::s4u::Actor::create("main", simgrid::s4u::Host::by_name("cb1-200"), [&]{run();});
+
+	simgrid::s4u::Actor::create("main", simgrid::s4u::Host::by_name("cb1-200"), [&]{run(std::stoi(argv[2]), argv[3], std::stoi(argv[4]));});
 	e->run();
 	return 0;
 }

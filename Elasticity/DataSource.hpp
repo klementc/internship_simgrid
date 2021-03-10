@@ -11,6 +11,7 @@ class DataSource {
      */
     std::string mbName_;
     bool keepGoing_;
+    std::vector<TaskDescription*> unfinished_reqs;
 
     /**
      * Returns the next timestamps at which the node should send a request

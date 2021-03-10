@@ -55,6 +55,7 @@ class TaskDescription : public EvntQ {
     double queueArrival;
     double instArrival;
     double endExec;
+    bool finished;
     // to enable multi routes (the important part will be in the output function, responible
     //for sending to output mailboxes depending ont the request type)
     std::string requestType;
@@ -95,8 +96,8 @@ class ElasticTaskManager {
     std::vector<std::string> incMailboxes_;
     // used for requests to wait for all dependencies to be received within a graph node
     // (respect precedence constraints and don't execute a task before all it's data arrived)
-    std::map<boost::uuids::uuid, std::vector<TaskDescription>> tempData;
-    std::map<boost::uuids::uuid, TaskDescription> tasks;
+    std::map<boost::uuids::uuid, std::vector<TaskDescription*>> tempData;
+    std::map<boost::uuids::uuid, TaskDescription*> tasks;
     std::vector<TaskInstance*> tiList;
     std::priority_queue<EvntQ*, std::vector<EvntQ*>, Comparator> nextEvtQueue;
     simgrid::s4u::SemaphorePtr sleep_sem;
@@ -112,6 +113,7 @@ class ElasticTaskManager {
     int counterExecSlot_;
     int parallelTasksPerInst_;
     std::vector<simgrid::s4u::ActorPtr> pollers_;
+    simgrid::s4u::SemaphorePtr access_tmpdata_;
 #ifdef USE_JAEGERTRACING
     std::shared_ptr<opentracing::v3::Tracer> tracer_;
 #endif

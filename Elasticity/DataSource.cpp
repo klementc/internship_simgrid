@@ -7,6 +7,7 @@
 
 #include "DataSource.hpp"
 
+XBT_LOG_NEW_DEFAULT_CATEGORY(a, "logs for the Graph experiment");
 
 void DataSource::run()
 {
@@ -30,8 +31,11 @@ void DataSource::run()
     double evtTS = getNextReqTS();
     uint64_t nextSize = getNextReqSize();
 
+    if(evtTS == -1){simgrid::s4u::Comm::wait_all(&pending_comms); return;}
+
     simgrid::s4u::this_actor::sleep_until(evtTS);
     TaskDescription* t = new TaskDescription(generator(),-1,0);
+    XBT_INFO("send %p", t);
     t->dSize = nextSize;
 
     simgrid::s4u::CommPtr comm = mb->put_async(t, t->dSize);
@@ -59,6 +63,8 @@ double DataSourceTSFile::getNextReqTS() {
   // next trigger is equal to the next line of the file
   double ts;
   file_ >> ts;
+
+  if(file_.eof()) return -1;
 
   return ts;
 }

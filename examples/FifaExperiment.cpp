@@ -2,6 +2,7 @@
 #include <simgrid/s4u/Host.hpp>
 #include <simgrid/s4u/Mailbox.hpp>
 #include <simgrid/s4u/Engine.hpp>
+#include <memory>
 
 #include "ElasticPolicy.hpp"
 #include "ElasticTask.hpp"

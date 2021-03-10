@@ -3,14 +3,17 @@
 #include <simgrid/s4u/Mailbox.hpp>
 #include <simgrid/s4u/Engine.hpp>
 
+#include <memory>
+
 #include "ElasticPolicy.hpp"
 #include "ElasticTask.hpp"
-
+#include "DataSource.hpp"
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(Graph_log, "logs for the Graph experiment");
 
 void return2a(TaskDescription* a){
   s4u_Mailbox* m = s4u_Mailbox::by_name("s3a");
+  XBT_INFO("send %p to s3a", a);
   m->put(a, a->dSize);
 }
 
@@ -22,13 +25,16 @@ void return2b(TaskDescription* a){
 void return1(TaskDescription* a){
   s4u_Mailbox* m1 = s4u_Mailbox::by_name("s2A");
   s4u_Mailbox* m2 = s4u_Mailbox::by_name("s2B");
-
+XBT_INFO("send %p to s2a", a);
+//XBT_INFO("send %p to s2b", a);
   m1->put(a, a->dSize);
   m2->put(a, a->dSize);
 }
 
 void returnf(TaskDescription* a){
-  XBT_DEBUG("request served");
+  XBT_INFO("request served %p", a);
+  a->finished = true;
+
   delete a;
 }
 
@@ -46,6 +52,11 @@ void run()
   etm2a->setOutputFunction(return2a);
   etm2b->setOutputFunction(return2b);
   etm3->setOutputFunction(returnf);
+
+  //etm1->setParallelTasksPerInst(50);
+  //etm2a->setParallelTasksPerInst(50);
+  //etm2b->setParallelTasksPerInst(50);
+  //etm3->setParallelTasksPerInst(50);
   simgrid::s4u::Actor::create("ET1", simgrid::s4u::Host::by_name("cb1-1"), [etm1] { etm1->run(); });
   simgrid::s4u::Actor::create("ET2A", simgrid::s4u::Host::by_name("cb1-2"), [etm2a] { etm2a->run(); });
   simgrid::s4u::Actor::create("ET2B", simgrid::s4u::Host::by_name("cb1-3"), [etm2b] { etm2b->run(); });
@@ -77,10 +88,10 @@ void run()
   etm2b->addHost(simgrid::s4u::Host::by_name("cb1-200"));
   etm3->addHost(simgrid::s4u::Host::by_name("cb1-300"));
 
-  etm1->setProcessRatio(1e8);
-  etm2a->setProcessRatio(1e9);
-  etm2b->setProcessRatio(1e9);
-  etm3->setProcessRatio(5e7);
+  etm1->setProcessRatio(/*1e8*/1e7);
+  etm2a->setProcessRatio(/*1e9*/1e8);
+  etm2b->setProcessRatio(/*1e9*/1e8);
+  etm3->setProcessRatio(/*5e7*/5e6);
 
   // interval between adding a new instance and using it
   etm1->setBootDuration(1);
@@ -88,6 +99,10 @@ void run()
   etm2b->setBootDuration(1);
   etm3->setBootDuration(1);
 
+
+  DataSourceTSFile* ds = new DataSourceTSFile("s1", "default1TimeStamps.csv", 1000);
+	simgrid::s4u::ActorPtr dataS = simgrid::s4u::Actor::create("snd", simgrid::s4u::Host::by_name("cb1-1"), [&]{ds->run();});
+/*
   s4u_Mailbox* mb = s4u_Mailbox::by_name("s1");
   boost::uuids::random_generator generator;
   std::ifstream file;
@@ -100,10 +115,11 @@ void run()
     t->dSize=5000;
     mb->put(t, t->dSize);
   }
-
+*/
   XBT_INFO("Done.");
 
-  simgrid::s4u::this_actor::sleep_for(100);
+  simgrid::s4u::this_actor::sleep_for(10000);
+  ds->suspend();
   cpuPol1->kill();
   cpuPol2a->kill();
   cpuPol2b->kill();

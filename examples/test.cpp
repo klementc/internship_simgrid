@@ -5,6 +5,7 @@
 #include <simgrid/s4u/Comm.hpp>
 #include "ElasticPolicy.hpp"
 #include "ElasticTask.hpp"
+#include <memory>
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
 
@@ -112,6 +113,7 @@ etmservice2->kill();
 }
 int main(int argc, char* argv[]) {
 	simgrid::s4u::Engine* e = new simgrid::s4u::Engine(&argc, argv);
+
 	e->load_platform(argv[1]);
 	simgrid::s4u::Actor::create("main", simgrid::s4u::Host::by_name("cb1-200"), [&]{run();});
 	e->run();

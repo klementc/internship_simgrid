@@ -87,17 +87,18 @@ void TaskInstance::pollEndOfTasks()
         if(a->parentSpans.size()>0)
           a->parentSpans.at(a->parentSpans.size()-1)->get()->Log({{"endExec", Engine::get_instance()->get_clock()}});
 #endif
-
-  //  execMap_.erase(pending_execs.at(index));
-  //  if(! pending_execs.at(index)->test()){XBT_INFO("NOT FINISHSED");}
+    simgrid::s4u::ExecPtr ep = pending_execs.at(index);
 
     pending_execs.erase(pending_execs.begin()+index);
-    /* set size for future transmissions
-      * used to model the size of the processed data (either bigger or smaller)
+
+    /*
+    * set size for future transmissions
+    * used to model the size of the processed data (either bigger or smaller)
     */
    a->dSize *= etm_->getDataSizeRatio();
+   XBT_INFO("output for %p", a);
     simgrid::s4u::ActorPtr out = simgrid::s4u::Actor::create(mbName_+"outputf"+boost::uuids::to_string(uuidGen_()),s4u::Host::current(),[&]{outputFunction_(a);});
-//XBT_DEBUG("ZAZA");
+
     if(keepGoing_)n_empty_->release();
   }
 }
@@ -141,12 +142,14 @@ void TaskInstance::run()
 
         etm_->modifWaitingReqAmount(-1);
         etm_->modifExecutingReqAmount(1);
+        //XBT_INFO("NEXT %lf %s %d", a->flops, this_actor::get_cname(), keepGoing_);
         simgrid::s4u::ExecPtr execP = this_actor::exec_async(a->flops);
         pending_execs.push_back(execP);
         execMap_.insert(std::pair<simgrid::s4u::ExecPtr, TaskDescription*>(execP, a));
         n_bl_->release();
 
-    }catch(Exception e){}
+
+    }catch(Exception e){XBT_INFO("woops: %s", e.what());}
   }
 
 }
@@ -161,6 +164,14 @@ void TaskInstance::kill()
   for(auto c : commV){
     c->cancel();
   }
+
+  // I GUESS IT IS NOT THE WAY TO DO
+  // IF WE KILL THE INSTANCE BUT SOME EXEC_ASYNC ARE STILL EXECUTING
+  // WAIT FOR THE LAST ONE TO FINISH
+  // IT SEEMS TO AVOID A SEGFAULT IN THE HOSTLOAD PLUGIN, BUT ITS A HORRIBLE WAY TO DO IT I GUESS
+  if(pending_execs.size()>0)
+    pending_execs.at(pending_execs.size()-1)->wait();
+
 XBT_INFO("a");
   poll->kill();
   pollEnd->kill();

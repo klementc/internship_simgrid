@@ -4,6 +4,8 @@
 #include <simgrid/s4u/Engine.hpp>
 #include "ElasticPolicy.hpp"
 #include "ElasticTask.hpp"
+#include <memory>
+
 XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
 
 void returnservice1(TaskDescription* td) {
