@@ -75,34 +75,6 @@ void ElasticTaskManager::setParallelTasksPerInst(int s) {
   parallelTasksPerInst_ = s;
 }
 
-/*
-boost::uuids::uuid ElasticTaskManager::addElasticTask(TaskDescription td){
-  TaskDescription t(td);
-  t.flops = processRatio_;
-  tasks.insert({t.id_, t});
-
-  return t.id_;
-}
-
-
-boost::uuids::uuid ElasticTaskManager::addElasticTask(boost::uuids::uuid id, double flopsTask, double interSpawnDelay, double s) {
-  TaskDescription td(id, flopsTask, interSpawnDelay, Engine::get_instance()->get_clock(), s);
-  tasks.insert({id, td});
-  if (interSpawnDelay > 0.0) {
-    // one more pending request
-    //modifWaitingReqAmount(1); ???
-    nextEvtQueue.push(&(tasks.find(id)->second));
-    XBT_DEBUG("tasks: %d nextEvtQueue: %d", tasks.size(),nextEvtQueue.size());
-    sleep_sem->release();
-  }
-  return id;
-}
-
-boost::uuids::uuid ElasticTaskManager::addElasticTask(boost::uuids::uuid id, double flopsTask, double interSpawnDelay) {
-  return addElasticTask(id, flopsTask, interSpawnDelay, -1);
-}
-*/
-
 void ElasticTaskManager::addHost(Host *host) {
   availableHostsList_.push_back(host);
   XBT_DEBUG("created instance: %d", availableHostsList_.size());
@@ -142,7 +114,9 @@ Host* ElasticTaskManager::removeHost(int i){
   if(i<availableHostsList_.size()){
     h =  availableHostsList_.at(i);
     availableHostsList_.erase(availableHostsList_.begin()+i);
-    tiList.at(i)->kill();
+    simgrid::s4u::TaskInstance* ti = tiList.at(i);
+    ti->kill();
+    delete ti;
     tiList.erase(tiList.begin()+i);
   }else{
     XBT_INFO("Cannot remove element at position %d, overflow", i);
@@ -191,6 +165,7 @@ void ElasticTaskManager::setOutputFunction(std::function<void(TaskDescription*)>
 {
   outputFunction = f;
 }
+
 #ifdef USE_JAEGERTRACING
 std::shared_ptr<opentracing::v3::Tracer> ElasticTaskManager::getTracer()
 {
@@ -220,9 +195,14 @@ double ElasticTaskManager::getDataSizeRatio() {
  * Will stop run()'s infinite loop
  */
 void ElasticTaskManager::kill() {
+  XBT_INFO("KILL ETM");
   keepGoing = false;
   for(int i=0;i<tiList.size();i++){
     tiList.at(i)->kill();
+  }
+
+  for(auto a : pollers_){
+    a->kill();
   }
 }
 
@@ -281,7 +261,7 @@ void ElasticTaskManager::run() {
 
   for(auto s : incMailboxes_) {
     Mailbox* rec = simgrid::s4u::Mailbox::by_name(s.c_str());
-    simgrid::s4u::Actor::create(serviceName_+"_"+s+"polling",s4u::Host::current(),[&]{pollnet(s);});
+    pollers_.push_back(simgrid::s4u::Actor::create(serviceName_+"_"+s+"polling",s4u::Host::current(),[&]{pollnet(s);}));
     XBT_INFO("polling on mailbox %s", s.c_str());
   }
 
@@ -330,3 +310,14 @@ void ElasticTaskManager::run() {
   }
 }
 
+ElasticTaskManager::~ElasticTaskManager(){
+
+  // cancel active communications
+  for(auto c: pending_comms){
+    c->cancel();
+  }
+
+  // delete instances
+  tiList.clear();
+
+}

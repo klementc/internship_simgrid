@@ -72,7 +72,9 @@ void TaskInstance::pollEndOfTasks()
   while(keepGoing_){
     n_bl_->acquire();
 
+//XBT_DEBUG("ZmZm %lf ", pending_execs.at(0).get()->get_start_time());
     int index = simgrid::s4u::Exec::wait_any(&pending_execs);
+//XBT_DEBUG("ZIZI %d ", index);
     // finished one exec, call output function and allow for a new execution
     TaskDescription* a = execMap_.find(pending_execs.at(index))->second;
     a->endExec = simgrid::s4u::Engine::get_clock();
@@ -81,17 +83,21 @@ void TaskInstance::pollEndOfTasks()
 
 #ifdef USE_JAEGERTRACING
         auto t2 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
-        a->parentSpans.at(a->parentSpans.size()-1)->get()->Log({{"endExec", Engine::get_instance()->get_clock()}});
+        // TODO Check if no problem on spans
+        if(a->parentSpans.size()>0)
+          a->parentSpans.at(a->parentSpans.size()-1)->get()->Log({{"endExec", Engine::get_instance()->get_clock()}});
 #endif
+
   //  execMap_.erase(pending_execs.at(index));
   //  if(! pending_execs.at(index)->test()){XBT_INFO("NOT FINISHSED");}
-    pending_execs.erase(pending_execs.begin()+index);
 
+    pending_execs.erase(pending_execs.begin()+index);
     /* set size for future transmissions
       * used to model the size of the processed data (either bigger or smaller)
     */
    a->dSize *= etm_->getDataSizeRatio();
-    simgrid::s4u::ActorPtr poll = simgrid::s4u::Actor::create(mbName_+"outputf"+boost::uuids::to_string(uuidGen_()),s4u::Host::current(),[&]{outputFunction_(a);});
+    simgrid::s4u::ActorPtr out = simgrid::s4u::Actor::create(mbName_+"outputf"+boost::uuids::to_string(uuidGen_()),s4u::Host::current(),[&]{outputFunction_(a);});
+//XBT_DEBUG("ZAZA");
     if(keepGoing_)n_empty_->release();
   }
 }
@@ -100,8 +106,8 @@ void TaskInstance::run()
 {
   host_ = this_actor::get_host();
 
-  simgrid::s4u::ActorPtr poll = simgrid::s4u::Actor::create(mbName_+boost::uuids::to_string(uuidGen_()),s4u::Host::current(),[&]{pollTasks();});
-  simgrid::s4u::ActorPtr pollEnd = simgrid::s4u::Actor::create(mbName_+"pollEnd",s4u::Host::current(),[&]{pollEndOfTasks();});
+  poll = simgrid::s4u::Actor::create(mbName_+boost::uuids::to_string(uuidGen_()),s4u::Host::current(),[&]{pollTasks();});
+  pollEnd = simgrid::s4u::Actor::create(mbName_+"pollEnd",s4u::Host::current(),[&]{pollEndOfTasks();});
   // boot duration (just sleep so that we don't process any request in the node until bootime elapsed)
   this_actor::sleep_for(bootTime_);
 
@@ -132,6 +138,7 @@ void TaskInstance::run()
         *t = std::move(span);
         a->parentSpans.push_back(t);
 #endif
+
         etm_->modifWaitingReqAmount(-1);
         etm_->modifExecutingReqAmount(1);
         simgrid::s4u::ExecPtr execP = this_actor::exec_async(a->flops);
@@ -142,14 +149,23 @@ void TaskInstance::run()
     }catch(Exception e){}
   }
 
-  pollEnd->kill();
-  poll->kill();
 }
 
 void TaskInstance::kill()
 {
+  XBT_INFO("Kill taskinstance td size: %d %d", reqs.size(), execMap_.size());
+
   keepGoing_ = false;
   // don't receive requests anymore
   //simgrid::s4u::Comm::wait_all(&commV);
-
+  for(auto c : commV){
+    c->cancel();
+  }
+XBT_INFO("a");
+  poll->kill();
+  pollEnd->kill();
+XBT_INFO("b");
+  n_empty_->release();
+  n_full_->release();
+  n_bl_->release();
 }

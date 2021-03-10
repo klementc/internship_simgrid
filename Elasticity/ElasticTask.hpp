@@ -8,6 +8,8 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <stack>
+
 
 #include <boost/uuid/uuid.hpp>            // uuid class
 #include <boost/uuid/uuid_generators.hpp> // generators
@@ -109,6 +111,7 @@ class ElasticTaskManager {
     double dataSizeRatio_;
     int counterExecSlot_;
     int parallelTasksPerInst_;
+    std::vector<simgrid::s4u::ActorPtr> pollers_;
 #ifdef USE_JAEGERTRACING
     std::shared_ptr<opentracing::v3::Tracer> tracer_;
 #endif
@@ -152,6 +155,8 @@ class ElasticTaskManager {
     inline std::string getServiceName(){return serviceName_;}
     double reqPerSec();
 
+    ~ElasticTaskManager();
+
 #ifdef USE_JAEGERTRACING
     /**
      * Obtain the tracer creater for jaeger interception
@@ -174,6 +179,7 @@ class TaskInstance {
     simgrid::s4u::SemaphorePtr n_bl_;
     double bootTime_;
     boost::uuids::random_generator uuidGen_;
+    simgrid::s4u::ActorPtr poll, pollEnd;
 
     int maxReqInInst_;
     std::vector<TaskDescription*> reqs;
@@ -198,6 +204,7 @@ class TaskInstance {
     void run();
     void kill();
     inline simgrid::s4u::Host* getRunningHost(){return host_;};
+    //~TaskInstance();
 };
 
 }}

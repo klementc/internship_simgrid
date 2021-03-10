@@ -48,7 +48,7 @@ void ElasticPolicyCPUThreshold::run()
       //XBT_DEBUG("add host %d", instanceToStartIndex);
       //etm->addHost(hostPool_.at(instanceToStartIndex));
       //instanceToStartIndex = (instanceToStartIndex+1) % hostPool_.size();
-      XBT_DEBUG("add host");
+      XBT_INFO("add host");
       if(hostPool_.size()>0) {
         etm->addHost(hostPool_.at(0));
         hostPool_.erase(hostPool_.begin());
@@ -57,6 +57,7 @@ void ElasticPolicyCPUThreshold::run()
       }
     }else if(avgLoad < lowCPUThresh_ && etm->getInstanceAmount()>1){
       // if more than one instance, remove one
+      XBT_INFO("remove host");
       Host* h = etm->removeHost(0);
       if(h)
         hostPool_.push_back(h);
