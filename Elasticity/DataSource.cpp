@@ -35,7 +35,7 @@ void DataSource::run()
 
     simgrid::s4u::this_actor::sleep_until(evtTS);
     TaskDescription* t = new TaskDescription(generator(),-1,0);
-    XBT_INFO("send %p", t);
+    XBT_DEBUG("send %p", t);
     t->dSize = nextSize;
 
     simgrid::s4u::CommPtr comm = mb->put_async(t, t->dSize);

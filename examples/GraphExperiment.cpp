@@ -13,29 +13,32 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(Graph_log, "logs for the Graph experiment");
 
 void return2a(TaskDescription* a){
   s4u_Mailbox* m = s4u_Mailbox::by_name("s3a");
-  XBT_INFO("send %p to s3a", a);
+  XBT_DEBUG("send %p to s3a", a);
   m->put(a, a->dSize);
 }
 
 void return2b(TaskDescription* a){
   s4u_Mailbox* m = s4u_Mailbox::by_name("s3b");
+  XBT_DEBUG("send %p to s3B", a);
   m->put(a, a->dSize);
 }
 
 void return1(TaskDescription* a){
   s4u_Mailbox* m1 = s4u_Mailbox::by_name("s2A");
   s4u_Mailbox* m2 = s4u_Mailbox::by_name("s2B");
-XBT_INFO("send %p to s2a", a);
-//XBT_INFO("send %p to s2b", a);
+XBT_DEBUG("send %p to s2a", a);
+XBT_DEBUG("send %p to s2b", a);
   m1->put(a, a->dSize);
   m2->put(a, a->dSize);
 }
 
 void returnf(TaskDescription* a){
-  XBT_INFO("request served %p", a);
+  XBT_DEBUG("request served %p", a);
   a->finished = true;
-
-  delete a;
+  if(a!=NULL){
+    delete a;
+    a = NULL;
+  }
 }
 
 void run()
@@ -53,10 +56,10 @@ void run()
   etm2b->setOutputFunction(return2b);
   etm3->setOutputFunction(returnf);
 
-  //etm1->setParallelTasksPerInst(50);
-  //etm2a->setParallelTasksPerInst(50);
-  //etm2b->setParallelTasksPerInst(50);
-  //etm3->setParallelTasksPerInst(50);
+  etm1->setParallelTasksPerInst(150);
+  etm2a->setParallelTasksPerInst(150);
+  etm2b->setParallelTasksPerInst(150);
+  etm3->setParallelTasksPerInst(150);
   simgrid::s4u::Actor::create("ET1", simgrid::s4u::Host::by_name("cb1-1"), [etm1] { etm1->run(); });
   simgrid::s4u::Actor::create("ET2A", simgrid::s4u::Host::by_name("cb1-2"), [etm2a] { etm2a->run(); });
   simgrid::s4u::Actor::create("ET2B", simgrid::s4u::Host::by_name("cb1-3"), [etm2b] { etm2b->run(); });
@@ -88,10 +91,10 @@ void run()
   etm2b->addHost(simgrid::s4u::Host::by_name("cb1-200"));
   etm3->addHost(simgrid::s4u::Host::by_name("cb1-300"));
 
-  etm1->setProcessRatio(/*1e8*/1e7);
-  etm2a->setProcessRatio(/*1e9*/1e8);
-  etm2b->setProcessRatio(/*1e9*/1e8);
-  etm3->setProcessRatio(/*5e7*/5e6);
+  etm1->setProcessRatio(1e8/*1e7*/);
+  etm2a->setProcessRatio(1e9/*1e8*/);
+  etm2b->setProcessRatio(1e9/*1e8*/);
+  etm3->setProcessRatio(5e7/*5e6*/);
 
   // interval between adding a new instance and using it
   etm1->setBootDuration(1);
@@ -102,20 +105,7 @@ void run()
 
   DataSourceTSFile* ds = new DataSourceTSFile("s1", "default1TimeStamps.csv", 1000);
 	simgrid::s4u::ActorPtr dataS = simgrid::s4u::Actor::create("snd", simgrid::s4u::Host::by_name("cb1-1"), [&]{ds->run();});
-/*
-  s4u_Mailbox* mb = s4u_Mailbox::by_name("s1");
-  boost::uuids::random_generator generator;
-  std::ifstream file;
-  file.open("default1TimeStamps.csv");
-  double a;
-  while (file >> a)
-  {
-    simgrid::s4u::this_actor::sleep_until(a);
-    TaskDescription* t = new TaskDescription(generator(), -1, 0);
-    t->dSize=5000;
-    mb->put(t, t->dSize);
-  }
-*/
+
   XBT_INFO("Done.");
 
   simgrid::s4u::this_actor::sleep_for(10000);
@@ -134,7 +124,6 @@ int main(int argc, char **argv) {
   int argcE = 1;
   simgrid::s4u::Engine *e = new simgrid::s4u::Engine(&argc, argv);
   e->load_platform("dejavu_platform.xml");
-  //simgrid::s4u::Actor::create("main", simgrid::s4u::Host::by_name("cb1-2"), [etm, argv] { eve(etm, 0.5); });
   simgrid::s4u::Actor::create("main", simgrid::s4u::Host::by_name("cb1-2"), [argv] { run(); });
   e->run();
   return 0;

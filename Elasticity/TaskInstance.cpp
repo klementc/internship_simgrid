@@ -40,7 +40,7 @@ void TaskInstance::pollTasks()
   simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(mbName_);
 
   // create and init parallel reception of tasks
-  int parComSize = 20;
+  int parComSize = 1;
   void* taskV;
 
   for(int i=0;i<parComSize;i++){
@@ -72,21 +72,20 @@ void TaskInstance::pollEndOfTasks()
   while(keepGoing_){
     n_bl_->acquire();
 
-//XBT_DEBUG("ZmZm %lf ", pending_execs.at(0).get()->get_start_time());
     int index = simgrid::s4u::Exec::wait_any(&pending_execs);
-//XBT_DEBUG("ZIZI %d ", index);
     // finished one exec, call output function and allow for a new execution
     TaskDescription* a = execMap_.find(pending_execs.at(index))->second;
     a->endExec = simgrid::s4u::Engine::get_clock();
     etm_->modifExecutingReqAmount(-1);
     etm_->setCounterExecSlot(etm_->getCounterExecSlot()+1);
 
+/*
 #ifdef USE_JAEGERTRACING
         auto t2 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
         // TODO Check if no problem on spans
         if(a->parentSpans.size()>0)
           a->parentSpans.at(a->parentSpans.size()-1)->get()->Log({{"endExec", Engine::get_instance()->get_clock()}});
-#endif
+#endif*/
     simgrid::s4u::ExecPtr ep = pending_execs.at(index);
 
     pending_execs.erase(pending_execs.begin()+index);
@@ -96,7 +95,7 @@ void TaskInstance::pollEndOfTasks()
     * used to model the size of the processed data (either bigger or smaller)
     */
    a->dSize *= etm_->getDataSizeRatio();
-   XBT_INFO("output for %p", a);
+   XBT_DEBUG("output for %p", a);
     simgrid::s4u::ActorPtr out = simgrid::s4u::Actor::create(mbName_+"outputf"+boost::uuids::to_string(uuidGen_()),s4u::Host::current(),[&]{outputFunction_(a);});
 
     if(keepGoing_)n_empty_->release();
@@ -126,7 +125,7 @@ void TaskInstance::run()
       a->startExec = simgrid::s4u::Engine::get_clock();
       reqs.erase(reqs.begin());
       XBT_DEBUG("instance received req %f %f", a->flops, a->dSize);
-
+/*
 #ifdef USE_JAEGERTRACING
         auto t1 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
         auto span = a->parentSpans.size()==0?
@@ -138,7 +137,7 @@ void TaskInstance::run()
         std::unique_ptr<opentracing::v3::Span>* t = new std::unique_ptr<opentracing::v3::Span>();
         *t = std::move(span);
         a->parentSpans.push_back(t);
-#endif
+#endif*/
 
         etm_->modifWaitingReqAmount(-1);
         etm_->modifExecutingReqAmount(1);
@@ -172,10 +171,8 @@ void TaskInstance::kill()
   if(pending_execs.size()>0)
     pending_execs.at(pending_execs.size()-1)->wait();
 
-XBT_INFO("a");
   poll->kill();
   pollEnd->kill();
-XBT_INFO("b");
   n_empty_->release();
   n_full_->release();
   n_bl_->release();

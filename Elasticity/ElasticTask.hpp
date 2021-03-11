@@ -90,28 +90,41 @@ class TaskInstance;
 /** @brief */
 class ElasticTaskManager {
   private:
+    /* The function to call at the end of an instance's execution */
     std::function<void(TaskDescription*)> outputFunction = [](TaskDescription*) {};
+
+    /* Hosts that contain an instance */
     std::vector<simgrid::s4u::Host*> availableHostsList_;
+    std::vector<TaskInstance*> tiList;
+
+    /* ETM properties */
     std::string serviceName_;
     std::vector<std::string> incMailboxes_;
-    // used for requests to wait for all dependencies to be received within a graph node
-    // (respect precedence constraints and don't execute a task before all it's data arrived)
-    std::map<boost::uuids::uuid, std::vector<TaskDescription*>> tempData;
-    std::map<boost::uuids::uuid, TaskDescription*> tasks;
-    std::vector<TaskInstance*> tiList;
-    std::priority_queue<EvntQ*, std::vector<EvntQ*>, Comparator> nextEvtQueue;
-    simgrid::s4u::SemaphorePtr sleep_sem;
     bool keepGoing;
     int nextHost_;
-    int64_t processRatio_;
-    int64_t waitingReqAmount_;
-    int64_t executingReqAmount_;
     double bootDuration_;
+    int64_t processRatio_;
+    double dataSizeRatio_;
+    int parallelTasksPerInst_;
+
+    /*
+     * used for requests to wait for all dependencies to be received within a graph node
+     * (respect precedence constraints and don't execute a task before all it's data arrived)
+     */
+    std::map<boost::uuids::uuid, std::vector<TaskDescription*>> tempData;
+
+    // list of triggered TDs
+    std::priority_queue<EvntQ*, std::vector<EvntQ*>, Comparator> nextEvtQueue;
+    simgrid::s4u::SemaphorePtr sleep_sem;
+
     simgrid::s4u::SemaphorePtr modif_sem_;
     boost::uuids::random_generator uuidGen_;
-    double dataSizeRatio_;
+
+    /* metrics */
+    int64_t waitingReqAmount_;
+    int64_t executingReqAmount_;
     int counterExecSlot_;
-    int parallelTasksPerInst_;
+
     std::vector<simgrid::s4u::ActorPtr> pollers_;
     simgrid::s4u::SemaphorePtr access_tmpdata_;
 #ifdef USE_JAEGERTRACING
@@ -125,14 +138,18 @@ class ElasticTaskManager {
     ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes);
     ElasticTaskManager(std::string name);
 
-    boost::uuids::uuid addElasticTask(TaskDescription td);
-    boost::uuids::uuid addElasticTask(boost::uuids::uuid id, double flopsTask, double interSpawnDelay);
-    boost::uuids::uuid addElasticTask(boost::uuids::uuid id, double flopsTask, double interSpawnDelay, double s);
+    /* fetch new task requests*/
     void pollnet(std::string mbName);
+    /* create a new instance on the given host*/
     void addHost(Host *host);
+    /* remove an instance */
     Host* removeHost(int i);
+    /* modify flops amount per req */
     void setProcessRatio(int64_t pr);
+    /* duration between instance creation and operational state*/
     void setBootDuration(double bd);
+
+    /* ETM properties*/
     int64_t getAmountOfWaitingRequests();
     int64_t getAmountOfExecutingRequests();
     void modifExecutingReqAmount(int n);
@@ -141,6 +158,7 @@ class ElasticTaskManager {
     double getDataSizeRatio();
     void setParallelTasksPerInst(int s);
 
+    /* trigger a taskdescription*/
     void trigger(TaskDescription* td);
     void trigger(TaskDescription* td, double ratioLoad);
     void setOutputFunction(std::function<void(TaskDescription*)> code);
@@ -206,7 +224,6 @@ class TaskInstance {
     void run();
     void kill();
     inline simgrid::s4u::Host* getRunningHost(){return host_;};
-    //~TaskInstance();
 };
 
 }}

@@ -91,9 +91,7 @@ void ElasticTaskManager::setBootDuration(double bd){
 }
 
 void ElasticTaskManager::trigger(TaskDescription* td) {
-
-  //TaskDescription *newTask = new TaskDescription(td);
-  if(td == nullptr){XBT_INFO("WTF TRIGGER A NULLPTR!");}
+  xbt_assert(td!=nullptr, "Triggered a nullptr");
   td->date = Engine::get_instance()->get_clock();
   nextEvtQueue.push(td);
   // one more pending request
@@ -102,11 +100,10 @@ void ElasticTaskManager::trigger(TaskDescription* td) {
 }
 
 void ElasticTaskManager::trigger(TaskDescription* td, double ratioLoad) {  // TODO, network load to add
-  //TaskDescription *newTask = new TaskDescription(td);
-  if(td == nullptr){XBT_INFO("WTF TRIGGER A NULLPTR!");}
+  xbt_assert(td!=nullptr, "Triggered a nullptr");
   td->date = Engine::get_instance()->get_clock();
   nextEvtQueue.push(td);
-    // one more pending request
+  // one more pending request
   modifWaitingReqAmount(1);
   sleep_sem->release();
 }
@@ -133,8 +130,6 @@ unsigned int ElasticTaskManager::getInstanceAmount(){
 std::vector<double> ElasticTaskManager::getCPULoads(){
   std::vector<double> v;
   for (int i=0; i<availableHostsList_.size();i++){
-    //v.push_back(sg_host_get_current_load(availableHostsList_.at(i)));
-    //XBT_INFO("load: %s %f", availableHostsList_.at(i)->get_name().c_str(),sg_host_get_current_load(availableHostsList_.at(i)));
     v.push_back(sg_host_get_avg_load(availableHostsList_.at(i)));
     sg_host_load_reset(availableHostsList_.at(i));
   }
@@ -149,7 +144,6 @@ void ElasticTaskManager::modifExecutingReqAmount(int n){
 }
 
 void ElasticTaskManager::modifWaitingReqAmount(int n){
-  //XBT_INFO("CALLED: OLD %d NEW %d", waitingReqAmount_, n);
   modif_sem_->acquire();
   waitingReqAmount_+=n;
   xbt_assert(waitingReqAmount_>=0,"cannot have less than 0 waiting requests");
@@ -225,7 +219,6 @@ void ElasticTaskManager::pollnet(std::string mboxName){
 
     int newMsgPos = simgrid::s4u::Comm::wait_any(&commV);
     TaskDescription* taskRequest = static_cast<TaskDescription*>(taskV);
-          XBT_INFO("got lock for %p from %s, %d", taskRequest, mboxName.c_str(), newMsgPos);
     //set amount of computation for the instance
     taskRequest->flops = processRatio_;
     taskRequest->queueArrival = simgrid::s4u::Engine::get_clock();
@@ -245,13 +238,12 @@ void ElasticTaskManager::pollnet(std::string mboxName){
       tempData.insert(std::pair<boost::uuids::uuid,std::vector<TaskDescription*>>(taskRequest->id_, v));
 
       if(v.size() == incMailboxes_.size()) {
-        XBT_INFO("Received %d for %p, trigger now", v.size(), taskRequest);
+        XBT_DEBUG("Received %d for %p, trigger now", v.size(), taskRequest);
         trigger(taskRequest);
         // remove data
         tempData.erase(taskRequest->id_);
         sleep_sem->release();
       }
-      XBT_INFO("release lock, vsize: %d", tempData.find(taskRequest->id_)->second.size());
     }
 
     access_tmpdata_->release();
@@ -274,29 +266,23 @@ void ElasticTaskManager::run() {
   }
 
   while(1) {
-        for(std::vector<simgrid::s4u::CommPtr>::iterator it = pending_comms.begin()
-      ; it != pending_comms.end();) {
-        if((*it)->test())
-          it = pending_comms.erase(it);
-        else
-          it++;
+    for(std::vector<simgrid::s4u::CommPtr>::iterator it = pending_comms.begin(); it != pending_comms.end();) {
+      if((*it)->test())
+        it = pending_comms.erase(it);
+      else
+        it++;
     }
     // execute events that need be executed now
     while(!nextEvtQueue.empty() && nextEvtQueue.top()->date <= Engine::get_instance()->get_clock()) {
-      //XBT_INFO("In run: nextEvtQueue: %d, netxEvt date: %lf",
-      //  nextEvtQueue.size(), nextEvtQueue.top()->date);
       EvntQ *currentEvent = nextEvtQueue.top();
       nextEvtQueue.pop();
-      XBT_INFO("add: %p", currentEvent);
+      XBT_DEBUG("add: %p", currentEvent);
       TaskDescription* t = dynamic_cast<TaskDescription*>(currentEvent);
       if (availableHostsList_.size() <= nextHost_)
         nextHost_ = 0;
       simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(serviceName_+"_data");
 
-      /* Async version
-      TODO: clean pending vector
-      */
-     //if(t != nullptr){
+      /* Async version TODO: clean pending vector */
       simgrid::s4u::CommPtr comm = mbp->put_async(t, (t->dSize == -1) ? 1 : t->dSize);
       pending_comms.push_back(comm);
 
@@ -304,7 +290,7 @@ void ElasticTaskManager::run() {
 
       nextHost_++;
       nextHost_ = nextHost_ % availableHostsList_.size();
-     //}
+
       }
     if(!keepGoing) {
       break;
