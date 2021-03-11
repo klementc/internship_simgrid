@@ -227,6 +227,19 @@ void ElasticTaskManager::pollnet(std::string mboxName){
     taskRequest->flopsPerServ.push_back(this->processRatio_);
 
     if(incMailboxes_.size() == 1) {
+
+/*#ifdef USE_JAEGERTRACING
+        auto t1 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
+        auto span = taskRequest->parentSpans.size()==0?
+          getTracer().get()->StartSpan( getServiceName(),
+            {opentracing::v3::StartTimestamp(t1)}) :
+          getTracer().get()->StartSpan( getServiceName(),
+            {opentracing::v3::StartTimestamp(t1), opentracing::v3::ChildOf(&taskRequest->parentSpans.at(taskRequest->parentSpans.size()-1)->get()->context())});
+        span->Log({ {"nbInst:", getInstanceAmount()},{"waitingReqAtRx:", getAmountOfWaitingRequests()},{"alreadyExecutingAtRx:", getAmountOfExecutingRequests()}});
+        std::unique_ptr<opentracing::v3::Span>* t = new std::unique_ptr<opentracing::v3::Span>();
+        *t = std::move(span);
+        taskRequest->parentSpans.push_back(t);
+#endif*/
       trigger(taskRequest);
       sleep_sem->release();
     } else {

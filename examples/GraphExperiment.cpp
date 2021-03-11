@@ -13,20 +13,26 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(Graph_log, "logs for the Graph experiment");
 
 void return2a(TaskDescription* a){
   s4u_Mailbox* m = s4u_Mailbox::by_name("s3a");
-  XBT_DEBUG("send %p to s3a", a);
+
+
+    XBT_DEBUG("send %p to s3a", a);
   m->put(a, a->dSize);
 }
 
 void return2b(TaskDescription* a){
   s4u_Mailbox* m = s4u_Mailbox::by_name("s3b");
-  XBT_DEBUG("send %p to s3B", a);
+
+
+    XBT_DEBUG("send %p to s3B", a);
   m->put(a, a->dSize);
 }
 
 void return1(TaskDescription* a){
   s4u_Mailbox* m1 = s4u_Mailbox::by_name("s2A");
   s4u_Mailbox* m2 = s4u_Mailbox::by_name("s2B");
-XBT_DEBUG("send %p to s2a", a);
+
+
+  XBT_DEBUG("send %p to s2a", a);
 XBT_DEBUG("send %p to s2b", a);
   m1->put(a, a->dSize);
   m2->put(a, a->dSize);
@@ -35,6 +41,19 @@ XBT_DEBUG("send %p to s2b", a);
 void returnf(TaskDescription* a){
   XBT_DEBUG("request served %p", a);
   a->finished = true;
+
+
+  /*auto sp = a->parentSpans.back();
+  auto t2 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(simgrid::s4u::Engine::get_instance()->get_clock()*1000));
+  sp->get()->Finish({opentracing::v3::FinishTimestamp(t2)});*/
+  for (auto it = a->parentSpans.rbegin(); it != a->parentSpans.rend(); ++it)
+  {
+    auto t2 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(simgrid::s4u::Engine::get_instance()->get_clock()*1000));
+    (*it)->get()->Log({{"end",t2.count()}});
+    (*it)->get()->Finish({opentracing::v3::FinishTimestamp(t2)});
+    (*it)->reset();
+  }
+
   if(a!=NULL){
     delete a;
     a = NULL;
@@ -56,10 +75,10 @@ void run()
   etm2b->setOutputFunction(return2b);
   etm3->setOutputFunction(returnf);
 
-  etm1->setParallelTasksPerInst(150);
-  etm2a->setParallelTasksPerInst(150);
-  etm2b->setParallelTasksPerInst(150);
-  etm3->setParallelTasksPerInst(150);
+  etm1->setParallelTasksPerInst(10);
+  etm2a->setParallelTasksPerInst(10);
+  etm2b->setParallelTasksPerInst(10);
+  etm3->setParallelTasksPerInst(10);
   simgrid::s4u::Actor::create("ET1", simgrid::s4u::Host::by_name("cb1-1"), [etm1] { etm1->run(); });
   simgrid::s4u::Actor::create("ET2A", simgrid::s4u::Host::by_name("cb1-2"), [etm2a] { etm2a->run(); });
   simgrid::s4u::Actor::create("ET2B", simgrid::s4u::Host::by_name("cb1-3"), [etm2b] { etm2b->run(); });
@@ -91,10 +110,10 @@ void run()
   etm2b->addHost(simgrid::s4u::Host::by_name("cb1-200"));
   etm3->addHost(simgrid::s4u::Host::by_name("cb1-300"));
 
-  etm1->setProcessRatio(1e8/*1e7*/);
-  etm2a->setProcessRatio(1e9/*1e8*/);
-  etm2b->setProcessRatio(1e9/*1e8*/);
-  etm3->setProcessRatio(5e7/*5e6*/);
+  etm1->setProcessRatio(/*1e8*/1e6);
+  etm2a->setProcessRatio(/*1e9*/1e7);
+  etm2b->setProcessRatio(/*1e9*/1e7);
+  etm3->setProcessRatio(/*5e7*/5e5);
 
   // interval between adding a new instance and using it
   etm1->setBootDuration(1);

@@ -79,13 +79,13 @@ void TaskInstance::pollEndOfTasks()
     etm_->modifExecutingReqAmount(-1);
     etm_->setCounterExecSlot(etm_->getCounterExecSlot()+1);
 
-/*
+
 #ifdef USE_JAEGERTRACING
         auto t2 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
         // TODO Check if no problem on spans
         if(a->parentSpans.size()>0)
           a->parentSpans.at(a->parentSpans.size()-1)->get()->Log({{"endExec", Engine::get_instance()->get_clock()}});
-#endif*/
+#endif
     simgrid::s4u::ExecPtr ep = pending_execs.at(index);
 
     pending_execs.erase(pending_execs.begin()+index);
@@ -125,7 +125,7 @@ void TaskInstance::run()
       a->startExec = simgrid::s4u::Engine::get_clock();
       reqs.erase(reqs.begin());
       XBT_DEBUG("instance received req %f %f", a->flops, a->dSize);
-/*
+
 #ifdef USE_JAEGERTRACING
         auto t1 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
         auto span = a->parentSpans.size()==0?
@@ -137,7 +137,7 @@ void TaskInstance::run()
         std::unique_ptr<opentracing::v3::Span>* t = new std::unique_ptr<opentracing::v3::Span>();
         *t = std::move(span);
         a->parentSpans.push_back(t);
-#endif*/
+#endif
 
         etm_->modifWaitingReqAmount(-1);
         etm_->modifExecutingReqAmount(1);
