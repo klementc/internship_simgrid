@@ -142,7 +142,7 @@ void TaskInstance::run()
         etm_->modifWaitingReqAmount(-1);
         etm_->modifExecutingReqAmount(1);
         //XBT_INFO("NEXT %lf %s %d", a->flops, this_actor::get_cname(), keepGoing_);
-        simgrid::s4u::ExecPtr execP = this_actor::exec_async(a->flops);
+        simgrid::s4u::ExecPtr execP = this_actor::exec_async(etm_->getProcessRatio(a->requestType));
         pending_execs.push_back(execP);
         execMap_.insert(std::pair<simgrid::s4u::ExecPtr, TaskDescription*>(execP, a));
         n_bl_->release();

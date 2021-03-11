@@ -92,6 +92,8 @@ class ElasticTaskManager {
   private:
     /* The function to call at the end of an instance's execution */
     std::function<void(TaskDescription*)> outputFunction = [](TaskDescription*) {};
+    /* match request type to request cost */
+    std::function<double(std::string)> costReqType_ ;
 
     /* Hosts that contain an instance */
     std::vector<simgrid::s4u::Host*> availableHostsList_;
@@ -144,8 +146,16 @@ class ElasticTaskManager {
     void addHost(Host *host);
     /* remove an instance */
     Host* removeHost(int i);
-    /* modify flops amount per req */
+
+    /* modify flops amount per req
+     * if func not set, then the setprocessration value will be taken for every request
+     * if func is set, the setprocessratio func will always be used
+     * */
     void setProcessRatio(int64_t pr);
+    void setProcessRatioFunc(std::function<double(std::string)> costReqType);
+    /* obtain the processing cost for a given request type */
+    double getProcessRatio(std::string);
+
     /* duration between instance creation and operational state*/
     void setBootDuration(double bd);
 

@@ -184,6 +184,19 @@ void ElasticTaskManager::setDataSizeRatio(double r) {
   dataSizeRatio_ = r;
 }
 
+void ElasticTaskManager::setProcessRatioFunc(std::function<double(std::string)> costReqType){
+  costReqType_ = costReqType;
+}
+
+double ElasticTaskManager::getProcessRatio(std::string reqType){
+  // if the function is defined, use it, otherwise use the single value
+  if(costReqType_){
+    return costReqType_(reqType);
+  }else{
+    return processRatio_;
+  }
+}
+
 double ElasticTaskManager::getDataSizeRatio() {
   return dataSizeRatio_;
 }
@@ -228,7 +241,8 @@ void ElasticTaskManager::pollnet(std::string mboxName){
 
     if(incMailboxes_.size() == 1) {
 
-/*#ifdef USE_JAEGERTRACING
+#ifdef USE_JAEGERTRACING
+        /* NOT SURE WHERE I SHOULD PUT IT
         auto t1 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
         auto span = taskRequest->parentSpans.size()==0?
           getTracer().get()->StartSpan( getServiceName(),
@@ -238,8 +252,8 @@ void ElasticTaskManager::pollnet(std::string mboxName){
         span->Log({ {"nbInst:", getInstanceAmount()},{"waitingReqAtRx:", getAmountOfWaitingRequests()},{"alreadyExecutingAtRx:", getAmountOfExecutingRequests()}});
         std::unique_ptr<opentracing::v3::Span>* t = new std::unique_ptr<opentracing::v3::Span>();
         *t = std::move(span);
-        taskRequest->parentSpans.push_back(t);
-#endif*/
+        taskRequest->parentSpans.push_back(t);*/
+#endif
       trigger(taskRequest);
       sleep_sem->release();
     } else {
