@@ -2,6 +2,8 @@ import networkx as nx
 import argparse
 from graphviz import render
 from networkx.drawing.nx_agraph import write_dot
+import os
+import sys
 
 def showGraphStr(fName):
     G = nx.drawing.nx_agraph.read_dot(fName)
@@ -17,7 +19,7 @@ def toImage(fName, outName):
 def dfsTest(graph):
     #G = nx.drawing.nx_agraph.read_dot(fName)
     G = graph
-    print("------------")
+    print("------------ Nodes in a DFS traversal:")
     print(list(G.nodes))
     print(list(G.edges))
     nodes = nx.dfs_edges(G)
@@ -40,12 +42,11 @@ def compactGraph(graph):
     - when going back, transform the graph into a sequence
     '''
     G = graph
-    GCompact = nx.Graph()
+    GCompact = nx.DiGraph()
 
     nodes = nx.dfs_edges(G)
     already_list=[]
     previous = {"serv":"","id":""}
-    dur = 0
     for n in nodes:
         #print for debug
         #dfsTest(GCompact)
@@ -106,15 +107,17 @@ if __name__=="__main__":
         parser = argparse.ArgumentParser()
         # Adding optional argument
         parser.add_argument("-f", "--filename", help = "dot file to parse", required=True)
+        parser.add_argument("-o", "--outFname", help="output image file name", required=False)
 
         # Read arguments from command line
         args = parser.parse_args()
         G = nx.drawing.nx_agraph.read_dot(args.filename)
-        toImage(args.filename, "test.png")
-        dfsTest(G)
-        print("aaaaaaa")
-        dfsTest(compactGraph(G))
-        toDotAndMakeImg(compactGraph(G),"zizi.dot")
+
+        #dfsTest(G)
+        #dfsTest(compactGraph(G))
+        if(args.outFname):
+            toImage(args.filename, "coucou.png")
+            toDotAndMakeImg(compactGraph(G), args.outFname)
 
     except KeyboardInterrupt:
         print('Interrupted')
