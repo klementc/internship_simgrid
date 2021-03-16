@@ -24,6 +24,7 @@
 #include <simgrid/s4u/Actor.hpp>
 
 #include "ElasticConfig.hpp"
+#include "RequestType.hpp"
 
 class EvntQ {
   public:
@@ -58,7 +59,7 @@ class TaskDescription : public EvntQ {
     bool finished;
     // to enable multi routes (the important part will be in the output function, responible
     //for sending to output mailboxes depending ont the request type)
-    std::string requestType;
+    RequestType requestType;
     // if ack needed (ex: waiting for data from a DB before sending a request to the next service)
     // then in the output function: push a mb name on the stack, send requests to the services you want an ack for
     // those services in their return function will pop the mb from the stack and send an ack
@@ -71,12 +72,12 @@ class TaskDescription : public EvntQ {
     std::vector<std::unique_ptr<opentracing::v3::Span>*> parentSpans;
 #endif
 
-    TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_, double date_, double dSize_, std::string requestType_)
+    TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_, double date_, double dSize_, RequestType requestType_)
         : EvntQ(date_), id_(id), flops(flops_), interSpawnDelay(interSpawnDelay_), dSize(dSize_), requestType(requestType_) {
     }
 
     TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_, double date_)
-        : TaskDescription(id, flops_, interSpawnDelay_, date_, -1, "default") {
+        : TaskDescription(id, flops_, interSpawnDelay_, date_, -1, RequestType::DEFAULT) {
     }
     TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_)
       : TaskDescription(id, flops_, interSpawnDelay_, 0.0) {}
@@ -93,7 +94,7 @@ class ElasticTaskManager {
     /* The function to call at the end of an instance's execution */
     std::function<void(TaskDescription*)> outputFunction = [](TaskDescription*) {};
     /* match request type to request cost */
-    std::function<double(std::string)> costReqType_ ;
+    std::function<double(RequestType)> costReqType_ ;
 
     /* Hosts that contain an instance */
     std::vector<simgrid::s4u::Host*> availableHostsList_;
@@ -152,9 +153,9 @@ class ElasticTaskManager {
      * if func is set, the setprocessratio func will always be used
      * */
     void setProcessRatio(int64_t pr);
-    void setProcessRatioFunc(std::function<double(std::string)> costReqType);
+    void setProcessRatioFunc(std::function<double(RequestType)> costReqType);
     /* obtain the processing cost for a given request type */
-    double getProcessRatio(std::string);
+    double getProcessRatio(RequestType);
 
     /* duration between instance creation and operational state*/
     void setBootDuration(double bd);

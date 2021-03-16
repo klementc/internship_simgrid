@@ -184,11 +184,11 @@ void ElasticTaskManager::setDataSizeRatio(double r) {
   dataSizeRatio_ = r;
 }
 
-void ElasticTaskManager::setProcessRatioFunc(std::function<double(std::string)> costReqType){
+void ElasticTaskManager::setProcessRatioFunc(std::function<double(RequestType)> costReqType){
   costReqType_ = costReqType;
 }
 
-double ElasticTaskManager::getProcessRatio(std::string reqType){
+double ElasticTaskManager::getProcessRatio(RequestType reqType){
   // if the function is defined, use it, otherwise use the single value
   if(costReqType_){
     return costReqType_(reqType);
@@ -219,7 +219,7 @@ void ElasticTaskManager::kill() {
 void ElasticTaskManager::pollnet(std::string mboxName){
   Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(mboxName.c_str());
 
-  int parComSize = 1;
+  int parComSize = 20; // 1 to avoid segfault
   std::vector<simgrid::s4u::CommPtr> commV;
   void* taskV;
   for(int i=0;i<parComSize;i++){
@@ -235,25 +235,15 @@ void ElasticTaskManager::pollnet(std::string mboxName){
     //set amount of computation for the instance
     taskRequest->flops = processRatio_;
     taskRequest->queueArrival = simgrid::s4u::Engine::get_clock();
+    taskRequest->flopsPerServ.push_back(this->processRatio_);
+
     commV.erase(commV.begin() + newMsgPos);
     commV.push_back(recvMB->get_async(&taskV));
-    taskRequest->flopsPerServ.push_back(this->processRatio_);
+
+    XBT_INFO("Received %p index: %d", taskRequest, newMsgPos);
 
     if(incMailboxes_.size() == 1) {
 
-#ifdef USE_JAEGERTRACING
-        /* NOT SURE WHERE I SHOULD PUT IT
-        auto t1 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
-        auto span = taskRequest->parentSpans.size()==0?
-          getTracer().get()->StartSpan( getServiceName(),
-            {opentracing::v3::StartTimestamp(t1)}) :
-          getTracer().get()->StartSpan( getServiceName(),
-            {opentracing::v3::StartTimestamp(t1), opentracing::v3::ChildOf(&taskRequest->parentSpans.at(taskRequest->parentSpans.size()-1)->get()->context())});
-        span->Log({ {"nbInst:", getInstanceAmount()},{"waitingReqAtRx:", getAmountOfWaitingRequests()},{"alreadyExecutingAtRx:", getAmountOfExecutingRequests()}});
-        std::unique_ptr<opentracing::v3::Span>* t = new std::unique_ptr<opentracing::v3::Span>();
-        *t = std::move(span);
-        taskRequest->parentSpans.push_back(t);*/
-#endif
       trigger(taskRequest);
       sleep_sem->release();
     } else {
@@ -310,6 +300,7 @@ void ElasticTaskManager::run() {
       simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(serviceName_+"_data");
 
       /* Async version TODO: clean pending vector */
+      XBT_INFO("Send %p to task", t);
       simgrid::s4u::CommPtr comm = mbp->put_async(t, (t->dSize == -1) ? 1 : t->dSize);
       pending_comms.push_back(comm);
 

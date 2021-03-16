@@ -40,7 +40,7 @@ void TaskInstance::pollTasks()
   simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(mbName_);
 
   // create and init parallel reception of tasks
-  int parComSize = 1;
+  int parComSize =  20; // 1 to avoid the segfault
   void* taskV;
 
   for(int i=0;i<parComSize;i++){
@@ -95,7 +95,7 @@ void TaskInstance::pollEndOfTasks()
     * used to model the size of the processed data (either bigger or smaller)
     */
    a->dSize *= etm_->getDataSizeRatio();
-   XBT_DEBUG("output for %p", a);
+   XBT_INFO("output for %p", a);
     simgrid::s4u::ActorPtr out = simgrid::s4u::Actor::create(mbName_+"outputf"+boost::uuids::to_string(uuidGen_()),s4u::Host::current(),[&]{outputFunction_(a);});
 
     if(keepGoing_)n_empty_->release();
