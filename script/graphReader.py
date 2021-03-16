@@ -59,7 +59,7 @@ def compactGraph(graph):
             nodeName=fromServ
             while(nodeName in already_list):
                 nodeName+="_"
-            print("Add node: %s"%(nodeName))
+            #print("Add node: %s"%(nodeName))
             GCompact.add_node(nodeName)
             GCompact.nodes[nodeName]["serv"]=fromServ
 
@@ -80,14 +80,14 @@ def compactGraph(graph):
 
 
         if toServ == previous["serv"]:
-            print("Add dur %s %s"%(previous["id"], G.nodes[n[1]]["dur"]))
+            #print("Add dur %s %s"%(previous["id"], G.nodes[n[1]]["dur"]))
             GCompact.nodes[previous["id"]]["dur"]+=int(G.nodes[n[1]]["dur"])
 
         if toServ != fromServ:
             nodeName=toServ
             while(nodeName in already_list):
                 nodeName+="_"
-            print("Add node: %s"%(nodeName))
+            #print("Add node: %s"%(nodeName))
             GCompact.add_node(nodeName)
             already_list.append(nodeName)
 
@@ -95,7 +95,7 @@ def compactGraph(graph):
             GCompact.nodes[nodeName]["serv"]=toServ
             GCompact.nodes[nodeName]["dur"]=int(G.nodes[n[1]]["dur"])
 
-            print("Add edge: %s -> %s"%(previous["id"], nodeName))
+            #print("Add edge: %s -> %s"%(previous["id"], nodeName))
             # add dur to label just for display purpose
             GCompact.nodes[previous["id"]]["label"]+=" dur:"+str(GCompact.nodes[previous["id"]]["dur"])
 
@@ -123,10 +123,16 @@ if __name__=="__main__":
         if(args.outFname):
             toDotAndMakeImg(GCompact, args.outFname)
 
-        a = codeGen.genOutputFunctionSwitchCode(GCompact, "DEFAULTREQUEST")
-        b = codeGen.genETMSwitchFunction(GCompact, "DEFAULTREQUEST")
-        for k in a:
-            print("%s: %s"%(k, a[k]))
+        #a = codeGen.genOutputFunctionSwitchCode(GCompact, "DEFAULTREQUEST")
+        #b = codeGen.genETMSwitchFunction(GCompact, "DEFAULTREQUEST")
+        #c = codeGen.genETMInitCode([GCompact])
+        d = codeGen.generateFullSimulationCode({"COMPOSE": GCompact})
+
+        with open("generated.cpp", "w") as text_file:
+            text_file.write(d)
+        print(d)
+        #for k in a:
+        #    print("%s: %s"%(k, a[k]))
 
     except KeyboardInterrupt:
         print('Interrupted')

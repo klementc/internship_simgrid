@@ -12,6 +12,7 @@ def genOutputFunctionSwitchCode(graph, requestType):
   mapCode={}
   hop = 1
   edges = nx.dfs_edges(graph)
+
   for edge in edges:
     outputServName = graph.nodes[edge[0]]["serv"]
     dstName = graph.nodes[edge[1]]["serv"]
@@ -20,7 +21,7 @@ def genOutputFunctionSwitchCode(graph, requestType):
 
     # code to be used
     code = """
-    if(nbHops == %d){
+    if(td->nbHops == %d){
       XBT_DEBUG("Output Function for %s, put to %s");
       s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("%s");
     	m_user_timeline->put(td, td->dSize);
@@ -40,7 +41,7 @@ def genOutputFunctionSwitchCode(graph, requestType):
       print("%s is the last node"%(edge[1]))
       # code to be used
       code ="""
-    if(nbHops == %d){
+    if(td->nbHops == %d){
       XBT_DEBUG("Output Function for %s, Final service, DELETE");
       delete td;
       // TODO DELETE JAEGER SPANS
@@ -72,7 +73,7 @@ def genETMSwitchFunction(graph, requestType):
 
     # code to be used
     code = """
-    if(nbHops == %d){XBT_DEBUG("Entered cost Function for %s"); return %s;}
+    if(td->nbHops == %d){XBT_DEBUG("Entered cost Function for %s"); return %s;}
     """ % (hop, requestType, dur*1000)
 
     # add it to the map
@@ -88,7 +89,7 @@ def genETMSwitchFunction(graph, requestType):
       print("%s is the last node"%(edge[1]))
       # code to be used
       code ="""
-    if(nbHops == %d){XBT_DEBUG("Entered cost Function for %s"); return %s;}
+    if(td->nbHops == %d){XBT_DEBUG("Entered cost Function for %s"); return %s;}
     """% (hop, requestType, graph.nodes[edge[1]]["dur"]*1000)
       mapCode[graph.nodes[edge[1]]["serv"]] += code
 
@@ -156,11 +157,106 @@ def generateFullSimulationCode(mapReqNameToGraph):
   code = ""
 
   # add imports
+  code += """
+#include <simgrid/s4u/Actor.hpp>
+#include <simgrid/s4u/Host.hpp>
+#include <simgrid/s4u/Mailbox.hpp>
+#include <simgrid/s4u/Engine.hpp>
+#include <simgrid/s4u/Comm.hpp>
+#include "ElasticPolicy.hpp"
+#include "ElasticTask.hpp"
+#include "DataSource.hpp"
+#include <memory>
+
+XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
+"""
 
   # add output return functions
+  code += "/* RETURN FUNCTIONS, AUTO GENERATED CODE, MODIFY IF YOU KNOW WHAT YOU WANT */"
+
+  outputFunctionCodes = {}
+  for k in mapReqNameToGraph:
+    print("fetch output code for reques %s"%(k))
+    cases = genOutputFunctionSwitchCode(mapReqNameToGraph[k], k)
+    for serv in cases:
+      # create header of func if not already done
+      if(not serv in outputFunctionCodes):
+        outputFunctionCodes[serv] = """
+    void return_%s(TaskDescription* td) {
+      XBT_DEBUG("Return function of service %s");
+      switch (td->requestType)
+      {"""%(serv,serv)
+
+      # now add the case for this request
+      outputFunctionCodes[serv] += cases[serv]
+  # close the function
+  for f in outputFunctionCodes:
+    outputFunctionCodes[f]+="""XBT_INFO("EROOOOOOOOOR");exit(1);\t}\n}"""
+    code += outputFunctionCodes[f]
 
   # add pr functions
+  code += "\n/* PR FUNCTIONS, AUTO GENERATED CODE, MODIFY IF YOU KNOW WHAT YOU WANT */"
+  prFunctionCodes = {}
+  for k in mapReqNameToGraph:
+    print("fetch pr code for request %s"%(k))
+    cases = genETMSwitchFunction(mapReqNameToGraph[k], k)
+    for serv in cases:
+      # create header of func if not already done
+      if(not serv in prFunctionCodes):
+        prFunctionCodes[serv] = """
+    double pr_%s(TaskDescription* td) {
+      XBT_DEBUG("pr function of service %s");
+      switch (td->requestType)
+      {"""%(serv, serv)
+
+      # now add the case for this request
+      prFunctionCodes[serv] += cases[serv]
+  # close the function
+  for f in prFunctionCodes:
+    prFunctionCodes[f]+="""XBT_INFO("EROOOOOOOOOR");exit(1);\t}//it should never end up here\nreturn -1;\n}"""
+    code += prFunctionCodes[f]
+
 
   # add constructors
+  code+="""
+  void run() {
+    XBT_INFO("Starting run()");
+  """
+  l = [mapReqNameToGraph[k] for k in mapReqNameToGraph ]
+  code+=genETMInitCode(l)
 
+  code+="""
+
+  /* ADD DATASOURCES MANUALLY HERE, SET THE END TIMER AS YOU WISH, AND LAUNCH YOUR SIMULATOR*/
+
+  // kill policies and ETMs
+  simgrid::s4u::this_actor::sleep_for(150); /*set it according to your needs*/
+  XBT_INFO("Done. Killing policies and etms");
+  """
+  servList = []
+  for graph in l:
+    # for each graph, add service if not already added to servList
+    edges = nx.dfs_edges(graph)
+    for edge in edges:
+      s1Name = graph.nodes[edge[0]]["serv"]
+      s2Name = graph.nodes[edge[1]]["serv"]
+      if(not s1Name in servList):
+        servList.append(s1Name)
+      if(not s2Name in servList):
+        servList.append(s2Name)
+  for serv in servList:
+    code+="""
+    serv_%s->kill();"""%(serv)
+
+  code+="""
+}
+int main(int argc, char* argv[]) {
+	simgrid::s4u::Engine* e = new simgrid::s4u::Engine(&argc, argv);
+
+	e->load_platform(argv[1]);
+	simgrid::s4u::Actor::create("main", simgrid::s4u::Host::by_name("cb1-200"), [&]{run();});
+	e->run();
+	return 0;
+}
+"""
   return code
