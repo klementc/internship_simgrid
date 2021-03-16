@@ -46,7 +46,7 @@ struct Comparator {
 class TaskDescription : public EvntQ {
   public:
     boost::uuids::uuid id_;
-    double flops;
+    int nbHops;
     double interSpawnDelay;
     bool repeat = true;
     std::function<void()> outputFunction = []() {};
@@ -72,15 +72,15 @@ class TaskDescription : public EvntQ {
     std::vector<std::unique_ptr<opentracing::v3::Span>*> parentSpans;
 #endif
 
-    TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_, double date_, double dSize_, RequestType requestType_)
-        : EvntQ(date_), id_(id), flops(flops_), interSpawnDelay(interSpawnDelay_), dSize(dSize_), requestType(requestType_) {
+    TaskDescription(boost::uuids::uuid id, double interSpawnDelay_, double date_, double dSize_, RequestType requestType_)
+        : EvntQ(date_), id_(id), interSpawnDelay(interSpawnDelay_), dSize(dSize_), requestType(requestType_), nbHops(0) {
     }
 
-    TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_, double date_)
-        : TaskDescription(id, flops_, interSpawnDelay_, date_, -1, RequestType::DEFAULT) {
+    TaskDescription(boost::uuids::uuid id, double interSpawnDelay_, double date_)
+        : TaskDescription(id, interSpawnDelay_, date_, -1, RequestType::DEFAULT) {
     }
-    TaskDescription(boost::uuids::uuid id, double flops_, double interSpawnDelay_)
-      : TaskDescription(id, flops_, interSpawnDelay_, 0.0) {}
+    TaskDescription(boost::uuids::uuid id, double interSpawnDelay_)
+      : TaskDescription(id, interSpawnDelay_, 0.0) {}
 };
 
 namespace simgrid {
@@ -94,7 +94,7 @@ class ElasticTaskManager {
     /* The function to call at the end of an instance's execution */
     std::function<void(TaskDescription*)> outputFunction = [](TaskDescription*) {};
     /* match request type to request cost */
-    std::function<double(RequestType)> costReqType_ ;
+    std::function<double(TaskDescription*)> costReqType_ ;
 
     /* Hosts that contain an instance */
     std::vector<simgrid::s4u::Host*> availableHostsList_;
@@ -153,9 +153,9 @@ class ElasticTaskManager {
      * if func is set, the setprocessratio func will always be used
      * */
     void setProcessRatio(int64_t pr);
-    void setProcessRatioFunc(std::function<double(RequestType)> costReqType);
+    void setProcessRatioFunc(std::function<double(TaskDescription*)> costReqType);
     /* obtain the processing cost for a given request type */
-    double getProcessRatio(RequestType);
+    double getProcessRatio(TaskDescription*);
 
     /* duration between instance creation and operational state*/
     void setBootDuration(double bd);
@@ -171,7 +171,6 @@ class ElasticTaskManager {
 
     /* trigger a taskdescription*/
     void trigger(TaskDescription* td);
-    void trigger(TaskDescription* td, double ratioLoad);
     void setOutputFunction(std::function<void(TaskDescription*)> code);
 
     void kill();

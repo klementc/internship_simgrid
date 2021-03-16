@@ -92,15 +92,8 @@ void ElasticTaskManager::setBootDuration(double bd){
 
 void ElasticTaskManager::trigger(TaskDescription* td) {
   xbt_assert(td!=nullptr, "Triggered a nullptr");
-  td->date = Engine::get_instance()->get_clock();
-  nextEvtQueue.push(td);
-  // one more pending request
-  modifWaitingReqAmount(1);
-  sleep_sem->release();
-}
-
-void ElasticTaskManager::trigger(TaskDescription* td, double ratioLoad) {  // TODO, network load to add
-  xbt_assert(td!=nullptr, "Triggered a nullptr");
+  // when we trigger an event, it means it reached the service correctly, thus we made a hop
+  td->nbHops++;
   td->date = Engine::get_instance()->get_clock();
   nextEvtQueue.push(td);
   // one more pending request
@@ -184,14 +177,14 @@ void ElasticTaskManager::setDataSizeRatio(double r) {
   dataSizeRatio_ = r;
 }
 
-void ElasticTaskManager::setProcessRatioFunc(std::function<double(RequestType)> costReqType){
+void ElasticTaskManager::setProcessRatioFunc(std::function<double(TaskDescription*)> costReqType){
   costReqType_ = costReqType;
 }
 
-double ElasticTaskManager::getProcessRatio(RequestType reqType){
+double ElasticTaskManager::getProcessRatio(TaskDescription* e){
   // if the function is defined, use it, otherwise use the single value
   if(costReqType_){
-    return costReqType_(reqType);
+    return costReqType_(e);
   }else{
     return processRatio_;
   }
@@ -233,9 +226,8 @@ void ElasticTaskManager::pollnet(std::string mboxName){
     int newMsgPos = simgrid::s4u::Comm::wait_any(&commV);
     TaskDescription* taskRequest = static_cast<TaskDescription*>(taskV);
     //set amount of computation for the instance
-    taskRequest->flops = processRatio_;
     taskRequest->queueArrival = simgrid::s4u::Engine::get_clock();
-    taskRequest->flopsPerServ.push_back(this->processRatio_);
+    taskRequest->flopsPerServ.push_back(getProcessRatio(taskRequest));
 
     commV.erase(commV.begin() + newMsgPos);
     commV.push_back(recvMB->get_async(&taskV));

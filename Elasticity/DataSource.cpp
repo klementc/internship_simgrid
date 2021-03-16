@@ -35,7 +35,7 @@ void DataSource::run()
     if(evtTS == -1){simgrid::s4u::Comm::wait_all(&pending_comms); return;}
 
     simgrid::s4u::this_actor::sleep_until(evtTS);
-    TaskDescription* t = new TaskDescription(generator(),-1,0);
+    TaskDescription* t = new TaskDescription(generator(),-1);
     XBT_DEBUG("send %p", t);
     t->dSize = nextSize;
     t->requestType = RequestType::DEFAULT;

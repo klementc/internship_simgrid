@@ -124,7 +124,7 @@ void TaskInstance::run()
       TaskDescription* a = reqs.at(0);
       a->startExec = simgrid::s4u::Engine::get_clock();
       reqs.erase(reqs.begin());
-      XBT_DEBUG("instance received req %f %f", a->flops, a->dSize);
+      XBT_DEBUG("instance received req %p", a);
 
 #ifdef USE_JAEGERTRACING
         auto t1 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
@@ -142,7 +142,7 @@ void TaskInstance::run()
         etm_->modifWaitingReqAmount(-1);
         etm_->modifExecutingReqAmount(1);
         //XBT_INFO("NEXT %lf %s %d", a->flops, this_actor::get_cname(), keepGoing_);
-        simgrid::s4u::ExecPtr execP = this_actor::exec_async(etm_->getProcessRatio(a->requestType));
+        simgrid::s4u::ExecPtr execP = this_actor::exec_async(etm_->getProcessRatio(a));
         pending_execs.push_back(execP);
         execMap_.insert(std::pair<simgrid::s4u::ExecPtr, TaskDescription*>(execP, a));
         n_bl_->release();
