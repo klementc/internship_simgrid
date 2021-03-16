@@ -38,7 +38,7 @@ void DataSource::run()
     TaskDescription* t = new TaskDescription(generator(),-1);
     XBT_DEBUG("send %p", t);
     t->dSize = nextSize;
-    t->requestType = RequestType::DEFAULT;
+    t->requestType = rt_;
 
     simgrid::s4u::CommPtr comm = mb->put_async(t, t->dSize);
     pending_comms.push_back(comm);

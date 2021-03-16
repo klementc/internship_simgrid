@@ -212,7 +212,7 @@ void ElasticTaskManager::kill() {
 void ElasticTaskManager::pollnet(std::string mboxName){
   Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(mboxName.c_str());
 
-  int parComSize = 20; // 1 to avoid segfault
+  int parComSize = 1; // 1 to avoid segfault
   std::vector<simgrid::s4u::CommPtr> commV;
   void* taskV;
   for(int i=0;i<parComSize;i++){
@@ -227,12 +227,11 @@ void ElasticTaskManager::pollnet(std::string mboxName){
     TaskDescription* taskRequest = static_cast<TaskDescription*>(taskV);
     //set amount of computation for the instance
     taskRequest->queueArrival = simgrid::s4u::Engine::get_clock();
-    taskRequest->flopsPerServ.push_back(getProcessRatio(taskRequest));
 
     commV.erase(commV.begin() + newMsgPos);
     commV.push_back(recvMB->get_async(&taskV));
 
-    XBT_INFO("Received %p index: %d", taskRequest, newMsgPos);
+    XBT_DEBUG("Received %p index: %d", taskRequest, newMsgPos);
 
     if(incMailboxes_.size() == 1) {
 
@@ -292,7 +291,8 @@ void ElasticTaskManager::run() {
       simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(serviceName_+"_data");
 
       /* Async version TODO: clean pending vector */
-      XBT_INFO("Send %p to task", t);
+      XBT_DEBUG("Send %p to task", t);
+      t->flopsPerServ.push_back(getProcessRatio(t));
       simgrid::s4u::CommPtr comm = mbp->put_async(t, (t->dSize == -1) ? 1 : t->dSize);
       pending_comms.push_back(comm);
 

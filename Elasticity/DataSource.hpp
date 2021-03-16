@@ -3,6 +3,7 @@
 
 #include "ElasticConfig.hpp"
 #include "ElasticTask.hpp"
+#include "RequestType.hpp"
 
 class DataSource {
   private:
@@ -11,8 +12,7 @@ class DataSource {
      */
     std::string mbName_;
     bool keepGoing_;
-    std::vector<TaskDescription*> unfinished_reqs;
-
+    RequestType rt_;
     /**
      * Returns the next timestamps at which the node should send a request
      * implement this method with your own data production scheme
@@ -21,8 +21,11 @@ class DataSource {
     //virtual double getNextFlopAmount() = 0;
     virtual uint64_t getNextReqSize() = 0;
   public:
+    DataSource(std::string mbName, RequestType rt)
+      : mbName_(mbName), keepGoing_(true), rt_(rt) {};
+
     DataSource(std::string mbName)
-      : mbName_(mbName), keepGoing_(true) {};
+      : DataSource(mbName_, RequestType::DEFAULT){};
     void run();
     void suspend();
 };
@@ -38,8 +41,10 @@ class DataSourceFixedInterval : public DataSource {
     uint64_t reqSize_;
     double previousTrigger_;
   public:
+    DataSourceFixedInterval(std::string mbName, RequestType rt, double interval, uint64_t reqS)
+      :DataSource(mbName, rt), interval_(interval), previousTrigger_(0) {};
     DataSourceFixedInterval(std::string mbName, double interval, uint64_t reqS)
-      :DataSource(mbName), interval_(interval), previousTrigger_(0) {};
+      :DataSourceFixedInterval(mbName, RequestType::DEFAULT, interval_, reqS) {};
     virtual inline uint64_t getNextReqSize() {return reqSize_;};
     virtual double getNextReqTS();
 };
@@ -55,8 +60,10 @@ class DataSourceTSFile : public DataSource {
     std::ifstream file_;
     uint64_t reqSize_;
   public:
+    DataSourceTSFile(std::string mbName, RequestType rt, std::string fName, uint64_t reqSize)
+      :DataSource(mbName, rt), reqSize_(reqSize){file_.open(fName);std::string a;file_>>a;};
     DataSourceTSFile(std::string mbName, std::string fName, uint64_t reqSize)
-      :DataSource(mbName), reqSize_(reqSize){file_.open(fName);std::string a;file_>>a;};
+      :DataSourceTSFile(mbName, RequestType::DEFAULT, fName, reqSize){}
     inline uint64_t getNextReqSize() {return reqSize_;};
     virtual double getNextReqTS();
 };

@@ -14,16 +14,15 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(Graph_log, "logs for the Graph experiment");
 void return2a(TaskDescription* a){
   s4u_Mailbox* m = s4u_Mailbox::by_name("s3a");
 
-
-    XBT_DEBUG("send %p to s3a", a);
+  XBT_DEBUG("send %p to s3a", a);
   m->put(a, a->dSize);
+
 }
 
 void return2b(TaskDescription* a){
   s4u_Mailbox* m = s4u_Mailbox::by_name("s3b");
 
-
-    XBT_DEBUG("send %p to s3B", a);
+  XBT_DEBUG("send %p to s3B", a);
   m->put(a, a->dSize);
 }
 
@@ -31,9 +30,8 @@ void return1(TaskDescription* a){
   s4u_Mailbox* m1 = s4u_Mailbox::by_name("s2A");
   s4u_Mailbox* m2 = s4u_Mailbox::by_name("s2B");
 
-
   XBT_DEBUG("send %p to s2a", a);
-XBT_DEBUG("send %p to s2b", a);
+  XBT_DEBUG("send %p to s2b", a);
   m1->put(a, a->dSize);
   m2->put(a, a->dSize);
 }
@@ -48,6 +46,7 @@ void returnf(TaskDescription* a){
   sp->get()->Finish({opentracing::v3::FinishTimestamp(t2)});*/
   for (auto it = a->parentSpans.rbegin(); it != a->parentSpans.rend(); ++it)
   {
+    //XBT_DEBUG("%lf %lf",simgrid::s4u::Engine::get_instance()->get_clock(),simgrid::s4u::Engine::get_instance()->get_clock()*1000000 );
     auto t2 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(simgrid::s4u::Engine::get_instance()->get_clock()*1000));
     (*it)->get()->Log({{"end",t2.count()}});
     (*it)->get()->Finish({opentracing::v3::FinishTimestamp(t2)});

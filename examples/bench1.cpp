@@ -25,6 +25,7 @@ void returnservice1(TaskDescription* td) {
   XBT_INFO("output service 1 queueArrival: %f instArrival: %f startExec: %f endExec: %f s1cost: %f\n", td->queueArrival, td->instArrival, td->startExec, td->endExec, td->flopsPerServ.at(0));
 	XBT_DEBUG("Return function of service service1");
 	s4u_Mailbox* mservice2 = s4u_Mailbox::by_name("service2");
+  XBT_INFO("send %p to service2", td);
 	mservice2->put(td, td->dSize);
 }
 
@@ -33,15 +34,22 @@ void returnservice1(TaskDescription* td) {
  * it does nothing (acts as a sink)
  */
 void returnservice2(TaskDescription* td) {
+  XBT_INFO("delete %p", td);
 	XBT_DEBUG("Return function of service service2");
 #ifdef USE_JAEGERTRACING
 XBT_DEBUG("CLOSE SPANS");
 	for (auto it = td->parentSpans.rbegin(); it != td->parentSpans.rend(); ++it)
   {
-    auto t2 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(simgrid::s4u::Engine::get_instance()->get_clock()*1000));
+    auto t2 = std::chrono::seconds(946684800)+std::chrono::microseconds(int(simgrid::s4u::Engine::get_instance()->get_clock()*1000000));
     (*it)->get()->Log({{"end",t2.count()}});
     (*it)->get()->Finish({opentracing::v3::FinishTimestamp(t2)});
+    (*it)->reset();
 
+  }
+
+    if(td!=NULL){
+    delete td;
+    td = NULL;
   }
 #endif /*USE_JAEGERTRACING*/
 	// here you can put the msg to a sink if desired
