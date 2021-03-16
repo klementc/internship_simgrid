@@ -52,7 +52,7 @@ def genOutputFunctionSwitchCode(graph, requestType):
   # add break;
   for k in mapCode:
     print("add break to %s"%(k))
-    mapCode[k]+="\nbreak;\n"
+    mapCode[k]+="""\nXBT_INFO("EROOOOOOOOOR");exit(1);\nbreak;\n"""
 
   return mapCode
 
@@ -191,7 +191,7 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
       outputFunctionCodes[serv] += cases[serv]
   # close the function
   for f in outputFunctionCodes:
-    outputFunctionCodes[f]+="""XBT_INFO("EROOOOOOOOOR");exit(1);\t}\n}"""
+    outputFunctionCodes[f]+="""\t}\n}"""
     code += outputFunctionCodes[f]
 
   # add pr functions

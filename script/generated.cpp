@@ -40,8 +40,9 @@ case RequestType::COMPOSE:
     	m_user_timeline->put(td, td->dSize);
     }
     
+XBT_INFO("EROOOOOOOOOR");exit(1);
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}
+	}
 }
     void return_media_service(TaskDescription* td) {
       XBT_DEBUG("Return function of service media_service");
@@ -54,8 +55,9 @@ case RequestType::COMPOSE:
     	m_user_timeline->put(td, td->dSize);
     }
     
+XBT_INFO("EROOOOOOOOOR");exit(1);
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}
+	}
 }
     void return_compose_post_service(TaskDescription* td) {
       XBT_DEBUG("Return function of service compose_post_service");
@@ -110,8 +112,9 @@ case RequestType::COMPOSE:
       // TODO DELETE JAEGER SPANS
     }
     
+XBT_INFO("EROOOOOOOOOR");exit(1);
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}
+	}
 }
     void return_user_service(TaskDescription* td) {
       XBT_DEBUG("Return function of service user_service");
@@ -124,8 +127,9 @@ case RequestType::COMPOSE:
     	m_user_timeline->put(td, td->dSize);
     }
     
+XBT_INFO("EROOOOOOOOOR");exit(1);
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}
+	}
 }
     void return_text_service(TaskDescription* td) {
       XBT_DEBUG("Return function of service text_service");
@@ -150,8 +154,9 @@ case RequestType::COMPOSE:
     	m_user_timeline->put(td, td->dSize);
     }
     
+XBT_INFO("EROOOOOOOOOR");exit(1);
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}
+	}
 }
     void return_url_shorten_service(TaskDescription* td) {
       XBT_DEBUG("Return function of service url_shorten_service");
@@ -164,8 +169,9 @@ case RequestType::COMPOSE:
     	m_user_timeline->put(td, td->dSize);
     }
     
+XBT_INFO("EROOOOOOOOOR");exit(1);
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}
+	}
 }
     void return_user_mention_service(TaskDescription* td) {
       XBT_DEBUG("Return function of service user_mention_service");
@@ -178,8 +184,9 @@ case RequestType::COMPOSE:
     	m_user_timeline->put(td, td->dSize);
     }
     
+XBT_INFO("EROOOOOOOOOR");exit(1);
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}
+	}
 }
     void return_post_storage_service(TaskDescription* td) {
       XBT_DEBUG("Return function of service post_storage_service");
@@ -192,8 +199,9 @@ case RequestType::COMPOSE:
     	m_user_timeline->put(td, td->dSize);
     }
     
+XBT_INFO("EROOOOOOOOOR");exit(1);
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}
+	}
 }
     void return_user_timeline_service(TaskDescription* td) {
       XBT_DEBUG("Return function of service user_timeline_service");
@@ -206,8 +214,9 @@ case RequestType::COMPOSE:
     	m_user_timeline->put(td, td->dSize);
     }
     
+XBT_INFO("EROOOOOOOOOR");exit(1);
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}
+	}
 }
     void return_write_home_timeline_service(TaskDescription* td) {
       XBT_DEBUG("Return function of service write_home_timeline_service");
@@ -226,8 +235,9 @@ case RequestType::COMPOSE:
     	m_user_timeline->put(td, td->dSize);
     }
     
+XBT_INFO("EROOOOOOOOOR");exit(1);
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}
+	}
 }
     void return_social_graph_service(TaskDescription* td) {
       XBT_DEBUG("Return function of service social_graph_service");
@@ -240,8 +250,9 @@ case RequestType::COMPOSE:
     	m_user_timeline->put(td, td->dSize);
     }
     
+XBT_INFO("EROOOOOOOOOR");exit(1);
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}
+	}
 }
     void return_unique_id_service(TaskDescription* td) {
       XBT_DEBUG("Return function of service unique_id_service");
@@ -254,8 +265,9 @@ case RequestType::COMPOSE:
     	m_user_timeline->put(td, td->dSize);
     }
     
+XBT_INFO("EROOOOOOOOOR");exit(1);
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}
+	}
 }
 /* PR FUNCTIONS, AUTO GENERATED CODE, MODIFY IF YOU KNOW WHAT YOU WANT */
     double pr_nginx_web_server(TaskDescription* td) {
