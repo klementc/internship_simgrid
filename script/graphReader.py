@@ -4,6 +4,7 @@ from graphviz import render
 from networkx.drawing.nx_agraph import write_dot
 import os
 import sys
+import codeGen
 
 def showGraphStr(fName):
     G = nx.drawing.nx_agraph.read_dot(fName)
@@ -31,6 +32,7 @@ def dfsTest(graph):
 def toDotAndMakeImg(graph, fName):
     graph.graph['graph']={'rankdir':'LR'}
     write_dot(graph, fName)
+    # compacted image:
     toImage(fName, fName+".png")
 
 def compactGraph(graph):
@@ -59,6 +61,8 @@ def compactGraph(graph):
                 nodeName+="_"
             print("Add node: %s"%(nodeName))
             GCompact.add_node(nodeName)
+            GCompact.nodes[nodeName]["serv"]=fromServ
+
             already_list.append(nodeName)
             # if it's a goback, add edge
             if(previous["id"]!=""):
@@ -88,6 +92,7 @@ def compactGraph(graph):
             already_list.append(nodeName)
 
             GCompact.nodes[nodeName]["label"]=toServ
+            GCompact.nodes[nodeName]["serv"]=toServ
             GCompact.nodes[nodeName]["dur"]=int(G.nodes[n[1]]["dur"])
 
             print("Add edge: %s -> %s"%(previous["id"], nodeName))
@@ -112,12 +117,16 @@ if __name__=="__main__":
         # Read arguments from command line
         args = parser.parse_args()
         G = nx.drawing.nx_agraph.read_dot(args.filename)
-
+        GCompact = compactGraph(G)
         #dfsTest(G)
         #dfsTest(compactGraph(G))
         if(args.outFname):
-            toImage(args.filename, "coucou.png")
-            toDotAndMakeImg(compactGraph(G), args.outFname)
+            toDotAndMakeImg(GCompact, args.outFname)
+
+        a = codeGen.genOutputFunctionSwitchCode(GCompact, "DEFAULTREQUEST")
+        b = codeGen.genETMSwitchFunction(GCompact, "DEFAULTREQUEST")
+        for k in a:
+            print("%s: %s"%(k, a[k]))
 
     except KeyboardInterrupt:
         print('Interrupted')
