@@ -99,8 +99,68 @@ def genETMSwitchFunction(graph, requestType):
 
   return mapCode
 
-def genETMInitCode(graph):
+def genETMInitCode(graphs):
   '''
-  ETM constructor and give it the correct output and cost switch functions
+  ETM constructor for a given list of graphs
+  (only 1 ETM if a service is in multiple graphs (i.e. different requests))
   '''
-  pass
+  servList = []
+  for graph in graphs:
+    # for each graph, add service if not already added to servList
+    edges = nx.dfs_edges(graph)
+    for edge in edges:
+      s1Name = graph.nodes[edge[0]]["serv"]
+      s2Name = graph.nodes[edge[1]]["serv"]
+      if(not s1Name in servList):
+        servList.append(s1Name)
+      if(not s2Name in servList):
+        servList.append(s2Name)
+
+  # add the code for each service
+  print("%d different services"%(len(servList)))
+  code = ""
+  hostIndex=1
+  for service in servList:
+    print("Generate constructor for service %s"%(service))
+    code += """
+    // create ETM for service %s
+    std::vector<std::string> v_serv_%s = std::vector<std::string>();
+    v_serv_%s.push_back("%s");
+    std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_%s = std::make_shared<simgrid::s4u::ElasticTaskManager>("%s",v_serv_%s);
+    serv_%s->setBootDuration(0);
+    serv_%s->setDataSizeRatio(1);
+    serv_%s->setOutputFunction(return_%s);
+    serv_%s->setProcessRatioFunc(pr_%s);
+    serv_%s->addHost(simgrid::s4u::Host::by_name("cb1-%s"));
+    simgrid::s4u::Actor::create("etm_%s", simgrid::s4u::Host::by_name("cb1-%s"), [serv_%s] { serv_%s->run(); });
+
+    """%(service,service,service,service,service,service,service,service,service,service,service,service,service,service,hostIndex,service,hostIndex,service,service)
+    hostIndex+=1
+  return code
+
+def generateFullSimulationCode(mapReqNameToGraph):
+  '''
+  Generates almost ready to run code given a map of requestName->requestGraph
+  - each graph must be a compacted graph of a request
+  - don't give more than one graph for the same request
+
+  This function gives as an output:
+  - the return function
+  - the pr functions (used by ETMs and instances to know how much computation is required)
+  - construction of the ETMs
+
+  Do by hand:
+  - add hosts on the machines you want (1 example on cb1-#number by the automatic tool)
+  - add dataSources
+  '''
+  code = ""
+
+  # add imports
+
+  # add output return functions
+
+  # add pr functions
+
+  # add constructors
+
+  return code
