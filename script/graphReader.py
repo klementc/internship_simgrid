@@ -35,6 +35,13 @@ def toDotAndMakeImg(graph, fName):
     # compacted image:
     toImage(fName, fName+".png")
 
+def getSumOfTimes(graph):
+    sum = 0
+    for n in graph.nodes:
+        sum += int(graph._node[n]["dur"])
+
+    return sum
+
 def compactGraph(graph):
     '''
     Transforms a dot graph in a compact form
@@ -113,6 +120,9 @@ if __name__=="__main__":
         # Adding optional argument
         parser.add_argument("-f", "--filename", help = "dot file to parse", required=True)
         parser.add_argument("-o", "--outFname", help="output image file name", required=False)
+        parser.add_argument("-g", "--generate", help="generates code for the given file if set", required=False)
+        parser.add_argument("-s", "--sum", help="compare sum of times between uncompacted and compact graphs if set", required=False)
+
 
         # Read arguments from command line
         args = parser.parse_args()
@@ -126,13 +136,19 @@ if __name__=="__main__":
         #a = codeGen.genOutputFunctionSwitchCode(GCompact, "DEFAULTREQUEST")
         #b = codeGen.genETMSwitchFunction(GCompact, "DEFAULTREQUEST")
         #c = codeGen.genETMInitCode([GCompact])
-        d = codeGen.generateFullSimulationCode({"COMPOSE": GCompact})
 
-        with open("generated.cpp", "w") as text_file:
-            text_file.write(d)
-        print(d)
-        #for k in a:
-        #    print("%s: %s"%(k, a[k]))
+        if(args.generate):
+            d = codeGen.generateFullSimulationCode({"COMPOSE": GCompact})
+
+            with open("generated.cpp", "w") as text_file:
+                text_file.write(d)
+            print(d)
+            #for k in a:
+            #    print("%s: %s"%(k, a[k]))
+
+        if(args.sum):
+            print("Sum of times in the original file: %d"%(getSumOfTimes(G)))
+            print("Sum of times in the the compact graph: %d"%(getSumOfTimes(GCompact)))
 
     except KeyboardInterrupt:
         print('Interrupted')

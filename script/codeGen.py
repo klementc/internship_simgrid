@@ -47,12 +47,15 @@ def genOutputFunctionSwitchCode(graph, requestType):
       // TODO DELETE JAEGER SPANS
     }
     """% (hop, requestType)
+      if(not graph.nodes[edge[1]]["serv"] in mapCode):
+        mapCode[graph.nodes[edge[1]]["serv"]] = "\ncase RequestType::%s:"%(requestType)
+
       mapCode[graph.nodes[edge[1]]["serv"]] += code
 
   # add break;
   for k in mapCode:
     print("add break to %s"%(k))
-    mapCode[k]+="""\nXBT_INFO("EROOOOOOOOOR");exit(1);\nbreak;\n"""
+    mapCode[k]+="""\nbreak;\n"""
 
   return mapCode
 
@@ -91,6 +94,9 @@ def genETMSwitchFunction(graph, requestType):
       code ="""
     if(td->nbHops == %d){XBT_DEBUG("Entered cost Function for %s"); return %s;}
     """% (hop, requestType, graph.nodes[edge[1]]["dur"]*1000)
+      if(not graph.nodes[edge[1]]["serv"] in mapCode):
+        mapCode[graph.nodes[edge[1]]["serv"]] =  "\ncase RequestType::%s:"%(requestType)
+
       mapCode[graph.nodes[edge[1]]["serv"]] += code
 
   # add break;
@@ -213,7 +219,7 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
       prFunctionCodes[serv] += cases[serv]
   # close the function
   for f in prFunctionCodes:
-    prFunctionCodes[f]+="""XBT_INFO("EROOOOOOOOOR");exit(1);\t}//it should never end up here\nreturn -1;\n}"""
+    prFunctionCodes[f]+="""\t}//it should never end up here\nreturn -1;\n}"""
     code += prFunctionCodes[f]
 
 
