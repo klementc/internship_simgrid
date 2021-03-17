@@ -6,12 +6,15 @@ import os
 import sys
 import codeGen
 
-def showGraphStr(fName):
+def showGraphStrFromF(fName):
     G = nx.drawing.nx_agraph.read_dot(fName)
+    showGraphStr(G)
+
+def showGraphStr(G):
     #G = graph
     print("Nodes and their attributes:")
     for node_id in G.nodes:
-        print(G._node[node_id])
+        print("%s: %s"%(node_id,G._node[node_id]))
 
 def toImage(fName, outName):
     print("Render %s to %s"%(fName, outName))
@@ -133,18 +136,23 @@ if __name__=="__main__":
         if(args.outFname):
             toDotAndMakeImg(GCompact, args.outFname)
 
-        #a = codeGen.genOutputFunctionSwitchCode(GCompact, "DEFAULTREQUEST")
-        #b = codeGen.genETMSwitchFunction(GCompact, "DEFAULTREQUEST")
+        #a = codeGen.genOutputFunctionSwitchCode(G, "DEFAULTREQUEST")
+        #b = codeGen.genETMSwitchFunction(G, "DEFAULTREQUEST")
+        d = codeGen.generateFullSimulationCode({"COMPOSE": G})
+        print(d)
+        #for k in a:
+        #    print("%s: %s"%(k,a[k]))
+
+
+        #b = codeGen.genETMSwitchFunction(G, "DEFAULTREQUEST")
         #c = codeGen.genETMInitCode([GCompact])
 
         if(args.generate):
-            d = codeGen.generateFullSimulationCode({"COMPOSE": GCompact})
+            d = codeGen.generateFullSimulationCode({"COMPOSE": G})
 
             with open("generated.cpp", "w") as text_file:
                 text_file.write(d)
-            print(d)
-            #for k in a:
-            #    print("%s: %s"%(k, a[k]))
+
 
         if(args.sum):
             print("Sum of times in the original file: %d"%(getSumOfTimes(G)))
