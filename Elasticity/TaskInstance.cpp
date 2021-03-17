@@ -81,7 +81,7 @@ void TaskInstance::pollEndOfTasks()
 
 
 #ifdef USE_JAEGERTRACING
-        auto t2 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
+        auto t2 = std::chrono::seconds(946684800)+std::chrono::microseconds(int(Engine::get_instance()->get_clock()*1000000));
         // TODO Check if no problem on spans
         if(a->parentSpans.size()>0)
           a->parentSpans.at(a->parentSpans.size()-1)->get()->Log({{"endExec", Engine::get_instance()->get_clock()}});
@@ -127,7 +127,7 @@ void TaskInstance::run()
       XBT_DEBUG("instance received req %p", a);
 
 #ifdef USE_JAEGERTRACING
-        auto t1 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(Engine::get_instance()->get_clock()*1000));
+        auto t1 = std::chrono::seconds(946684800)+std::chrono::microseconds(int(Engine::get_instance()->get_clock()*1000000));
         auto span = a->parentSpans.size()==0?
           etm_->getTracer().get()->StartSpan( etm_->getServiceName(),
             {opentracing::v3::StartTimestamp(t1)}) :
