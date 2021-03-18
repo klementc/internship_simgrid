@@ -13,7 +13,8 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
   to the next service depending on the hop value and actual service)
   '''
   mapCode={}
-  edges = nx.dfs_edges(graph)
+  root = [n for n,d in graph.in_degree() if d==0] [0]
+  edges = nx.dfs_edges(graph,source = root)
 
   # take care of lonely node after fork
   if(graph.number_of_nodes() == 1):
@@ -141,8 +142,9 @@ def genETMSwitchFunction(graph, requestType, hop = 1):
     else:
       mapCode[servName] += code
 
+  root = [n for n,d in graph.in_degree() if d==0] [0]
+  edges = nx.dfs_edges(graph,source = root)
 
-  edges = nx.dfs_edges(graph)
   for edge in edges:
     print(edge)
     # if more than one successor, it means we have parallel spans
@@ -219,7 +221,8 @@ def genETMInitCode(graphs):
   servList = []
   for graph in graphs:
     # for each graph, add service if not already added to servList
-    edges = nx.dfs_edges(graph)
+    root = [n for n,d in graph.in_degree() if d==0] [0]
+    edges = nx.dfs_edges(graph,source = root)
     for edge in edges:
       s1Name = graph.nodes[edge[0]]["serv"]
       s2Name = graph.nodes[edge[1]]["serv"]
@@ -347,7 +350,8 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
   servList = []
   for graph in l:
     # for each graph, add service if not already added to servList
-    edges = nx.dfs_edges(graph)
+    root = [n for n,d in graph.in_degree() if d==0] [0]
+    edges = nx.dfs_edges(graph,source = root)
     for edge in edges:
       s1Name = graph.nodes[edge[0]]["serv"]
       s2Name = graph.nodes[edge[1]]["serv"]
@@ -388,10 +392,33 @@ def mergeCodeMaps(mapsToMerge):
   return finalMap
 
 # taken from https://stackoverflow.com/questions/32935510/networkx-digraph-create-subgraph-digraph-by-node
+#def create_subgraph(G, node):
+#    edges = nx.dfs_successors(G, node)
+#    nodes = [node]
+#    for k,v in edges.items():
+#        nodes.extend([k])
+#        nodes.extend(v)
+#    return G.subgraph(nodes)
+#def create_subgraph(Ga,sub_G,start_node):
+#    for n in Ga.successors(start_node):
+#        sub_G.add_edge(start_node,n)
+#        create_subgraph(Ga,sub_G,n)
+
 def create_subgraph(G, node):
-    edges = nx.dfs_successors(G, node)
-    nodes = [node]
-    for k,v in edges.items():
-        nodes.extend([k])
-        nodes.extend(v)
-    return G.subgraph(nodes)
+  nodes = nx.single_source_shortest_path(G,node).keys()
+  res = G.subgraph(nodes).copy()
+
+  for i in G.out_edges(node, data=True):
+    #print(i[0]," -> ",i[1])
+    res.update([i])
+    res.add_edge(i[0], i[1])
+  for n in nodes:
+    for j in G.out_edges(n, data=True):
+      #print("%s -> %s"%(j[0],j[1]))
+      res.add_edge(j[0], j[1])
+
+  #print("IN GRAPH")
+  #graphReader.dfsTest(G)
+  #print("OUT GRAPH")
+  #graphReader.dfsTest(res)
+  return res
