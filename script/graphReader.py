@@ -191,44 +191,68 @@ if __name__=="__main__":
     try:
         parser = argparse.ArgumentParser()
         # Adding optional argument
-        parser.add_argument("-f", "--filename", help = "dot file to parse", required=True)
+        parser.add_argument("-f", "--filename", help = "dot file to parse", required=False)
         parser.add_argument("-o", "--outFname", help="output image file name", required=False)
         parser.add_argument("-g", "--generate", help="generates code for the given file if set", required=False)
         parser.add_argument("-s", "--sum", help="compare sum of times between uncompacted and compact graphs if set", required=False)
-
+        parser.add_argument("-i", "--interactive", help="Provide your traces and create your simulation code interractively", action='store_true')
 
         # Read arguments from command line
         args = parser.parse_args()
-        G = nx.drawing.nx_agraph.read_dot(args.filename)
 
-        GCompact = compactGraph(G)[0]
-        #dfsTest(G)
-        #dfsTest(compactGraph(G))
+        graphDict = {}
+        # interractive part
+        if(args.interactive):
+            print("""Welcome to the simulation code generator.\nBefore executing this you need to have either raw jaeger traces of the requests you\nwant in your simulator as a dot file, or an already compacted graph that can be translated""")
+            while(query_yes_no("Do you want to add a new trace to your simulator?")):
+                print("Enter the request name associated to this trace : ",end="")
+                reqName = input()
+                print("Enter the path to your file : ", end="")
+                path = input()
+                G = nx.drawing.nx_agraph.read_dot(path)
+                if(query_yes_no("Does it need to be compacted or is it already?")):
+                    graphDict[reqName] = compactGraph(G)[0]
+                else:
+                    graphDict[reqName] = G
+            print("All traces loaded. Summary code generation for :")
+            for k in graphDict:
+                print("\t- Trace %s"%(k))
+            print("Please give the name of the code file to produce : ", end="")
+            codeFile = input()
+            code = codeGen.generateFullSimulationCode(graphDict)
 
-        #a = codeGen.genOutputFunctionSwitchCode(G, "DEFAULTREQUEST")
-        #b = codeGen.genETMSwitchFunction(G, "DEFAULTREQUEST")
-        #d = codeGen.generateFullSimulationCode({"COMPOSE": G})
-        #print(d)
-        #for k in a:
-        #    print("%s: %s"%(k,a[k]))
+            with open(codeFile, "w") as text_file:
+                text_file.write(code)
+        else:
+            G = nx.drawing.nx_agraph.read_dot(args.filename)
+            GCompact = compactGraph(G)[0]
+            #dfsTest(G)
+            #dfsTest(compactGraph(G))
+
+            #a = codeGen.genOutputFunctionSwitchCode(G, "DEFAULTREQUEST")
+            #b = codeGen.genETMSwitchFunction(G, "DEFAULTREQUEST")
+            #d = codeGen.generateFullSimulationCode({"COMPOSE": G})
+            #print(d)
+            #for k in a:
+            #    print("%s: %s"%(k,a[k]))
 
 
-        #b = codeGen.genETMSwitchFunction(G, "DEFAULTREQUEST")
-        #c = codeGen.genETMInitCode([GCompact])
+            #b = codeGen.genETMSwitchFunction(G, "DEFAULTREQUEST")
+            #c = codeGen.genETMInitCode([GCompact])
 
 
-        #if(args.outFname):
-        #    toDotAndMakeImg(GCompact, args.outFname)
-        if(args.generate):
-            d = codeGen.generateFullSimulationCode({"COMPOSE": G})
+            #if(args.outFname):
+            #    toDotAndMakeImg(GCompact, args.outFname)
+            if(args.generate):
+                d = codeGen.generateFullSimulationCode({"COMPOSE": G})
 
-            with open("generated.cpp", "w") as text_file:
-                text_file.write(d)
+                with open("generated.cpp", "w") as text_file:
+                    text_file.write(d)
 
 
-        if(args.sum):
-            print("Sum of times in the original file: %d"%(getSumOfTimes(G)))
-            #print("Sum of times in the the compact graph: %d"%(getSumOfTimes(GCompact)))
+            if(args.sum):
+                print("Sum of times in the original file: %d"%(getSumOfTimes(G)))
+                #print("Sum of times in the the compact graph: %d"%(getSumOfTimes(GCompact)))
 
     except KeyboardInterrupt:
         print('Interrupted')

@@ -13,6 +13,7 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
   to the next service depending on the hop value and actual service)
   '''
   mapCode={}
+  print(graph)
   root = [n for n,d in graph.in_degree() if d==0] [0]
   edges = nx.dfs_edges(graph,source = root)
 
@@ -20,12 +21,22 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
   if(graph.number_of_nodes() == 1):
     servName = list(graph.nodes(data=True))[0][1]["serv"]
     print("ENNDDDD %s "%(list(graph.nodes)))
-    # TODO DELETIONS
+    # TODO clean DELETIONS of spans
     code = """
     \ncase RequestType::%s:
     if(td->nbHops == %d){
       XBT_DEBUG("Output Function %s (FINAL NODE, NO CHILD!)");
       // TODO DELETE
+              for (auto it = td->parentSpans.rbegin(); it != td->parentSpans.rend(); ++it)
+  {
+    if((*it)->get() != NULL){
+    auto t2 = std::chrono::seconds(946684800)+std::chrono::microseconds(int(simgrid::s4u::Engine::get_instance()->get_clock()*1000000));
+    (*it)->get()->Log({{"end",t2.count()}});
+    (*it)->get()->Finish({opentracing::v3::FinishTimestamp(t2)});
+    (*it)->reset();
+    (*it) == NULL;
+    }
+  }
     }
     """ % (requestType, hop, servName)
     if(not servName in mapCode):
@@ -98,12 +109,23 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
       hop+=1
 
       # if the dst node is the last node of the sequence, add its code now
+      # TODO: clean deletes of spans
       if(len(list(graph.successors(edge[1]))) == 0):
         print("%s is the last node"%(edge[1]))
         # code to be used
         code ="""
       if(td->nbHops == %d){
         XBT_DEBUG("Output Function for %s, Final service, DELETE");
+        for (auto it = td->parentSpans.rbegin(); it != td->parentSpans.rend(); ++it)
+  {
+    if((*it)->get() != NULL){
+    auto t2 = std::chrono::seconds(946684800)+std::chrono::microseconds(int(simgrid::s4u::Engine::get_instance()->get_clock()*1000000));
+    (*it)->get()->Log({{"end",t2.count()}});
+    (*it)->get()->Finish({opentracing::v3::FinishTimestamp(t2)});
+    (*it)->reset();
+    (*it) == NULL;
+    }
+  }
         delete td;
         // TODO DELETE JAEGER SPANS
       }
@@ -290,7 +312,7 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
 
   outputFunctionCodes = {}
   for k in mapReqNameToGraph:
-    print("fetch output code for reques %s"%(k))
+    print("generate output code for request %s"%(k))
     cases = genOutputFunctionSwitchCode(mapReqNameToGraph[k], k)
     for serv in cases:
       # create header of func if not already done
