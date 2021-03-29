@@ -20,7 +20,7 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
   # take care of lonely node after fork
   if(graph.number_of_nodes() == 1):
     servName = list(graph.nodes(data=True))[0][1]["serv"]
-    print("ENNDDDD %s "%(list(graph.nodes)))
+    #print("ENNDDDD %s "%(list(graph.nodes)))
     # TODO clean DELETIONS of spans
     code = """
     \ncase RequestType::%s:
@@ -50,7 +50,6 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
     # if more than one successor, it means we have parallel spans
     # in this case, add the output code for this requesttype, and call each of the successors
     if(len(list(graph.successors(edge[0]))) > 1):
-      print("FORRRRRK")
       srcServName = graph.nodes[edge[0]]["serv"]
       # generate the code for this node with one put per parallel child
       code = """
@@ -83,9 +82,6 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
       return mapCode
     # while we have sequential spans, no need to do something complex
     else:
-      #graphReader.showGraphStr(graph)
-      print("0:",graph.nodes[edge[0]])
-      print("1:",graph.nodes[edge[1]]["serv"])
       outputServName = graph.nodes[edge[0]]["serv"]
       dstName = graph.nodes[edge[1]]["serv"]
       print("generate code for: %s request: %s"%(edge[0], requestType))
@@ -111,7 +107,7 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
       # if the dst node is the last node of the sequence, add its code now
       # TODO: clean deletes of spans
       if(len(list(graph.successors(edge[1]))) == 0):
-        print("%s is the last node"%(edge[1]))
+        #print("%s is the last node"%(edge[1]))
         # code to be used
         code ="""
       if(td->nbHops == %d){
@@ -154,7 +150,6 @@ def genETMSwitchFunction(graph, requestType, hop = 1):
   if(graph.number_of_nodes() == 1):
     servName = list(graph.nodes(data=True))[0][1]["serv"]
     dur=int(list(graph.nodes(data=True))[0][1]["dur"])
-    print("ENNDDDD %s "%(list(graph.nodes)))
     code = """
     \ncase RequestType::%s:
     if(td->nbHops == %d){XBT_DEBUG("Entered cost Function for %s"); return %d;}
@@ -168,16 +163,13 @@ def genETMSwitchFunction(graph, requestType, hop = 1):
   edges = nx.dfs_edges(graph,source = root)
 
   for edge in edges:
-    print(edge)
+    #print(edge)
     # if more than one successor, it means we have parallel spans
     # in this case, add the output code for this requesttype, and call each of the successors
     print("%d : %s"%(len(list(graph.successors(edge[0]))),list(graph.successors(edge[0]))))
     if(len(list(graph.successors(edge[0]))) > 1):
-      print("FORRKKKKKK")
       outputServName = graph.nodes[edge[0]]["serv"]
       dur = int(graph.nodes[edge[0]]["dur"])
-      #print("generate flop amount code for: %s request: %s"%(edge[0], requestType))
-      #print("%s (service: %s cost: %s)"%(edge[0],  outputServName, dur))
 
       code ="""
       if(td->nbHops == %d){XBT_DEBUG("Entered cost Function for %s"); return %d;\n}\nbreak;\n
@@ -191,7 +183,6 @@ def genETMSwitchFunction(graph, requestType, hop = 1):
       for i in range(len(childs)):
         # ugly but easiest way I found for now
         subgraph = create_subgraph(graph,childs[i])
-        print("nextgraph:")
         graphReader.showGraphStr(subgraph)
         mapCode = mergeCodeMaps([mapCode, genETMSwitchFunction(subgraph,requestType+"_"+str(i),hop+1)])
       return mapCode
@@ -200,8 +191,8 @@ def genETMSwitchFunction(graph, requestType, hop = 1):
     else:
       outputServName = graph.nodes[edge[0]]["serv"]
       dur = int(graph.nodes[edge[0]]["dur"])
-      print("generate flop amount code for: %s request: %s"%(edge[0], requestType))
-      print("%s (service: %s cost: %s)"%(edge[0],  outputServName, dur))
+      #print("generate flop amount code for: %s request: %s"%(edge[0], requestType))
+      #print("%s (service: %s cost: %s)"%(edge[0],  outputServName, dur))
 
       # code to be used
       code = """
@@ -218,7 +209,7 @@ def genETMSwitchFunction(graph, requestType, hop = 1):
 
       # if the dst node is the last node of the sequence, add its code now
       if(len(list(graph.successors(edge[1]))) == 0):
-        print("%s is the last node"%(edge[1]))
+        #print("%s is the last node"%(edge[1]))
         # code to be used
         code ="""
       if(td->nbHops == %d){XBT_DEBUG("Entered cost Function for %s (FINAL NODE, NO CHILD!)"); return %s;}
@@ -414,33 +405,16 @@ def mergeCodeMaps(mapsToMerge):
   return finalMap
 
 # taken from https://stackoverflow.com/questions/32935510/networkx-digraph-create-subgraph-digraph-by-node
-#def create_subgraph(G, node):
-#    edges = nx.dfs_successors(G, node)
-#    nodes = [node]
-#    for k,v in edges.items():
-#        nodes.extend([k])
-#        nodes.extend(v)
-#    return G.subgraph(nodes)
-#def create_subgraph(Ga,sub_G,start_node):
-#    for n in Ga.successors(start_node):
-#        sub_G.add_edge(start_node,n)
-#        create_subgraph(Ga,sub_G,n)
-
+# warning: don't forget to specify the root node, otherwise it is chosen randomly, which gave me a headache :)
 def create_subgraph(G, node):
   nodes = nx.single_source_shortest_path(G,node).keys()
   res = G.subgraph(nodes).copy()
 
   for i in G.out_edges(node, data=True):
-    #print(i[0]," -> ",i[1])
     res.update([i])
     res.add_edge(i[0], i[1])
   for n in nodes:
     for j in G.out_edges(n, data=True):
-      #print("%s -> %s"%(j[0],j[1]))
       res.add_edge(j[0], j[1])
 
-  #print("IN GRAPH")
-  #graphReader.dfsTest(G)
-  #print("OUT GRAPH")
-  #graphReader.dfsTest(res)
   return res
