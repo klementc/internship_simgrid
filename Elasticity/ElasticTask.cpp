@@ -176,6 +176,9 @@ double ElasticTaskManager::reqPerSec() {
 void ElasticTaskManager::setDataSizeRatio(double r) {
   dataSizeRatio_ = r;
 }
+void ElasticTaskManager::setReqNames(std::function<std::string(RequestType)> rnToStr){
+  reqTypeToStr_ = rnToStr;
+}
 
 void ElasticTaskManager::setProcessRatioFunc(std::function<double(TaskDescription*)> costReqType){
   costReqType_ = costReqType;
@@ -188,6 +191,11 @@ double ElasticTaskManager::getProcessRatio(TaskDescription* e){
   }else{
     return processRatio_;
   }
+}
+
+std::string ElasticTaskManager::getStrFromReqType(RequestType r){
+  if(reqTypeToStr_){return reqTypeToStr_(r);}
+  else{XBT_DEBUG("No reqTypeToStr_ provided, return service name"); return serviceName_;}
 }
 
 double ElasticTaskManager::getDataSizeRatio() {

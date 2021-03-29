@@ -95,6 +95,7 @@ class ElasticTaskManager {
     std::function<void(TaskDescription*)> outputFunction = [](TaskDescription*) {};
     /* match request type to request cost */
     std::function<double(TaskDescription*)> costReqType_ ;
+    std::function<std::string(RequestType)> reqTypeToStr_;
 
     /* Hosts that contain an instance */
     std::vector<simgrid::s4u::Host*> availableHostsList_;
@@ -137,7 +138,7 @@ class ElasticTaskManager {
     std::vector<simgrid::s4u::CommPtr> pending_comms;
 
   public:
-    std::string parentName;
+    /* request type to string (very stupid, should be modified) */
     ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes);
     ElasticTaskManager(std::string name);
 
@@ -173,8 +174,12 @@ class ElasticTaskManager {
     void trigger(TaskDescription* td);
     void setOutputFunction(std::function<void(TaskDescription*)> code);
 
+    void setReqNames(std::function<std::string(RequestType)> rnToStr);
+
     void kill();
     void run();
+
+    std::string getStrFromReqType(RequestType);
 
     // basic metrics
     std::vector<double> getCPULoads();

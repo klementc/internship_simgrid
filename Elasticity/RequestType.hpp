@@ -1,3 +1,4 @@
+#pragma once
 #ifndef REQUESTTYPE_HPP
 #define REQUESTTYPE_HPP
 
@@ -8,7 +9,25 @@ enum class RequestType
   REGISTER,
   LOGIN,
   TESTREQ_EXAMPLE,
+  READHOME,
+  READUSER,
   /* add whatever you want (not sure how to let the user extend in in a clean way) */
+  COMPOSE_0,
+  COMPOSE_1,
+  COMPOSE_0_1,
+  COMPOSE_0_0,
+  COMPOSE_2,
+  COMPOSE_3,
+  COMPOSE_2_0,
+  COMPOSE_2_1,
+  COMPOSE_3_1,
+  COMPOSE_2_2,
+  READUSER_1,
+  READUSER_0,
+  READUSER_2,
+  READHOME_0,
+  READHOME_1,
+  READHOME_2,
 };
 
 #endif /*REQUESTTYPE_HPP*/

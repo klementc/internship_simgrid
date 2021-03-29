@@ -125,13 +125,13 @@ void TaskInstance::run()
       a->startExec = simgrid::s4u::Engine::get_clock();
       reqs.erase(reqs.begin());
       XBT_DEBUG("instance received req %p", a);
-
 #ifdef USE_JAEGERTRACING
+        std::string rName = etm_->getStrFromReqType(a->requestType);
         auto t1 = std::chrono::seconds(946684800)+std::chrono::microseconds(int(Engine::get_instance()->get_clock()*1000000));
         auto span = a->parentSpans.size()==0?
-          etm_->getTracer().get()->StartSpan( etm_->getServiceName(),
+          etm_->getTracer().get()->StartSpan( rName,
             {opentracing::v3::StartTimestamp(t1)}) :
-          etm_->getTracer().get()->StartSpan( etm_->getServiceName(),
+          etm_->getTracer().get()->StartSpan( rName,
             {opentracing::v3::StartTimestamp(t1), opentracing::v3::ChildOf(&a->parentSpans.at(a->parentSpans.size()-1)->get()->context())});
         span->Log({ {"nbInst:", etm_->getInstanceAmount()},{"waitingReqAtStart:", etm_->getAmountOfWaitingRequests()},{"alreadyExecutingAtStart:", etm_->getAmountOfExecutingRequests()},{"startExec", Engine::get_instance()->get_clock()}});
         std::unique_ptr<opentracing::v3::Span>* t = new std::unique_ptr<opentracing::v3::Span>();

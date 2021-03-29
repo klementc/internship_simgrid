@@ -4,7 +4,7 @@ import os
 import sys
 import graphReader
 
-
+reqNames = []
 
 def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
   '''
@@ -12,6 +12,7 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
   to be pasted in the output function (redirecting taskRequests
   to the next service depending on the hop value and actual service)
   '''
+  reqNames.append(requestType)
   mapCode={}
   print(graph)
   root = [n for n,d in graph.in_degree() if d==0] [0]
@@ -267,10 +268,11 @@ def genETMInitCode(graphs):
     serv_%s->setDataSizeRatio(1);
     serv_%s->setOutputFunction(return_%s);
     serv_%s->setProcessRatioFunc(pr_%s);
+    serv_%s->setReqNames(reqTypeToStr);
     serv_%s->addHost(simgrid::s4u::Host::by_name("cb1-%s"));
     simgrid::s4u::Actor::create("etm_%s", simgrid::s4u::Host::by_name("cb1-%s"), [serv_%s] { serv_%s->run(); });
 
-    """%(service,service,service,service,service,service,service,service,service,service,service,service,service,service,hostIndex,service,hostIndex,service,service)
+    """%(service,service,service,service,service,service,service,service,service,service,service,service,service,service,service,hostIndex,service,hostIndex,service,service)
     hostIndex+=1
   return code
 
@@ -350,6 +352,13 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
   for f in prFunctionCodes:
     prFunctionCodes[f]+="""\t}//it should never end up here\nreturn -1;\n}"""
     code += prFunctionCodes[f]
+
+  # add dummy reqtype to string:
+  code += """\nstd::string reqTypeToStr(RequestType t){
+    switch (t)\n{"""
+  for k in reqNames:
+    code+= "\tcase RequestType::%s : return \"%s\";break;\n"%(k,k)
+  code+="""}return "WTF";\n}\n"""
 
 
   # add constructors
