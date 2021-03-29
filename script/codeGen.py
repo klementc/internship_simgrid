@@ -58,16 +58,23 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
       """ % (hop, edge[0])
       # foreach successor, add its put code
       childs = list(graph.successors(edge[0]))
+
+      # use this to avoid using twice the same name for a mailbox on the same service (if multiple child calls to the same ouput service)
+      servAlreadyUsed = []
       for i in range(len(childs)):
         dst = graph.nodes[childs[i]]
+        dstMBName = dst["serv"]
+        while(dstMBName in servAlreadyUsed):
+          dstMBName += "_"
         # code to be used
+        servAlreadyUsed.append(dstMBName)
         code += """
           XBT_DEBUG("Put to %s");
           s4u_Mailbox* m_%s = s4u_Mailbox::by_name("%s");
           TaskDescription* td_%d = new TaskDescription(*td);
           td_%d->requestType = RequestType::%s_%d;
           m_%s->put(td_%d, td_%d->dSize);
-        """ % (dst["serv"], dst["serv"], dst["serv"], i, i, requestType,i,dst["serv"],i,i)
+        """ % (dst["serv"], dstMBName, dst["serv"], i, i, requestType,i,dstMBName,i,i)
         if(not dst["serv"] in mapCode):
           mapCode[srcServName] = "\ncase RequestType::%s:"%(requestType)
         mapCode[srcServName] += code
@@ -91,16 +98,17 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
       code = """
       if(td->nbHops == %d){
         XBT_DEBUG("Output Function for %s, put to %s");
-        s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("%s");
-        m_user_timeline->put(td, td->dSize);
+        s4u_Mailbox* m_%s = s4u_Mailbox::by_name("%s");
+        m_%s->put(td, td->dSize);
       }
-      """ % (hop, requestType, dstName, dstName)
+      """ % (hop, requestType, dstName,dstName, dstName, dstName)
 
       # add it to the map
       if(not outputServName in mapCode):
         mapCode[outputServName] = "\ncase RequestType::%s:"%(requestType)
 
       mapCode[outputServName] += code
+      mapCode[outputServName]+="\nbreak;\n"
       # used to differentiate multiple calls to the same service
       hop+=1
 

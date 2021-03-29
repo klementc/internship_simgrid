@@ -131,7 +131,7 @@ def compactGraph(graph, already_list=[], previous={"serv":"","id":""}):
 
         # if several childs, ask if compact or not and do the appropriate action if yes
         if(len(list(G.successors(n[0])))>1 and not "par" in G.nodes[n[0]]):
-            par = query_yes_no("/!\ Node %s has more than one child. Please say if childrens are to be executed in parallel (y) or not (n) /!\\\nChildrens: %s\n"%(n[0], list(G.successors(n[0]))))
+            par = query_yes_no("/!\\ Node %s has more than one child. Please say if childrens are to be executed in parallel (y) or not (n) /!\\\nChildrens: %s\n"%(n[0], list(G.successors(n[0]))))
             if(not par):
                 G.nodes[n[0]]["par"]="no"
             else:
