@@ -220,11 +220,12 @@ void ElasticTaskManager::kill() {
 void ElasticTaskManager::pollnet(std::string mboxName){
   Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(mboxName.c_str());
 
-  int parComSize = 1; // 1 to avoid segfault
+  int parComSize = 20; // 1 to avoid segfault
+  void* tasksV[parComSize];
   std::vector<simgrid::s4u::CommPtr> commV;
   void* taskV;
   for(int i=0;i<parComSize;i++){
-    commV.push_back(recvMB->get_async(&taskV));
+    commV.push_back(recvMB->get_async(&(tasksV[i])));
   }
 
 
@@ -232,12 +233,12 @@ void ElasticTaskManager::pollnet(std::string mboxName){
           access_tmpdata_->acquire();
 
     int newMsgPos = simgrid::s4u::Comm::wait_any(&commV);
-    TaskDescription* taskRequest = static_cast<TaskDescription*>(taskV);
+    TaskDescription* taskRequest = static_cast<TaskDescription*>(tasksV[newMsgPos]);
     //set amount of computation for the instance
     taskRequest->queueArrival = simgrid::s4u::Engine::get_clock();
 
     commV.erase(commV.begin() + newMsgPos);
-    commV.push_back(recvMB->get_async(&taskV));
+    commV.insert(commV.begin() + newMsgPos, recvMB->get_async(&(tasksV[newMsgPos])));
 
     XBT_DEBUG("Received %p index: %d", taskRequest, newMsgPos);
 
@@ -301,6 +302,7 @@ void ElasticTaskManager::run() {
       /* Async version TODO: clean pending vector */
       XBT_DEBUG("Send %p to task", t);
       t->flopsPerServ.push_back(getProcessRatio(t));
+      if(! t->dSize || t->dSize == -1){t->dSize = 1; XBT_DEBUG("NO SIZE SET, PUT TO 1");}
       simgrid::s4u::CommPtr comm = mbp->put_async(t, (t->dSize == -1) ? 1 : t->dSize);
       pending_comms.push_back(comm);
 

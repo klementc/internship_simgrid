@@ -19,7 +19,7 @@ class DataSource {
      */
     virtual double getNextReqTS() = 0;
     //virtual double getNextFlopAmount() = 0;
-    virtual uint64_t getNextReqSize() = 0;
+    virtual double getNextReqSize() = 0;
   public:
     DataSource(std::string mbName, RequestType rt)
       : mbName_(mbName), keepGoing_(true), rt_(rt) {};
@@ -38,14 +38,14 @@ class DataSource {
 class DataSourceFixedInterval : public DataSource {
   private:
     double interval_;
-    uint64_t reqSize_;
+    double reqSize_;
     double previousTrigger_;
   public:
-    DataSourceFixedInterval(std::string mbName, RequestType rt, double interval, uint64_t reqS)
-      :DataSource(mbName, rt), interval_(interval), previousTrigger_(0) {};
-    DataSourceFixedInterval(std::string mbName, double interval, uint64_t reqS)
+    DataSourceFixedInterval(std::string mbName, RequestType rt, double interval, double reqS)
+      :DataSource(mbName, rt), interval_(interval), previousTrigger_(0), reqSize_(reqS) {};
+    DataSourceFixedInterval(std::string mbName, double interval, double reqS)
       :DataSourceFixedInterval(mbName, RequestType::DEFAULT, interval_, reqS) {};
-    virtual inline uint64_t getNextReqSize() {return reqSize_;};
+    virtual double getNextReqSize();
     virtual double getNextReqTS();
 };
 
@@ -58,13 +58,13 @@ class DataSourceFixedInterval : public DataSource {
 class DataSourceTSFile : public DataSource {
   private:
     std::ifstream file_;
-    uint64_t reqSize_;
+    double reqSize_;
   public:
-    DataSourceTSFile(std::string mbName, RequestType rt, std::string fName, uint64_t reqSize)
+    DataSourceTSFile(std::string mbName, RequestType rt, std::string fName, double reqSize)
       :DataSource(mbName, rt), reqSize_(reqSize){file_.open(fName);std::string a;file_>>a;};
-    DataSourceTSFile(std::string mbName, std::string fName, uint64_t reqSize)
+    DataSourceTSFile(std::string mbName, std::string fName, double reqSize)
       :DataSourceTSFile(mbName, RequestType::DEFAULT, fName, reqSize){}
-    inline uint64_t getNextReqSize() {return reqSize_;};
+    virtual double getNextReqSize();
     virtual double getNextReqTS();
 };
 #endif

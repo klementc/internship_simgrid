@@ -40,26 +40,28 @@ void TaskInstance::pollTasks()
   simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(mbName_);
 
   // create and init parallel reception of tasks
-  int parComSize =  1; // 1 to avoid the segfault
+  int parComSize =  20; // 1 to avoid the segfault
+  void* tasksV[parComSize];
   void* taskV;
 
   for(int i=0;i<parComSize;i++){
-    commV.push_back(mbp->get_async(&taskV));
+    commV.push_back(mbp->get_async(&(tasksV[i])));
   }
 
   while(keepGoing_) {
     int newMsgPos = simgrid::s4u::Comm::wait_any(&commV);
-    TaskDescription* taskRequest = static_cast<TaskDescription*>(taskV);
+    TaskDescription* taskRequest = static_cast<TaskDescription*>(tasksV[newMsgPos]);
     taskRequest->instArrival = simgrid::s4u::Engine::get_clock();
-    commV.erase(commV.begin() + newMsgPos);
-    commV.push_back(mbp->get_async(&taskV));
+    commV.erase(commV.begin()+newMsgPos);
+    commV.insert(commV.begin() + newMsgPos, mbp->get_async(&(tasksV[newMsgPos])));
+    //commV.push_back(mbp->get_async(&taskV));
     // we wait until there is a slot to execute a task before putting the request in the slot
     //n_empty_->acquire();
     int n = n_empty_->acquire_timeout(1000);
     if(!(n==0))
       continue;
     reqs.push_back(taskRequest);
-    XBT_DEBUG("instance received a request, queue size: %d", reqs.size());
+    XBT_DEBUG("instance received a request %p at index %d, queue size: %d", taskRequest, newMsgPos, reqs.size());
 
     n_full_->release();
   }

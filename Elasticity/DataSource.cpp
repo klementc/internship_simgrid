@@ -30,13 +30,14 @@ void DataSource::run()
     //  -> the timestamps at which it is triggered
     //  -> the size of the request sent over the network
     double evtTS = getNextReqTS();
-    uint64_t nextSize = getNextReqSize();
+    double nextSize = getNextReqSize();
 
     if(evtTS == -1){simgrid::s4u::Comm::wait_all(&pending_comms); return;}
 
     simgrid::s4u::this_actor::sleep_until(evtTS);
     TaskDescription* t = new TaskDescription(generator(),-1);
     XBT_DEBUG("send %p", t);
+
     t->dSize = nextSize;
     t->requestType = rt_;
 
@@ -59,6 +60,10 @@ double DataSourceFixedInterval::getNextReqTS() {
   return previousTrigger_;
 }
 
+double DataSourceFixedInterval::getNextReqSize() {
+  return reqSize_;
+}
+
 /* Timestamps File example */
 
 double DataSourceTSFile::getNextReqTS() {
@@ -70,4 +75,6 @@ double DataSourceTSFile::getNextReqTS() {
 
   return ts;
 }
-
+double DataSourceTSFile::getNextReqSize() {
+  return reqSize_;
+}
