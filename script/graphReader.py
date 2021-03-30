@@ -99,6 +99,129 @@ def getSumOfTimes(graph):
 
     return sum
 
+
+def groupNodesWithSameServ(graph, root, already_list=[]):
+    graphOut = nx.DiGraph()
+    subg = codeGen.create_subgraph(graph, root)
+
+    # add root and then add dst of each edge
+    rootServ = graph.nodes[root]["label"]
+    rootId = rootServ
+    while(rootId in already_list):
+        rootId += "_"
+    already_list.append(rootId)
+    graphOut.add_node(rootId)
+    nx.set_node_attributes(graphOut,{rootId:{"serv":rootServ,"label":rootServ,"id":rootId,"dur":int(graph.nodes[root]["dur"])}})
+
+    currentServ = {"serv":rootServ,"id":rootId}
+
+
+    edges = nx.dfs_edges(subg, source = root)
+    for src, dst in edges:
+        srcChildNodes = list(subg.successors(src))
+        if(len(srcChildNodes)>1):
+            # add grouped graph for each child
+            for succ in srcChildNodes:
+                gChild, alistCh = groupNodesWithSameServ(graph, succ, already_list=already_list)
+                already_list += alistCh
+                graphOut.add_nodes_from(gChild.nodes(data=True))
+                graphOut.add_edges_from(gChild.edges(data=True))
+                # add link between src and succ
+                rootChild =  [n for n,d in gChild.in_degree() if d==0][0]
+                graphOut.add_edge(currentServ["id"],gChild.nodes[rootChild]["id"])
+            return (graphOut, already_list)
+        else:
+            # already in this service, add duration
+            if(graph.nodes[dst]["label"] == currentServ["serv"]):
+                graphOut.nodes[currentServ["id"]]["dur"] += int(graph.nodes[dst]["dur"])
+            # new service, add service and edge
+            else:
+                dstServ = graph.nodes[dst]["label"]
+                dstId = dstServ
+                while(dstId in already_list):
+                    dstId += "_"
+                already_list.append(dstId)
+                graphOut.add_node(dstId)
+                nx.set_node_attributes(graphOut,{dstId:{"serv":dstServ,"label":dstServ,"id":dstId,"dur":int(graph.nodes[dst]["dur"])}})
+                graphOut.add_edge(currentServ["id"], dstId)
+                currentServ = {"serv":dstServ,"id":dstId}
+
+    return (graphOut, already_list)
+
+def sequentializeOrNot(graph, root, seqLeafs=None):
+    graphOut = nx.DiGraph()
+    #print("enter seqornot:",graph.nodes(data=True))
+    #print("root: ",root)
+    subg = codeGen.create_subgraph(graph, root)
+    leafList = []
+
+    if(subg.number_of_nodes() == 1):
+        print("Only one node, add it and return")
+        leaf = [nodeKey for nodeKey in subg.nodes()][0]
+        leafList.append(leaf)
+        return subg, leafList
+    else:
+        # it means the subgraph has edges, process for each edge
+        edges = nx.dfs_edges(subg, source = root)
+        for src,dst in edges:
+            graphOut.add_node(src)
+            nx.set_node_attributes(graphOut,{src:graph.nodes[src]})
+            #print(src+"->"+dst)
+            srcChildNodes = list(subg.successors(src))
+            if(len(srcChildNodes)==1):
+                print("Sequence, no problem add: %s %s",graph.nodes[dst],list(graph.successors(dst)))
+                graphOut.add_node(dst)
+                nx.set_node_attributes(graphOut,{dst:graph.nodes[dst]})
+                graphOut.add_edge(src,dst)
+                # if no child to dst, add it to the leaflist
+                if(len(list(graph.successors(dst)))==0):
+                    print("ADDD LEAFF")
+                    leafList.append(dst)
+            else:
+                print("FORK %d nodes"%(len(srcChildNodes)))
+                # create subgraph for all childs and link them together
+                prevChildLeaves = []
+                parallel = query_yes_no("Execute in parallel?\nNode: %s\nChilds: %s\n"%(subg.nodes[src]["label"], cleanNames(subg, srcChildNodes)))
+                for succ in srcChildNodes:
+                    # create subgraph
+                    #print("create subgraph: ",graph.nodes[succ])
+                    gChild, leavesChild = sequentializeOrNot(graph, succ)
+                    #print("Fork adds: %s"%(gChild.nodes(data=True)))
+                    graphOut.add_nodes_from(gChild.nodes(data=True))
+                    graphOut.add_edges_from(gChild.edges(data=True))
+
+                    # if in parallel, attach child graph to the src node
+                    if(parallel):
+                        #print("Add edge: %s -> %s"%(src, succ))
+                        graphOut.add_edge(src, succ)
+                    else:
+                        # TODO
+                        # if first child:
+                        #   add to src
+                        # elif only one leaf in previous child:
+                        #   add new child to previous leaf and new leaf = child.leaf
+                        # else: (multiple leaves in previous child)
+                        #   choose node to add to  (or take longest)
+                        if(len(prevChildLeaves) == 0):
+                            graphOut.add_edge(src,succ)
+                            prevChildLeaves = leavesChild
+                            print("CHHHH: %s"%(prevChildLeaves))
+                        elif(len(prevChildLeaves) == 1):
+                            graphOut.add_edge(prevChildLeaves[0], succ)
+                            prevChildLeaves = leavesChild
+                            print("CIIIIIII: %s"%(prevChildLeaves))
+                        else:
+                            longest = nx.dag_longest_path(gChild,weight="dur")
+                            print("LONGEST: %s"%(longest))
+                            query_yes_no("TODO, WILL ADD TO %s "%prevChildLeaves[0])
+                            graphOut.add_edge(longest[-1], succ)
+                            prevChildLeaves = longest[-1]
+                # GET LONGEST PATH  IN CURRENT GRAPH IF REQUIRED IN PARENT CALL
+                longest = nx.dag_longest_path(graphOut,weight="dur")[-1]
+                return graphOut, [longest] # TODO RETURN CORRECT CHILDS
+
+    return graphOut, leafList
+
 def compactGraph(graph, already_list=[], previous={"serv":"","id":""}):
     '''
     Transforms a dot graph in a compact form
@@ -255,17 +378,20 @@ if __name__=="__main__":
             print("You now need to add your dataSources to the simulation code before running it!")
         else:
             G = nx.drawing.nx_agraph.read_dot(args.filename)
-            GCompact = compactGraph(G)[0]
+            #GCompact = compactGraph(G)[0]
+            g, _ = sequentializeOrNot(G, root = [n for n,d in G.in_degree() if d==0][0])
+            toDotAndMakeImg(g, "aaa.dot", "aaa.png")
+            g2, _ = groupNodesWithSameServ(g, [n for n,d in g.in_degree() if d==0][0])
+            toDotAndMakeImg(g2, "aaa2.dot", "aaa2.png")
 
-            if(args.generate):
-                d = codeGen.generateFullSimulationCode({"COMPOSE": G})
+            print("Sum of times in the original file: %d"%(getSumOfTimes(G)))
+            print("Sum of times in the the processed graph: %d"%(getSumOfTimes(g)))
+            print("Sum of times in the the grouped graph: %d"%(getSumOfTimes(g2)))
 
-                with open("generated.cpp", "w") as text_file:
-                    text_file.write(d)
+            d = codeGen.generateFullSimulationCode({"COMPOSE": g2})
 
-            if(args.sum):
-                print("Sum of times in the original file: %d"%(getSumOfTimes(G)))
-                print("Sum of times in the the processed graph: %d"%(getSumOfTimes(GCompact)))
+            with open("generated.cpp", "w") as text_file:
+                text_file.write(d)
 
     except KeyboardInterrupt:
         print('Interrupted')

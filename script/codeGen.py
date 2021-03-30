@@ -50,7 +50,7 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
     print("edge: ",edge)
     # if more than one successor, it means we have parallel spans
     # in this case, add the output code for this requesttype, and call each of the successors
-    if(len(list(graph.successors(edge[0]))) > 1):
+    if(len(list(graph.successors(edge[0]))) > 1 and not "seen" in graph.nodes[list(graph.successors(edge[0]))[0]]):
       srcServName = graph.nodes[edge[0]]["serv"]
       # generate the code for this node with one put per parallel child
       code = """
@@ -64,6 +64,7 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
       servAlreadyUsed = []
       for i in range(len(childs)):
         dst = graph.nodes[childs[i]]
+        graph.nodes[childs[i]]["seen"]=True
         dstMBName = dst["serv"]
         while(dstMBName in servAlreadyUsed):
           dstMBName += "_"
@@ -76,9 +77,9 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
           td_%d->requestType = RequestType::%s_%d;
           m_%s->put(td_%d, td_%d->dSize);
         """ % (dst["serv"], dstMBName, dst["serv"], i, i, requestType,i,dstMBName,i,i)
-        if(not dst["serv"] in mapCode):
-          mapCode[srcServName] = "\ncase RequestType::%s:"%(requestType)
-        mapCode[srcServName] += code
+      if(not dst["serv"] in mapCode):
+        mapCode[srcServName] = "\ncase RequestType::%s:"%(requestType)
+      mapCode[srcServName] += code
       mapCode[srcServName]+="\n}\nbreak;\n"
 
       # return the result of the maps of childrens and the current map
