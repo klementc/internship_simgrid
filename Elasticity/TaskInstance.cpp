@@ -40,7 +40,7 @@ void TaskInstance::pollTasks()
   simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(mbName_);
 
   // create and init parallel reception of tasks
-  int parComSize =  20; // 1 to avoid the segfault
+  int parComSize =  maxReqInInst_; // 1 to avoid the segfault
   void* tasksV[parComSize];
   void* taskV;
 
