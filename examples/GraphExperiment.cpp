@@ -47,7 +47,7 @@ void returnf(TaskDescription* a){
   for (auto it = a->parentSpans.rbegin(); it != a->parentSpans.rend(); ++it)
   {
     //XBT_DEBUG("%lf %lf",simgrid::s4u::Engine::get_instance()->get_clock(),simgrid::s4u::Engine::get_instance()->get_clock()*1000000 );
-    auto t2 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(simgrid::s4u::Engine::get_instance()->get_clock()*1000));
+    auto t2 = std::chrono::seconds(946684800)+std::chrono::microseconds(int(simgrid::s4u::Engine::get_instance()->get_clock()*1000000));
     (*it)->get()->Log({{"end",t2.count()}});
     (*it)->get()->Finish({opentracing::v3::FinishTimestamp(t2)});
     (*it)->reset();

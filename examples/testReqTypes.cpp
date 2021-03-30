@@ -52,7 +52,7 @@ double pr_user_timeline(TaskDescription* td){
   switch (td->requestType)
   {
     case RequestType::TESTREQ_EXAMPLE:
-    	if(td->nbHops == 2){XBT_INFO("ret 1e8");return 1e8;}
+    	if(td->nbHops == 2){XBT_INFO("ret 1e8");return 0;}
       break;
   }
   XBT_INFO("PROBLEM");

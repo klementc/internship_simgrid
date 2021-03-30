@@ -22,10 +22,10 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
  * Redirects the output of etm1 to the second service
  */
 void returnservice1(TaskDescription* td) {
-  XBT_INFO("output service 1 queueArrival: %f instArrival: %f startExec: %f endExec: %f s1cost: %f\n", td->queueArrival, td->instArrival, td->startExec, td->endExec, td->flopsPerServ.at(0));
+  //XBT_INFO("output service 1 queueArrival: %f instArrival: %f startExec: %f endExec: %f s1cost: %f\n", td->queueArrival, td->instArrival, td->startExec, td->endExec, td->flopsPerServ.at(0));
 	XBT_DEBUG("Return function of service service1");
 	s4u_Mailbox* mservice2 = s4u_Mailbox::by_name("service2");
-  XBT_INFO("send %p to service2", td);
+  //XBT_INFO("send %p to service2", td);
 	mservice2->put(td, td->dSize);
 }
 
@@ -74,7 +74,9 @@ void run(int servFlops, std::string tsFile, int parDeg) {
   /* ETM2 (sink)*/
   std::vector<std::string> vservice2 = std::vector<std::string>();
   vservice2.push_back("service2");
+
   std::shared_ptr<simgrid::s4u::ElasticTaskManager> etmservice2 = std::make_shared<simgrid::s4u::ElasticTaskManager>("etmservice2",vservice2);
+  etmservice2->setParallelTasksPerInst(parDeg);
   etmservice2->setOutputFunction(returnservice2);
   simgrid::s4u::Actor::create("etmservice2_a", simgrid::s4u::Host::by_name("cb1-100"), [etmservice2] { etmservice2->run(); });
   /* 2 instances */
@@ -93,7 +95,7 @@ void run(int servFlops, std::string tsFile, int parDeg) {
 	simgrid::s4u::ActorPtr dataS = simgrid::s4u::Actor::create("snd", simgrid::s4u::Host::by_name("cb1-1"), [&]{ds->run();});
 
   // kill policies and ETMs
-  simgrid::s4u::this_actor::sleep_for(299.9);
+  simgrid::s4u::this_actor::sleep_for(10000);
   XBT_INFO("Done. Killing policies and etms");
   ds->suspend();
   // TODO NECESSARY???????

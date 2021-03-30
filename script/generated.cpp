@@ -16,31 +16,34 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
       switch (td->requestType)
       {
 case RequestType::COMPOSE:
-    if(td->nbHops == 1){
-      XBT_DEBUG("Output Function for COMPOSE, put to media_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("media_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-    if(td->nbHops == 4){
-      XBT_DEBUG("Output Function for COMPOSE, put to user_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("user_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-    if(td->nbHops == 7){
-      XBT_DEBUG("Output Function for COMPOSE, put to text_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("text_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-    if(td->nbHops == 23){
-      XBT_DEBUG("Output Function for COMPOSE, put to unique_id_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("unique_id_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-XBT_INFO("EROOOOOOOOOR");exit(1);
+      if(td->nbHops == 1){
+        XBT_DEBUG("Output Function for nginx_web_server (PARALLEL CHILDS)");
+      
+          XBT_DEBUG("Put to media_service");
+          s4u_Mailbox* m_media_service = s4u_Mailbox::by_name("media_service");
+          TaskDescription* td_0 = new TaskDescription(*td);
+          td_0->requestType = RequestType::COMPOSE_0;
+          m_media_service->put(td_0, td_0->dSize);
+        
+          XBT_DEBUG("Put to user_service");
+          s4u_Mailbox* m_user_service = s4u_Mailbox::by_name("user_service");
+          TaskDescription* td_1 = new TaskDescription(*td);
+          td_1->requestType = RequestType::COMPOSE_1;
+          m_user_service->put(td_1, td_1->dSize);
+        
+          XBT_DEBUG("Put to text_service");
+          s4u_Mailbox* m_text_service = s4u_Mailbox::by_name("text_service");
+          TaskDescription* td_2 = new TaskDescription(*td);
+          td_2->requestType = RequestType::COMPOSE_2;
+          m_text_service->put(td_2, td_2->dSize);
+        
+          XBT_DEBUG("Put to unique_id_service");
+          s4u_Mailbox* m_unique_id_service = s4u_Mailbox::by_name("unique_id_service");
+          TaskDescription* td_3 = new TaskDescription(*td);
+          td_3->requestType = RequestType::COMPOSE_3;
+          m_unique_id_service->put(td_3, td_3->dSize);
+        
+}
 break;
 	}
 }
@@ -48,14 +51,13 @@ break;
       XBT_DEBUG("Return function of service media_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 2){
-      XBT_DEBUG("Output Function for COMPOSE, put to compose_post_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("compose_post_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-XBT_INFO("EROOOOOOOOOR");exit(1);
+case RequestType::COMPOSE_0:
+      if(td->nbHops == 2){
+        XBT_DEBUG("Output Function for COMPOSE_0, put to compose_post_service");
+        s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("compose_post_service");
+        m_user_timeline->put(td, td->dSize);
+      }
+      
 break;
 	}
 }
@@ -63,56 +65,75 @@ break;
       XBT_DEBUG("Return function of service compose_post_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 3){
-      XBT_DEBUG("Output Function for COMPOSE, put to nginx_web_server");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("nginx_web_server");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-    if(td->nbHops == 6){
-      XBT_DEBUG("Output Function for COMPOSE, put to nginx_web_server");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("nginx_web_server");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-    if(td->nbHops == 10){
-      XBT_DEBUG("Output Function for COMPOSE, put to text_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("text_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-    if(td->nbHops == 13){
-      XBT_DEBUG("Output Function for COMPOSE, put to text_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("text_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-    if(td->nbHops == 15){
-      XBT_DEBUG("Output Function for COMPOSE, put to post_storage_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("post_storage_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-    if(td->nbHops == 17){
-      XBT_DEBUG("Output Function for COMPOSE, put to user_timeline_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("user_timeline_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-    if(td->nbHops == 19){
-      XBT_DEBUG("Output Function for COMPOSE, put to write_home_timeline_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("write_home_timeline_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-    if(td->nbHops == 25){
-      XBT_DEBUG("Output Function for COMPOSE, Final service, DELETE");
-      delete td;
-      // TODO DELETE JAEGER SPANS
-    }
-    
-XBT_INFO("EROOOOOOOOOR");exit(1);
+case RequestType::COMPOSE_0:
+      if(td->nbHops == 3){
+        XBT_DEBUG("Output Function for COMPOSE_0, Final service, DELETE");
+        delete td;
+        // TODO DELETE JAEGER SPANS
+      }
+      
+break;
+
+
+case RequestType::COMPOSE_1:
+      if(td->nbHops == 3){
+        XBT_DEBUG("Output Function for COMPOSE_1, Final service, DELETE");
+        delete td;
+        // TODO DELETE JAEGER SPANS
+      }
+      
+break;
+
+
+case RequestType::COMPOSE_2_0:
+      if(td->nbHops == 4){
+        XBT_DEBUG("Output Function for COMPOSE_2_0, Final service, DELETE");
+        delete td;
+        // TODO DELETE JAEGER SPANS
+      }
+      
+break;
+
+
+case RequestType::COMPOSE_2_1:
+      if(td->nbHops == 4){
+        XBT_DEBUG("Output Function for COMPOSE_2_1, Final service, DELETE");
+        delete td;
+        // TODO DELETE JAEGER SPANS
+      }
+      
+break;
+
+
+case RequestType::COMPOSE_2_2:
+      if(td->nbHops == 3){
+        XBT_DEBUG("Output Function for COMPOSE_2_2, put to post_storage_service");
+        s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("post_storage_service");
+        m_user_timeline->put(td, td->dSize);
+      }
+      
+      if(td->nbHops == 5){
+        XBT_DEBUG("Output Function for COMPOSE_2_2, put to user_timeline_service");
+        s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("user_timeline_service");
+        m_user_timeline->put(td, td->dSize);
+      }
+      
+      if(td->nbHops == 7){
+        XBT_DEBUG("Output Function for COMPOSE_2_2, put to write_home_timeline_service");
+        s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("write_home_timeline_service");
+        m_user_timeline->put(td, td->dSize);
+      }
+      
+break;
+
+
+case RequestType::COMPOSE_3:
+      if(td->nbHops == 3){
+        XBT_DEBUG("Output Function for COMPOSE_3, Final service, DELETE");
+        delete td;
+        // TODO DELETE JAEGER SPANS
+      }
+      
 break;
 	}
 }
@@ -120,14 +141,13 @@ break;
       XBT_DEBUG("Return function of service user_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 5){
-      XBT_DEBUG("Output Function for COMPOSE, put to compose_post_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("compose_post_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-XBT_INFO("EROOOOOOOOOR");exit(1);
+case RequestType::COMPOSE_1:
+      if(td->nbHops == 2){
+        XBT_DEBUG("Output Function for COMPOSE_1, put to compose_post_service");
+        s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("compose_post_service");
+        m_user_timeline->put(td, td->dSize);
+      }
+      
 break;
 	}
 }
@@ -135,26 +155,29 @@ break;
       XBT_DEBUG("Return function of service text_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 8){
-      XBT_DEBUG("Output Function for COMPOSE, put to url_shorten_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("url_shorten_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-    if(td->nbHops == 11){
-      XBT_DEBUG("Output Function for COMPOSE, put to user_mention_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("user_mention_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-    if(td->nbHops == 14){
-      XBT_DEBUG("Output Function for COMPOSE, put to compose_post_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("compose_post_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-XBT_INFO("EROOOOOOOOOR");exit(1);
+case RequestType::COMPOSE_2:
+      if(td->nbHops == 2){
+        XBT_DEBUG("Output Function for text_service (PARALLEL CHILDS)");
+      
+          XBT_DEBUG("Put to url_shorten_service");
+          s4u_Mailbox* m_url_shorten_service = s4u_Mailbox::by_name("url_shorten_service");
+          TaskDescription* td_0 = new TaskDescription(*td);
+          td_0->requestType = RequestType::COMPOSE_2_0;
+          m_url_shorten_service->put(td_0, td_0->dSize);
+        
+          XBT_DEBUG("Put to user_mention_service");
+          s4u_Mailbox* m_user_mention_service = s4u_Mailbox::by_name("user_mention_service");
+          TaskDescription* td_1 = new TaskDescription(*td);
+          td_1->requestType = RequestType::COMPOSE_2_1;
+          m_user_mention_service->put(td_1, td_1->dSize);
+        
+          XBT_DEBUG("Put to compose_post_service");
+          s4u_Mailbox* m_compose_post_service = s4u_Mailbox::by_name("compose_post_service");
+          TaskDescription* td_2 = new TaskDescription(*td);
+          td_2->requestType = RequestType::COMPOSE_2_2;
+          m_compose_post_service->put(td_2, td_2->dSize);
+        
+}
 break;
 	}
 }
@@ -162,14 +185,13 @@ break;
       XBT_DEBUG("Return function of service url_shorten_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 9){
-      XBT_DEBUG("Output Function for COMPOSE, put to compose_post_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("compose_post_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-XBT_INFO("EROOOOOOOOOR");exit(1);
+case RequestType::COMPOSE_2_0:
+      if(td->nbHops == 3){
+        XBT_DEBUG("Output Function for COMPOSE_2_0, put to compose_post_service");
+        s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("compose_post_service");
+        m_user_timeline->put(td, td->dSize);
+      }
+      
 break;
 	}
 }
@@ -177,14 +199,13 @@ break;
       XBT_DEBUG("Return function of service user_mention_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 12){
-      XBT_DEBUG("Output Function for COMPOSE, put to compose_post_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("compose_post_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-XBT_INFO("EROOOOOOOOOR");exit(1);
+case RequestType::COMPOSE_2_1:
+      if(td->nbHops == 3){
+        XBT_DEBUG("Output Function for COMPOSE_2_1, put to compose_post_service");
+        s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("compose_post_service");
+        m_user_timeline->put(td, td->dSize);
+      }
+      
 break;
 	}
 }
@@ -192,14 +213,13 @@ break;
       XBT_DEBUG("Return function of service post_storage_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 16){
-      XBT_DEBUG("Output Function for COMPOSE, put to compose_post_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("compose_post_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-XBT_INFO("EROOOOOOOOOR");exit(1);
+case RequestType::COMPOSE_2_2:
+      if(td->nbHops == 4){
+        XBT_DEBUG("Output Function for COMPOSE_2_2, put to compose_post_service");
+        s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("compose_post_service");
+        m_user_timeline->put(td, td->dSize);
+      }
+      
 break;
 	}
 }
@@ -207,14 +227,13 @@ break;
       XBT_DEBUG("Return function of service user_timeline_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 18){
-      XBT_DEBUG("Output Function for COMPOSE, put to compose_post_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("compose_post_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-XBT_INFO("EROOOOOOOOOR");exit(1);
+case RequestType::COMPOSE_2_2:
+      if(td->nbHops == 6){
+        XBT_DEBUG("Output Function for COMPOSE_2_2, put to compose_post_service");
+        s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("compose_post_service");
+        m_user_timeline->put(td, td->dSize);
+      }
+      
 break;
 	}
 }
@@ -222,20 +241,19 @@ break;
       XBT_DEBUG("Return function of service write_home_timeline_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 20){
-      XBT_DEBUG("Output Function for COMPOSE, put to social_graph_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("social_graph_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-    if(td->nbHops == 22){
-      XBT_DEBUG("Output Function for COMPOSE, put to nginx_web_server");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("nginx_web_server");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-XBT_INFO("EROOOOOOOOOR");exit(1);
+case RequestType::COMPOSE_2_2:
+      if(td->nbHops == 8){
+        XBT_DEBUG("Output Function for COMPOSE_2_2, put to social_graph_service");
+        s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("social_graph_service");
+        m_user_timeline->put(td, td->dSize);
+      }
+      
+      if(td->nbHops == 10){
+        XBT_DEBUG("Output Function for COMPOSE_2_2, Final service, DELETE");
+        delete td;
+        // TODO DELETE JAEGER SPANS
+      }
+      
 break;
 	}
 }
@@ -243,14 +261,13 @@ break;
       XBT_DEBUG("Return function of service social_graph_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 21){
-      XBT_DEBUG("Output Function for COMPOSE, put to write_home_timeline_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("write_home_timeline_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-XBT_INFO("EROOOOOOOOOR");exit(1);
+case RequestType::COMPOSE_2_2:
+      if(td->nbHops == 9){
+        XBT_DEBUG("Output Function for COMPOSE_2_2, put to write_home_timeline_service");
+        s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("write_home_timeline_service");
+        m_user_timeline->put(td, td->dSize);
+      }
+      
 break;
 	}
 }
@@ -258,14 +275,13 @@ break;
       XBT_DEBUG("Return function of service unique_id_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 24){
-      XBT_DEBUG("Output Function for COMPOSE, put to compose_post_service");
-      s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("compose_post_service");
-    	m_user_timeline->put(td, td->dSize);
-    }
-    
-XBT_INFO("EROOOOOOOOOR");exit(1);
+case RequestType::COMPOSE_3:
+      if(td->nbHops == 2){
+        XBT_DEBUG("Output Function for COMPOSE_3, put to compose_post_service");
+        s4u_Mailbox* m_user_timeline = s4u_Mailbox::by_name("compose_post_service");
+        m_user_timeline->put(td, td->dSize);
+      }
+      
 break;
 	}
 }
@@ -275,157 +291,169 @@ break;
       switch (td->requestType)
       {
 case RequestType::COMPOSE:
-    if(td->nbHops == 1){XBT_DEBUG("Entered cost Function for COMPOSE"); return 2926000;}
-    
-    if(td->nbHops == 4){XBT_DEBUG("Entered cost Function for COMPOSE"); return 0;}
-    
-    if(td->nbHops == 7){XBT_DEBUG("Entered cost Function for COMPOSE"); return 0;}
-    
-    if(td->nbHops == 23){XBT_DEBUG("Entered cost Function for COMPOSE"); return 0;}
-    
+      if(td->nbHops == 1){XBT_DEBUG("Entered cost Function for nginx_web_server"); return 1876000;
+}
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}//it should never end up here
+
+      	}//it should never end up here
 return -1;
 }
     double pr_media_service(TaskDescription* td) {
       XBT_DEBUG("pr function of service media_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 2){XBT_DEBUG("Entered cost Function for COMPOSE"); return 429000;}
-    
+case RequestType::COMPOSE_0:
+      if(td->nbHops == 2){XBT_DEBUG("Entered cost Function for COMPOSE_0"); return 415000;}
+      
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}//it should never end up here
+	}//it should never end up here
 return -1;
 }
     double pr_compose_post_service(TaskDescription* td) {
       XBT_DEBUG("pr function of service compose_post_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 3){XBT_DEBUG("Entered cost Function for COMPOSE"); return 950000;}
-    
-    if(td->nbHops == 6){XBT_DEBUG("Entered cost Function for COMPOSE"); return 651000;}
-    
-    if(td->nbHops == 10){XBT_DEBUG("Entered cost Function for COMPOSE"); return 910000;}
-    
-    if(td->nbHops == 13){XBT_DEBUG("Entered cost Function for COMPOSE"); return 910000;}
-    
-    if(td->nbHops == 15){XBT_DEBUG("Entered cost Function for COMPOSE"); return 2353000;}
-    
-    if(td->nbHops == 17){XBT_DEBUG("Entered cost Function for COMPOSE"); return 0;}
-    
-    if(td->nbHops == 19){XBT_DEBUG("Entered cost Function for COMPOSE"); return 0;}
-    
-    if(td->nbHops == 25){XBT_DEBUG("Entered cost Function for COMPOSE"); return 832000;}
-    
+case RequestType::COMPOSE_0:
+      if(td->nbHops == 3){XBT_DEBUG("Entered cost Function for COMPOSE_0 (FINAL NODE, NO CHILD!)"); return 770000;}
+      
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}//it should never end up here
+
+
+case RequestType::COMPOSE_1:
+      if(td->nbHops == 3){XBT_DEBUG("Entered cost Function for COMPOSE_1 (FINAL NODE, NO CHILD!)"); return 579000;}
+      
+break;
+
+
+case RequestType::COMPOSE_2_0:
+      if(td->nbHops == 4){XBT_DEBUG("Entered cost Function for COMPOSE_2_0 (FINAL NODE, NO CHILD!)"); return 652000;}
+      
+break;
+
+
+case RequestType::COMPOSE_2_1:
+      if(td->nbHops == 4){XBT_DEBUG("Entered cost Function for COMPOSE_2_1 (FINAL NODE, NO CHILD!)"); return 938000;}
+      
+break;
+
+
+case RequestType::COMPOSE_2_2:
+      if(td->nbHops == 3){XBT_DEBUG("Entered cost Function for COMPOSE_2_2"); return 1860000;}
+      
+      if(td->nbHops == 5){XBT_DEBUG("Entered cost Function for COMPOSE_2_2"); return 0;}
+      
+      if(td->nbHops == 7){XBT_DEBUG("Entered cost Function for COMPOSE_2_2"); return 0;}
+      
+break;
+
+
+case RequestType::COMPOSE_3:
+      if(td->nbHops == 3){XBT_DEBUG("Entered cost Function for COMPOSE_3 (FINAL NODE, NO CHILD!)"); return 629000;}
+      
+break;
+	}//it should never end up here
 return -1;
 }
     double pr_user_service(TaskDescription* td) {
       XBT_DEBUG("pr function of service user_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 5){XBT_DEBUG("Entered cost Function for COMPOSE"); return 423000;}
-    
+case RequestType::COMPOSE_1:
+      if(td->nbHops == 2){XBT_DEBUG("Entered cost Function for COMPOSE_1"); return 334000;}
+      
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}//it should never end up here
+	}//it should never end up here
 return -1;
 }
     double pr_text_service(TaskDescription* td) {
       XBT_DEBUG("pr function of service text_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 8){XBT_DEBUG("Entered cost Function for COMPOSE"); return 2209000;}
-    
-    if(td->nbHops == 11){XBT_DEBUG("Entered cost Function for COMPOSE"); return 0;}
-    
-    if(td->nbHops == 14){XBT_DEBUG("Entered cost Function for COMPOSE"); return 0;}
-    
+case RequestType::COMPOSE_2:
+      if(td->nbHops == 2){XBT_DEBUG("Entered cost Function for text_service"); return 1578000;
+}
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}//it should never end up here
+
+      	}//it should never end up here
 return -1;
 }
     double pr_url_shorten_service(TaskDescription* td) {
       XBT_DEBUG("pr function of service url_shorten_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 9){XBT_DEBUG("Entered cost Function for COMPOSE"); return 6666000;}
-    
+case RequestType::COMPOSE_2_0:
+      if(td->nbHops == 3){XBT_DEBUG("Entered cost Function for COMPOSE_2_0"); return 837000;}
+      
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}//it should never end up here
+	}//it should never end up here
 return -1;
 }
     double pr_user_mention_service(TaskDescription* td) {
       XBT_DEBUG("pr function of service user_mention_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 12){XBT_DEBUG("Entered cost Function for COMPOSE"); return 2521000;}
-    
+case RequestType::COMPOSE_2_1:
+      if(td->nbHops == 3){XBT_DEBUG("Entered cost Function for COMPOSE_2_1"); return 1934000;}
+      
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}//it should never end up here
+	}//it should never end up here
 return -1;
 }
     double pr_post_storage_service(TaskDescription* td) {
       XBT_DEBUG("pr function of service post_storage_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 16){XBT_DEBUG("Entered cost Function for COMPOSE"); return 1069000;}
-    
+case RequestType::COMPOSE_2_2:
+      if(td->nbHops == 4){XBT_DEBUG("Entered cost Function for COMPOSE_2_2"); return 976000;}
+      
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}//it should never end up here
+	}//it should never end up here
 return -1;
 }
     double pr_user_timeline_service(TaskDescription* td) {
       XBT_DEBUG("pr function of service user_timeline_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 18){XBT_DEBUG("Entered cost Function for COMPOSE"); return 4109000;}
-    
+case RequestType::COMPOSE_2_2:
+      if(td->nbHops == 6){XBT_DEBUG("Entered cost Function for COMPOSE_2_2"); return 3950000;}
+      
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}//it should never end up here
+	}//it should never end up here
 return -1;
 }
     double pr_write_home_timeline_service(TaskDescription* td) {
       XBT_DEBUG("pr function of service write_home_timeline_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 20){XBT_DEBUG("Entered cost Function for COMPOSE"); return 534000;}
-    
-    if(td->nbHops == 22){XBT_DEBUG("Entered cost Function for COMPOSE"); return 48000;}
-    
+case RequestType::COMPOSE_2_2:
+      if(td->nbHops == 8){XBT_DEBUG("Entered cost Function for COMPOSE_2_2"); return 447000;}
+      
+      if(td->nbHops == 10){XBT_DEBUG("Entered cost Function for COMPOSE_2_2 (FINAL NODE, NO CHILD!)"); return 47000;}
+      
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}//it should never end up here
+	}//it should never end up here
 return -1;
 }
     double pr_social_graph_service(TaskDescription* td) {
       XBT_DEBUG("pr function of service social_graph_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 21){XBT_DEBUG("Entered cost Function for COMPOSE"); return 1780000;}
-    
+case RequestType::COMPOSE_2_2:
+      if(td->nbHops == 9){XBT_DEBUG("Entered cost Function for COMPOSE_2_2"); return 1756000;}
+      
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}//it should never end up here
+	}//it should never end up here
 return -1;
 }
     double pr_unique_id_service(TaskDescription* td) {
       XBT_DEBUG("pr function of service unique_id_service");
       switch (td->requestType)
       {
-case RequestType::COMPOSE:
-    if(td->nbHops == 24){XBT_DEBUG("Entered cost Function for COMPOSE"); return 490000;}
-    
+case RequestType::COMPOSE_3:
+      if(td->nbHops == 2){XBT_DEBUG("Entered cost Function for COMPOSE_3"); return 377000;}
+      
 break;
-XBT_INFO("EROOOOOOOOOR");exit(1);	}//it should never end up here
+	}//it should never end up here
 return -1;
 }
   void run() {

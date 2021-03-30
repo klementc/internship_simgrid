@@ -46,6 +46,16 @@ def cleanNames(G,nodeList):
         s+="\n\t- %s"%(G.nodes[n]["label"])
     return s
 
+def verifyNoMissingServs(G1, G2):
+    l1 = []
+    l2 = []
+    for n in G1.nodes():
+        l1.append(G1.nodes[n]["label"])
+    for n in G2.nodes():
+        l2.append(G2.nodes[n]["label"])
+
+    print("MISSING:"+str(set(l1) ^ set(l2)))
+
 def showGraphStrFromF(fName):
     G = nx.drawing.nx_agraph.read_dot(fName)
     showGraphStr(G)
@@ -101,6 +111,7 @@ def compactGraph(graph, already_list=[], previous={"serv":"","id":""}):
     GCompact = nx.DiGraph()
     if(G.number_of_nodes() == 1):
         print("1 NODE ")
+        verifyNoMissingServs(G, GCompact)
         return (GCompact, already_list)
     root = [n for n,d in G.in_degree() if d==0] [0]
     nodes = nx.dfs_edges(G, source = root)
@@ -162,6 +173,7 @@ def compactGraph(graph, already_list=[], previous={"serv":"","id":""}):
                     GCompact.add_edge(previous["id"], nodeName)
                     already_list.append(nodeName)
 
+                verifyNoMissingServs(G, GCompact)
                 return (GCompact,already_list)
 
         if toServ == previous["serv"]:
@@ -189,10 +201,6 @@ def compactGraph(graph, already_list=[], previous={"serv":"","id":""}):
 
         # once we went through a node, mark it so that we don't compute several times the same flops if going back and forth
         G.nodes[n[0]]["visited"]=True
-
-    root = [n for n,d in GCompact.in_degree() if d==0] [0]
-    gs=codeGen.create_subgraph(GCompact, root)
-    print("EXIT BY NORMAL RET, root: "+str(root)+" nodes: "+str(gs.nodes))
 
     return (GCompact, already_list)
 
