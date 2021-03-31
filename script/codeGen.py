@@ -56,6 +56,8 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
       code = """
       if(td->nbHops == %d){
         XBT_DEBUG("Output Function for %s (PARALLEL CHILDS)");
+        std::vector<simgrid::s4u::CommPtr> comV;
+        simgrid::s4u::CommPtr com;
       """ % (hop, edge[0])
       # foreach successor, add its put code
       childs = list(graph.successors(edge[0]))
@@ -75,12 +77,13 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
           s4u_Mailbox* m_%s = s4u_Mailbox::by_name("%s");
           TaskDescription* td_%d = new TaskDescription(*td);
           td_%d->requestType = RequestType::%s_%d;
-          m_%s->put(td_%d, td_%d->dSize);
+          com = m_%s->put_async(td_%d, td_%d->dSize);
+          comV.push_back(com);
         """ % (dst["serv"], dstMBName, dst["serv"], i, i, requestType,i,dstMBName,i,i)
       if(not srcServName in mapCode):
         mapCode[srcServName] = "\ncase RequestType::%s:"%(requestType)
       mapCode[srcServName] += code
-      mapCode[srcServName]+="\nbreak;\n}\n"
+      mapCode[srcServName]+="\nsimgrid::s4u::Comm::wait_all(&comV); // wait for communications to finish\nbreak;\n}\n"
 
       # return the result of the maps of childrens and the current map
       for i in range(len(childs)):
