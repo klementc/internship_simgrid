@@ -382,6 +382,8 @@ if __name__=="__main__":
             g, _ = sequentializeOrNot(G, root = [n for n,d in G.in_degree() if d==0][0])
             toDotAndMakeImg(g, "aaa.dot", "aaa.png")
             g2, _ = groupNodesWithSameServ(g, [n for n,d in g.in_degree() if d==0][0])
+            for n in g2.nodes():
+                g2.nodes[n]["label"]+=" dur: "+str(g2.nodes[n]["dur"])
             toDotAndMakeImg(g2, "aaa2.dot", "aaa2.png")
 
             print("Sum of times in the original file: %d"%(getSumOfTimes(G)))

@@ -77,10 +77,10 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
           td_%d->requestType = RequestType::%s_%d;
           m_%s->put(td_%d, td_%d->dSize);
         """ % (dst["serv"], dstMBName, dst["serv"], i, i, requestType,i,dstMBName,i,i)
-      if(not dst["serv"] in mapCode):
+      if(not srcServName in mapCode):
         mapCode[srcServName] = "\ncase RequestType::%s:"%(requestType)
       mapCode[srcServName] += code
-      mapCode[srcServName]+="\n}\nbreak;\n"
+      mapCode[srcServName]+="\nbreak;\n}\n"
 
       # return the result of the maps of childrens and the current map
       for i in range(len(childs)):
@@ -102,7 +102,7 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
         XBT_DEBUG("Output Function for %s, put to %s");
         s4u_Mailbox* m_%s = s4u_Mailbox::by_name("%s");
         m_%s->put(td, td->dSize);
-      }
+
       """ % (hop, requestType, dstName,dstName, dstName, dstName)
 
       # add it to the map
@@ -110,7 +110,7 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
         mapCode[outputServName] = "\ncase RequestType::%s:"%(requestType)
 
       mapCode[outputServName] += code
-      mapCode[outputServName]+="\nbreak;\n"
+      mapCode[outputServName]+="\nbreak;\n}\n"
       # used to differentiate multiple calls to the same service
       hop+=1
 
