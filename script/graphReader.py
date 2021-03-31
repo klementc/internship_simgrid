@@ -101,6 +101,10 @@ def getSumOfTimes(graph):
 
 
 def groupNodesWithSameServ(graph, root, already_list=[]):
+    '''
+    Decide and modify the structure of the graph depending on the need or not
+    for parallel subtasks
+    '''
     graphOut = nx.DiGraph()
     subg = codeGen.create_subgraph(graph, root)
 
@@ -149,6 +153,9 @@ def groupNodesWithSameServ(graph, root, already_list=[]):
     return (graphOut, already_list)
 
 def sequentializeOrNot(graph, root, seqLeafs=None):
+    '''
+    Group tasks that are neighboor as a single node
+    '''
     graphOut = nx.DiGraph()
     #print("enter seqornot:",graph.nodes(data=True))
     #print("root: ",root)
@@ -222,111 +229,6 @@ def sequentializeOrNot(graph, root, seqLeafs=None):
 
     return graphOut, leafList
 
-def compactGraph(graph, already_list=[], previous={"serv":"","id":""}):
-    '''
-    Transforms a dot graph in a compact form
-    idea:
-    - perform a depth-first traversal of the graph
-    - if 2 directly linked nodes are from the same service, add their duration
-    - when going back, transform the graph into a sequence
-    '''
-    G = graph
-    GCompact = nx.DiGraph()
-    if(G.number_of_nodes() == 1):
-        print("1 NODE ")
-        verifyNoMissingServs(G, GCompact)
-        return (GCompact, already_list)
-    root = [n for n,d in G.in_degree() if d==0] [0]
-    nodes = nx.dfs_edges(G, source = root)
-    #previous = {"serv":"","id":""}
-    for n in nodes:
-        fromServ = G.nodes[n[0]]["label"]
-        toServ = G.nodes[n[1]]["label"]
-        # create nodes and edges if needed
-        if fromServ != previous["serv"]:
-            nodeName=fromServ
-            while(nodeName in already_list):
-                nodeName+="_"
-            #print("Add node: %s"%(nodeName))
-            GCompact.add_node(nodeName)
-            GCompact.nodes[nodeName]["serv"]=fromServ
-
-            already_list.append(nodeName)
-            # if it's a goback, add edge
-            if(previous["id"]!=""):
-                GCompact.add_edge(previous["id"], nodeName)
-
-
-            previous = {"serv":fromServ,"id":nodeName}
-            GCompact.nodes[previous["id"]]["label"]=fromServ
-            # don't add dur if it is a go back to a forking node
-            if( not "visited" in G.nodes[n[0]]):
-                GCompact.nodes[previous["id"]]["dur"]=int(G.nodes[n[0]]["dur"])
-            else:
-                # maybe 0, manage it in the code generator after
-                GCompact.nodes[previous["id"]]["dur"]=0
-
-        # if several childs, ask if compact or not and do the appropriate action if yes
-        if(len(list(G.successors(n[0])))>1 and not "par" in G.nodes[n[0]]):
-            par = query_yes_no("/!\\ Node %s has more than one child. Please say if childrens are to be executed in parallel (y) or not (n) /!\\\nChildrens: %s\n"%(G.nodes[n[0]]["label"], cleanNames(G,list(G.successors(n[0])))))
-            if(not par):
-                G.nodes[n[0]]["par"]="no"
-            else:
-                # add each child and add call compact on each subgraph
-                for succ in list(G.successors(n[0])):
-                    nodeName=G.nodes[succ]["label"]
-                    while(nodeName in already_list):
-                        nodeName+="_"
-                    #already_list.append(nodeName)
-                    #print(already_list)
-                    print(nodeName)
-                    #print("add succ for %s"%(nodeName))
-                    GCompact.add_node(nodeName)
-                    GCompact.nodes[nodeName]["label"]=G.nodes[succ]["label"]
-                    GCompact.nodes[nodeName]["serv"]=G.nodes[succ]["label"]
-                    GCompact.nodes[nodeName]["dur"]=int(G.nodes[succ]["dur"])
-                    #wGCompact.add_edge(previous["id"], nodeName)
-
-                    ch = codeGen.create_subgraph(G,succ)
-                    #dfsTest(ch)
-                    #print("call compact for %s"%(codeGen.create_subgraph(G,succ).nodes()))
-                    GCompactchild, already_list = compactGraph(ch,already_list=already_list, previous={"serv":"","id":""})
-                    GCompact.add_nodes_from(GCompactchild.nodes(data=True),)
-                    GCompact.add_edges_from(GCompactchild.edges())
-                    GCompact.add_edge(previous["id"], nodeName)
-                    already_list.append(nodeName)
-
-                verifyNoMissingServs(G, GCompact)
-                return (GCompact,already_list)
-
-        if toServ == previous["serv"]:
-            #print("Add dur %s %s"%(previous["id"], G.nodes[n[1]]["dur"]))
-            GCompact.nodes[previous["id"]]["dur"]+=int(G.nodes[n[1]]["dur"])
-
-        if toServ != fromServ:
-            nodeName=toServ
-            while(nodeName in already_list):
-                nodeName+="_"
-            #print("Add node: %s"%(nodeName))
-            GCompact.add_node(nodeName)
-            already_list.append(nodeName)
-
-            GCompact.nodes[nodeName]["label"]=toServ
-            GCompact.nodes[nodeName]["serv"]=toServ
-            GCompact.nodes[nodeName]["dur"]=int(G.nodes[n[1]]["dur"])
-
-            #print("Add edge: %s -> %s"%(previous["id"], nodeName))
-            # add dur to label just for display purpose
-            #GCompact.nodes[previous["id"]]["label"]+=" dur:"+str(GCompact.nodes[previous["id"]]["dur"])
-
-            GCompact.add_edge(previous["id"], nodeName)
-            previous = {"serv":toServ, "id":nodeName}
-
-        # once we went through a node, mark it so that we don't compute several times the same flops if going back and forth
-        G.nodes[n[0]]["visited"]=True
-
-    return (GCompact, already_list)
-
 if __name__=="__main__":
     try:
         parser = argparse.ArgumentParser()
@@ -352,17 +254,28 @@ if __name__=="__main__":
                 G = nx.drawing.nx_agraph.read_dot(path)
 
                 print("Processing dot graph for request %s (file: %s)"%(reqName, path))
-                processedGraph = compactGraph(G)[0]
-                for n in processedGraph.nodes():
-                    processedGraph.nodes[n]["label"]+=" dur: "+str(processedGraph.nodes[n]["dur"])
-                processedGraphPathImg = path+"_processed.png"
-                processedGraphPathDot = path+"_processed.dot"
-                print("Save output graph as image to '%s', dot file to '%s'"%(processedGraphPathImg, processedGraphPathDot))
-                toDotAndMakeImg(processedGraph, processedGraphPathDot, processedGraphPathImg)
-                graphDict[reqName] = processedGraph
+                g, _ = sequentializeOrNot(G, root = [n for n,d in G.in_degree() if d==0][0])
+                g2, _ = groupNodesWithSameServ(g, [n for n,d in g.in_degree() if d==0][0])
+
+                for n in g.nodes():
+                    g.nodes[n]["label"]+=" dur: "+str(g.nodes[n]["dur"])
+                for n in g2.nodes():
+                    g2.nodes[n]["label"]+=" dur: "+str(g2.nodes[n]["dur"])
+
+                parOrNotPathImg = path+"_seqnot.png"
+                parOrNotPathDot = path+"_seqnot.dot"
+                processedGraphPathImg = path+"_seqnot_processed.png"
+                processedGraphPathDot = path+"_seqnot_processed.dot"
+
+                print("Save seq output graph as image to '%s', dot file to '%s'\nSave processed ouput as image to '%s', dot file to '%s'"%(parOrNotPathImg, parOrNotPathDot, processedGraphPathImg, processedGraphPathDot))
+                toDotAndMakeImg(g, parOrNotPathDot, parOrNotPathImg)
+                toDotAndMakeImg(g2, processedGraphPathDot, processedGraphPathImg)
+
+                graphDict[reqName] = g2
 
                 print("Sum of times in the original file: %d"%(getSumOfTimes(G)))
-                print("Sum of times in the the processed graph: %d"%(getSumOfTimes(processedGraph)))
+                print("Sum of times in the the processed graph: %d"%(getSumOfTimes(g)))
+                print("Sum of times in the the final graph: %d"%(getSumOfTimes(g2)))
 
             print("All traces processed. Now generating code for :")
             for k in graphDict:
