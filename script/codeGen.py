@@ -239,10 +239,11 @@ def genETMSwitchFunction(graph, requestType, hop = 1):
 
   return mapCode
 
-def genETMInitCode(graphs):
+def genETMInitCode(graphs, parDeg=50):
   '''
   ETM constructor for a given list of graphs
   (only 1 ETM if a service is in multiple graphs (i.e. different requests))
+  parDeg = maximum amount of parallel execs per inst
   '''
   servList = []
   for graph in graphs:
@@ -270,13 +271,14 @@ def genETMInitCode(graphs):
     std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_%s = std::make_shared<simgrid::s4u::ElasticTaskManager>("%s",v_serv_%s);
     serv_%s->setBootDuration(0);
     serv_%s->setDataSizeRatio(1);
+    serv_%s->setParallelTasksPerInst(%d);
     serv_%s->setOutputFunction(return_%s);
     serv_%s->setProcessRatioFunc(pr_%s);
     serv_%s->setReqNames(reqTypeToStr);
     serv_%s->addHost(simgrid::s4u::Host::by_name("cb1-%s"));
     simgrid::s4u::Actor::create("etm_%s", simgrid::s4u::Host::by_name("cb1-%s"), [serv_%s] { serv_%s->run(); });
 
-    """%(service,service,service,service,service,service,service,service,service,service,service,service,service,service,service,hostIndex,service,hostIndex,service,service)
+    """%(service,service,service,service,service,service,service,service,service,service,parDeg,service,service,service,service,service,service,hostIndex,service,hostIndex,service,service)
     hostIndex+=1
   return code
 
