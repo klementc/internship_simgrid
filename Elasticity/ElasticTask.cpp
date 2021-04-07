@@ -54,7 +54,6 @@ ElasticTaskManager::ElasticTaskManager(std::string name, std::vector<std::string
   sg_host_load_plugin_init();
   sleep_sem = s4u::Semaphore::create(0);
   modif_sem_ = s4u::Semaphore::create(1);
-  access_tmpdata_ = s4u::Semaphore::create(1);
 
 #ifdef USE_JAEGERTRACING
   tracer_ = setUpTracer("config.yml", serviceName_.c_str());
@@ -230,7 +229,6 @@ void ElasticTaskManager::pollnet(std::string mboxName){
 
 
   while(keepGoing){
-          access_tmpdata_->acquire();
 
     int newMsgPos = simgrid::s4u::Comm::wait_any(&commV);
     TaskDescription* taskRequest = static_cast<TaskDescription*>(tasksV[newMsgPos]);
@@ -263,7 +261,6 @@ void ElasticTaskManager::pollnet(std::string mboxName){
       }
     }
 
-    access_tmpdata_->release();
 
   }
 }

@@ -22,8 +22,8 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
  * Redirects the output of etm1 to the second service
  */
 void returnservice1(TaskDescription* td) {
-  //XBT_INFO("output service 1 queueArrival: %f instArrival: %f startExec: %f endExec: %f s1cost: %f\n", td->queueArrival, td->instArrival, td->startExec, td->endExec, td->flopsPerServ.at(0));
-	XBT_DEBUG("Return function of service service1");
+  XBT_INFO("output service 1 queueArrival: %f instArrival: %f startExec: %f endExec: %f s1cost: %f\n", td->queueArrival, td->instArrival, td->startExec, td->endExec, td->flopsPerServ.at(0));
+	//XBT_INFO("Return function of service service1");
 	s4u_Mailbox* mservice2 = s4u_Mailbox::by_name("service2");
   //XBT_INFO("send %p to service2", td);
 	mservice2->put(td, td->dSize);
@@ -34,8 +34,8 @@ void returnservice1(TaskDescription* td) {
  * it does nothing (acts as a sink)
  */
 void returnservice2(TaskDescription* td) {
-  XBT_INFO("delete %p", td);
-	XBT_DEBUG("Return function of service service2");
+  //XBT_INFO("delete %p", td);
+	//XBT_INFO("Return function of service service2");
 #ifdef USE_JAEGERTRACING
 XBT_DEBUG("CLOSE SPANS");
 	for (auto it = td->parentSpans.rbegin(); it != td->parentSpans.rend(); ++it)

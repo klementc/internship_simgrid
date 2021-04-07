@@ -130,7 +130,6 @@ class ElasticTaskManager {
     int counterExecSlot_;
 
     std::vector<simgrid::s4u::ActorPtr> pollers_;
-    simgrid::s4u::SemaphorePtr access_tmpdata_;
 #ifdef USE_JAEGERTRACING
     std::shared_ptr<opentracing::v3::Tracer> tracer_;
 #endif
