@@ -95,7 +95,7 @@ void run(int servFlops, std::string tsFile, int parDeg) {
 	simgrid::s4u::ActorPtr dataS = simgrid::s4u::Actor::create("snd", simgrid::s4u::Host::by_name("cb1-1"), [&]{ds->run();});
 
   // kill policies and ETMs
-  simgrid::s4u::this_actor::sleep_for(10000);
+  simgrid::s4u::this_actor::sleep_for(350);
   XBT_INFO("Done. Killing policies and etms");
   ds->suspend();
   // TODO NECESSARY???????

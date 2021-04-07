@@ -219,7 +219,8 @@ void ElasticTaskManager::kill() {
 void ElasticTaskManager::pollnet(std::string mboxName){
   Mailbox* recvMB = simgrid::s4u::Mailbox::by_name(mboxName.c_str());
 
-  int parComSize = parallelTasksPerInst_; // 1 to avoid segfault
+  int parComSize = parallelTasksPerInst_;
+  XBT_DEBUG("start poll with %d parallel get_async", parallelTasksPerInst_);
   void* tasksV[parComSize];
   std::vector<simgrid::s4u::CommPtr> commV;
   void* taskV;
