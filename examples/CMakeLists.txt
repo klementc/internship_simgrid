@@ -41,6 +41,9 @@ TARGET_LINK_LIBRARIES(testDoc Elasticity simgrid ${EXTRA_LIBS})
 ADD_EXECUTABLE( bench1 bench1.cpp )
 TARGET_LINK_LIBRARIES(bench1 Elasticity simgrid ${EXTRA_LIBS})
 
+ADD_EXECUTABLE( bench2 bench2.cpp )
+TARGET_LINK_LIBRARIES(bench2 Elasticity simgrid ${EXTRA_LIBS})
+
 ADD_EXECUTABLE( testReqTypes testReqTypes.cpp )
 TARGET_LINK_LIBRARIES(testReqTypes Elasticity simgrid ${EXTRA_LIBS})
 
