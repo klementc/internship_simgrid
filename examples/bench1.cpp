@@ -22,7 +22,7 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
  * Redirects the output of etm1 to the second service
  */
 void returnservice1(TaskDescription* td) {
-  XBT_INFO("output service 1 queueArrival: %f instArrival: %f startExec: %f endExec: %f s1cost: %f\n", td->queueArrival, td->instArrival, td->startExec, td->endExec, td->flopsPerServ.at(0));
+  XBT_INFO("output service 1 queueArrival: %f instArrival: %f startExec: %f endExec: %f s1cost: %f name: service1\n", td->queueArrival, td->instArrival, td->startExec, td->endExec, td->flopsPerServ.at(0));
 	//XBT_INFO("Return function of service service1");
 	s4u_Mailbox* mservice2 = s4u_Mailbox::by_name("service2");
   //XBT_INFO("send %p to service2", td);
@@ -99,7 +99,7 @@ void run(int servFlops, std::string tsFile, int parDeg) {
   XBT_INFO("Done. Killing policies and etms");
   ds->suspend();
   // TODO NECESSARY???????
-  //dataS->kill();
+  dataS->kill();
 
 
   etmservice1->kill();

@@ -22,7 +22,7 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
  * Redirects the output of etm1 to the second service
  */
 void returnservice1(TaskDescription* td) {
-  XBT_INFO("output service 1 queueArrival: %f instArrival: %f startExec: %f endExec: %f s1cost: %f\n", td->queueArrival, td->instArrival, td->startExec, td->endExec, td->flopsPerServ.at(0));
+  XBT_INFO("output service 1 queueArrival: %f instArrival: %f startExec: %f endExec: %f s1cost: %f name: service1\n", td->queueArrival, td->instArrival, td->startExec, td->endExec, td->flopsPerServ.at(0));
 	//XBT_INFO("Return function of service service1");
 	s4u_Mailbox* mservice2 = s4u_Mailbox::by_name("service2");
   //XBT_INFO("send %p to service2", td);
@@ -34,7 +34,7 @@ void returnservice1(TaskDescription* td) {
  * Redirects the output of etm2 to the sink service
  */
 void returnservice2(TaskDescription* td) {
-  XBT_INFO("output service 1 queueArrival: %f instArrival: %f startExec: %f endExec: %f s1cost: %f\n", td->queueArrival, td->instArrival, td->startExec, td->endExec, td->flopsPerServ.at(0));
+  XBT_INFO("output service 2 queueArrival: %f instArrival: %f startExec: %f endExec: %f s1cost: %f name: service2\n", td->queueArrival, td->instArrival, td->startExec, td->endExec, td->flopsPerServ.at(0));
 	//XBT_INFO("Return function of service service1");
 	s4u_Mailbox* mservice3 = s4u_Mailbox::by_name("service3");
   //XBT_INFO("send %p to service2", td);
@@ -124,9 +124,10 @@ void run(int serv1Flops, int serv2Flops, std::string tsFile, int parDeg) {
   simgrid::s4u::this_actor::sleep_for(350);
   XBT_INFO("Done. Killing policies and etms");
   ds->suspend();
-
+  dataS->kill();
   etmservice1->kill();
   etmservice2->kill();
+  etmservice3->kill();
 }
 
 
