@@ -3,6 +3,14 @@
 
 DATE=`date +%Y-%m-%d_%H-%M-%S`
 
+if [[ 2 -gt $# ]]
+then
+  echo "Usage:"
+  echo "- $0 snap network : take a snapshot of the running container's network statistic"
+  echo "- $0 substract snap1 snap2 <nbReqsInBetween>: substract the network Rx and Tx values from snapshot snap2 to the values of snap1. Then divide each value by nbRequests to obtain the cost of a single request in the output file"
+  exit 1
+fi
+
 if [[ "snap" = $1 ]]
 then
   if [[ "network" = $2 ]]
@@ -31,6 +39,10 @@ then
   fi
 elif [[ "substract" = $1 ]]
 then
+  if [[ -z $4 ]]
+  then
+    echo "You need to specify the amount of requests in between the 2 diffs"
+  fi
   csvOut="diff_$(echo $3 | awk -F  "." '{print $1}')_$(echo $2 | awk -F  "." '{print $1}').csv"
   echo "substract between files $2 and $3, put to $csvOut"
   # for each container, substract values from $2 to the values of $3
@@ -45,12 +57,11 @@ then
     toSub=$(cat $3 | grep $contName)
     bytesReceivedToSub=$(echo $toSub | awk -F "," '{print $5}')
     bytesSentToSub=$(echo $toSub | awk -F "," '{print $4}')
-    echo "$"
     echo "$bytesReceivedTotal - $bytesReceivedToSub "
     echo "$bytesSentTotal - $bytesSentToSub "
 
-    recRes=$(($bytesReceivedTotal - $bytesReceivedToSub))
-    sendRes=$(($bytesSentTotal - $bytesSentToSub))
+    recRes=$((($bytesReceivedTotal - $bytesReceivedToSub)/$4))
+    sendRes=$((($bytesSentTotal - $bytesSentToSub)/$4))
 
     echo "${contName},${sendRes},${recRes}" >> ${csvOut}
 
