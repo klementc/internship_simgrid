@@ -34,7 +34,7 @@ void returnservice1(TaskDescription* td) {
  * Redirects the output of etm2 to the sink service
  */
 void returnservice2(TaskDescription* td) {
-  XBT_INFO("output service 2 queueArrival: %f instArrival: %f startExec: %f endExec: %f s1cost: %f name: service2\n", td->queueArrival, td->instArrival, td->startExec, td->endExec, td->flopsPerServ.at(0));
+  XBT_INFO("output service 2 queueArrival: %f instArrival: %f startExec: %f endExec: %f s1cost: %f name: service2\n", td->queueArrival, td->instArrival, td->startExec, td->endExec, td->flopsPerServ.at(1));
 	//XBT_INFO("Return function of service service1");
 	s4u_Mailbox* mservice3 = s4u_Mailbox::by_name("service3");
   //XBT_INFO("send %p to service2", td);
