@@ -16,24 +16,29 @@ def addSizes(mapReqs):
   '''
   DEFAULTOUTSIZE = 100
   d = {}
-  code="""\nstd::string outSizes(RequestType t, std::string nextServ){
+  code="""\nint outSizes(RequestType t, std::string nextServ){
     switch (t)\n{"""
   for k in mapReqs:
     graph = mapReqs[k]
     fromFile = graphReader.query_yes_no("Do you want to add output sizes for request %s from a size file? (Otherwise use default value: %d bytes)"%(k, DEFAULTOUTSIZE), default="no")
     if(fromFile):
       pathSizes = input("Please give the path to your size file: ")
-      d = {row[0] : row[2] for _, row in pd.read_csv(pathSizes).iterrows()}
+      # for allowing a name in dot I replaced - by _ in the graph, do the same here for the container names
+      d = {row[0].replace("-", "_") : row[2] for _, row in pd.read_csv(pathSizes).iterrows()}
+      #d = {re.split(r'(_\d)', row[0], maxsplit = 1)[0] : row[2] for _, row in pd.read_csv(pathSizes).iterrows()}
     else:
       print("Using default size %d for all messages"%(DEFAULTOUTSIZE))
 
-    outServs = []
+    outServs = {}
     root = [n for n,d in graph.in_degree() if d==0] [0]
     for e in nx.dfs_edges(graph,source = root):
       if(not graph.nodes[e[1]]["serv"] in outServs):
-        outServs.append(graph.nodes[e[1]]["serv"])
+        outServs[graph.nodes[e[1]]["serv"]] = 1
+      else:
+        outServs[graph.nodes[e[1]]["serv"]] += 1
 
     switchVals = []
+    print(d)
     for r in reqNames:
       val = re.split(r'(_\d)', r, maxsplit = 1)[0]
       print(str(val),"<->", str(k))
@@ -42,9 +47,16 @@ def addSizes(mapReqs):
     for r in switchVals:
       code += "\tcase RequestType::%s :\n"%(r)
       for o in outServs:
-        if(o in d):
-          code += "\tif(nextServ == \"%s\"){return %d;}\n"%(o,int(d["servReq"]))
+        # dirty, but to avoid missing names because of prefix
+        present = False
+        for kd in d:
+          if(o in kd):
+            present = kd
+        if(present):
+          print("found in d: amount: %d, value=%d/%d"%(outServs[o],int(d[present]),outServs[o]))
+          code += "\tif(nextServ == \"%s\"){return %d;}\n"%(o,int(d[present]/outServs[o])) # we divide by the amount of instance of this service in the request
         else:
+          print("%s not in d, use default"%(o))
           code += "\tif(nextServ == \"%s\"){return %d;}\n"%(o,DEFAULTOUTSIZE)
       code += "\tbreak;\n"
   code+="""}return -1; // WE SHOULD NEVER GET TO THAT POINT\n}\n"""
@@ -122,7 +134,7 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
           s4u_Mailbox* m_%s = s4u_Mailbox::by_name("%s");
           TaskDescription* td_%d = new TaskDescription(*td);
           td_%d->requestType = RequestType::%s_%d;
-          com = m_%s->put_async(td_%d, outSizes(td_%d, %s));
+          com = m_%s->put_async(td_%d, outSizes(td_%d->requestType, \"%s\"));
           comV.push_back(com);
         """ % (dst["serv"], dstMBName, dst["serv"], i, i, requestType,i,dstMBName,i,i,dstMBName)
       if(not srcServName in mapCode):
@@ -149,7 +161,7 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
       if(td->nbHops == %d){
         XBT_DEBUG("Output Function for %s, put to %s");
         s4u_Mailbox* m_%s = s4u_Mailbox::by_name("%s");
-        m_%s->put(td, outSizes(td, %s));
+        m_%s->put(td, outSizes(td->requestType, \"%s\"));
 
       """ % (hop, requestType, dstName,dstName, dstName, dstName, dstName)
 
@@ -357,6 +369,8 @@ def generateFullSimulationCode(mapReqNameToGraph):
 #include <memory>
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
+
+int outSizes(RequestType, std::string);
 """
 
   # add output return functions

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-
+[[ -z ${PREFIX} ]] && PREFIX="default"
 DATE=`date +%Y-%m-%d_%H-%M-%S`
 
 if [[ 2 -gt $# ]]
@@ -15,7 +15,7 @@ if [[ "snap" = $1 ]]
 then
   if [[ "network" = $2 ]]
   then
-    csvOut="snapshot_network_${DATE}.csv"
+    csvOut="${PREFIX}_snapshot_network_${DATE}.csv"
     echo "containerName,containerID,containerPID,bytesSent,bytesReceived" > ${csvOut}
     echo "Taks snapshot of network usage at time $DATE"
     containers=$(sudo docker ps | awk '{if(NR>1) print $NF,$1}')
@@ -43,7 +43,7 @@ then
   then
     echo "You need to specify the amount of requests in between the 2 diffs"
   fi
-  csvOut="diff_$(echo $3 | awk -F  "." '{print $1}')_$(echo $2 | awk -F  "." '{print $1}').csv"
+  csvOut="${PREFIX}_diff_$(echo $3 | awk -F  "." '{print $1}')_$(echo $2 | awk -F  "." '{print $1}').csv"
   echo "substract between files $2 and $3, put to $csvOut"
   # for each container, substract values from $2 to the values of $3
   containers=$(tail -n+2 $2)
