@@ -136,7 +136,7 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
           td_%d->requestType = RequestType::%s_%d;
           com = m_%s->put_async(td_%d, outSizes(td_%d->requestType, \"%s\"));
           comV.push_back(com);
-        """ % (dst["serv"], dstMBName, dst["serv"], i, i, requestType,i,dstMBName,i,i,dstMBName)
+        """ % (dst["serv"], dstMBName, dst["serv"], i, i, requestType,i,dstMBName,i,i,dst["serv"])
       if(not srcServName in mapCode):
         mapCode[srcServName] = "\ncase RequestType::%s:"%(requestType)
       mapCode[srcServName] += code
