@@ -182,7 +182,7 @@ def sequentializeOrNot(graph, root, seqLeafs=None):
                 graphOut.add_edge(src,dst)
                 # if no child to dst, add it to the leaflist
                 if(len(list(graph.successors(dst)))==0):
-                    print("ADDD LEAFF")
+                    #print("ADDD LEAFF")
                     leafList.append(dst)
             else:
                 print("FORK %d nodes"%(len(srcChildNodes)))
@@ -212,14 +212,14 @@ def sequentializeOrNot(graph, root, seqLeafs=None):
                         if(len(prevChildLeaves) == 0):
                             graphOut.add_edge(src,succ)
                             prevChildLeaves = leavesChild
-                            print("CHHHH: %s"%(prevChildLeaves))
+                            #print("CHHHH: %s"%(prevChildLeaves))
                         elif(len(prevChildLeaves) == 1):
                             graphOut.add_edge(prevChildLeaves[0], succ)
                             prevChildLeaves = leavesChild
-                            print("CIIIIIII: %s"%(prevChildLeaves))
+                            #print("CIIIIIII: %s"%(prevChildLeaves))
                         else:
                             longest = nx.dag_longest_path(gChild,weight="dur")
-                            print("LONGEST: %s"%(longest))
+                            #print("LONGEST: %s"%(longest))
                             query_yes_no("TODO, WILL ADD TO %s "%prevChildLeaves[0])
                             graphOut.add_edge(longest[-1], succ)
                             prevChildLeaves = longest[-1]
