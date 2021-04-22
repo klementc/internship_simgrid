@@ -3,3 +3,5 @@
 build
 .Rhistory
 .vscode
+script/tmp
+analysis
