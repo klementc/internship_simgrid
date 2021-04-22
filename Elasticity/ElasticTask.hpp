@@ -47,7 +47,7 @@ class TaskDescription : public EvntQ {
   public:
     boost::uuids::uuid id_;
     int nbHops;
-    double interSpawnDelay;
+    double firstArrivalDate;
     bool repeat = true;
     std::function<void()> outputFunction = []() {};
     bool hasTimestamps = false;
@@ -72,15 +72,15 @@ class TaskDescription : public EvntQ {
     std::vector<std::unique_ptr<opentracing::v3::Span>*> parentSpans;
 #endif
 
-    TaskDescription(boost::uuids::uuid id, double interSpawnDelay_, double date_, double dSize_, RequestType requestType_)
-        : EvntQ(date_), id_(id), interSpawnDelay(interSpawnDelay_), dSize(dSize_), requestType(requestType_), nbHops(0) {
+    TaskDescription(boost::uuids::uuid id, double date_, double dSize_, RequestType requestType_)
+        : EvntQ(date_), id_(id), dSize(dSize_), requestType(requestType_), nbHops(0) {
     }
 
-    TaskDescription(boost::uuids::uuid id, double interSpawnDelay_, double date_)
-        : TaskDescription(id, interSpawnDelay_, date_, -1, RequestType::DEFAULT) {
+    TaskDescription(boost::uuids::uuid id, double date_)
+        : TaskDescription(id,  date_, -1, RequestType::DEFAULT) {
     }
-    TaskDescription(boost::uuids::uuid id, double interSpawnDelay_)
-      : TaskDescription(id, interSpawnDelay_, 0.0) {}
+    TaskDescription(boost::uuids::uuid id)
+      : TaskDescription(id, 0.0) {}
 };
 
 namespace simgrid {
@@ -138,6 +138,7 @@ class ElasticTaskManager {
 
   public:
     /* request type to string (very stupid, should be modified) */
+    ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes, std::string jaegConfigFile);
     ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes);
     ElasticTaskManager(std::string name);
 

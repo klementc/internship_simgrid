@@ -4,6 +4,7 @@
 
 #include <simgrid/s4u/Mailbox.hpp>
 #include <simgrid/s4u/Comm.hpp>
+#include <simgrid/s4u/Engine.hpp>
 
 #include "DataSource.hpp"
 #include "RequestType.hpp"
@@ -35,7 +36,9 @@ void DataSource::run()
     if(evtTS == -1){simgrid::s4u::Comm::wait_all(&pending_comms); return;}
 
     simgrid::s4u::this_actor::sleep_until(evtTS);
-    TaskDescription* t = new TaskDescription(generator(),-1);
+    double date = simgrid::s4u::Engine::get_instance()->get_clock();
+    TaskDescription* t = new TaskDescription(generator(),date);
+    t->firstArrivalDate = date;
     XBT_DEBUG("send %p", t);
 
     t->dSize = nextSize;

@@ -21,16 +21,6 @@ using namespace s4u;
 XBT_LOG_NEW_DEFAULT_CATEGORY(elastic, "elastic tasks");
 
 #ifdef USE_JAEGERTRACING
-void setUpTracerGlob(const char* configFilePath, std::string name)
-{
-  XBT_INFO("set up jaeger tracer for %s", name.c_str());
-    auto configYAML = YAML::LoadFile(configFilePath);
-    auto config = jaegertracing::Config::parse(configYAML);
-    auto tracer = jaegertracing::Tracer::make(
-        name, config, jaegertracing::logging::consoleLogger());
-    opentracing::Tracer::InitGlobal(
-        std::static_pointer_cast<opentracing::Tracer>(tracer));
-}
 
 std::shared_ptr<opentracing::v3::Tracer> setUpTracer(const char* configFilePath, std::string name)
 {
@@ -44,7 +34,7 @@ std::shared_ptr<opentracing::v3::Tracer> setUpTracer(const char* configFilePath,
 #endif
 
 // ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
-ElasticTaskManager::ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes)
+ElasticTaskManager::ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes, std::string jaegConfigFile)
   : serviceName_(name), incMailboxes_(incMailboxes), nextHost_(0),
     keepGoing(true), processRatio_(1e7), waitingReqAmount_(0),
     bootDuration_(0), executingReqAmount_(0), dataSizeRatio_(1),
@@ -56,11 +46,15 @@ ElasticTaskManager::ElasticTaskManager(std::string name, std::vector<std::string
   modif_sem_ = s4u::Semaphore::create(1);
 
 #ifdef USE_JAEGERTRACING
-  tracer_ = setUpTracer("config.yml", serviceName_.c_str());
+  tracer_ = setUpTracer(jaegConfigFile.c_str(), serviceName_.c_str());
 #endif
 }
+ElasticTaskManager::ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes)
+  : ElasticTaskManager(name, incMailboxes, "config.yml")
+{}
+
 ElasticTaskManager::ElasticTaskManager(std::string name)
-  : ElasticTaskManager(name, std::vector<std::string>(1, name))
+  : ElasticTaskManager(name, std::vector<std::string>(1, name), "config.yml")
 {}
 
 void ElasticTaskManager::setProcessRatio(int64_t pr)
