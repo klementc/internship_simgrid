@@ -3,6 +3,6 @@
 <platform version="4.1">
 
   <zone id="AS0" routing="Full">
-    <cluster id="server1_cb1" prefix="cb1-" suffix="" radical="1-400" speed="1Gf" bw="10GBps" lat="10ms"/>
+    <cluster id="server1_cb1" prefix="cb1-" suffix="" radical="1-400" speed="1Gf" bw="10GBps" lat="50ms"/>
   </zone>
 </platform>

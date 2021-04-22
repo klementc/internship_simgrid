@@ -19,18 +19,8 @@ endif()
 FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../Elasticity/config.yml
       DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-ADD_EXECUTABLE( test test.cpp )
-TARGET_LINK_LIBRARIES(test Elasticity simgrid ${EXTRA_LIBS})
-
-
-ADD_EXECUTABLE( fifa FifaExperiment.cpp )
-TARGET_LINK_LIBRARIES(fifa Elasticity simgrid ${EXTRA_LIBS})
-
 ADD_EXECUTABLE( graph GraphExperiment.cpp )
 TARGET_LINK_LIBRARIES(graph Elasticity simgrid ${EXTRA_LIBS})
-
-ADD_EXECUTABLE( main main.cpp )
-TARGET_LINK_LIBRARIES(main Elasticity simgrid ${EXTRA_LIBS})
 
 ADD_EXECUTABLE( dataSourceTest DataSourceTest.cpp )
 TARGET_LINK_LIBRARIES(dataSourceTest Elasticity simgrid ${EXTRA_LIBS})
@@ -61,3 +51,5 @@ ADD_EXECUTABLE(test2req test2req.cpp )
 TARGET_LINK_LIBRARIES(test2req Elasticity simgrid ${EXTRA_LIBS})
 ADD_EXECUTABLE(testreunion testreunion.cpp )
 TARGET_LINK_LIBRARIES(testreunion Elasticity simgrid ${EXTRA_LIBS})
+ADD_EXECUTABLE(dsb_compose dsb_compose.cpp )
+TARGET_LINK_LIBRARIES(dsb_compose Elasticity simgrid ${EXTRA_LIBS})
