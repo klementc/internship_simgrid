@@ -3,13 +3,9 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <simgrid/s4u/Host.hpp>
-#include "simgrid/s4u/Engine.hpp"
-#include "simgrid/s4u/Comm.hpp"
-#include "simgrid/s4u/Semaphore.hpp"
+#include "simgrid/s4u.hpp"
 #include "simgrid/kernel/future.hpp"
 #include "simgrid/plugins/load.h"
-#include <simgrid/s4u/Mailbox.hpp>
 #include <simgrid/Exception.hpp>
 
 #include "ElasticTask.hpp"

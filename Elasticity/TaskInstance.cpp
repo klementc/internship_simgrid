@@ -3,15 +3,9 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <simgrid/s4u/Host.hpp>
-#include <simgrid/s4u/Engine.hpp>
-#include <simgrid/s4u/Exec.hpp>
-#include <simgrid/s4u/Comm.hpp>
-#include <simgrid/s4u/Semaphore.hpp>
-#include <simgrid/kernel/future.hpp>
-#include <simgrid/plugins/load.h>
-#include <simgrid/s4u/Mailbox.hpp>
-#include <simgrid/Exception.hpp>
+#include <simgrid/s4u.hpp>
+#include <simgrid/s4u/Disk.hpp>
+#include <simgrid/s4u/Io.hpp>
 
 #include "ElasticTask.hpp"
 
@@ -21,14 +15,32 @@ using namespace s4u;
 XBT_LOG_NEW_DEFAULT_CATEGORY(elasticInstance, "elastic task instance");
 
 TaskInstance::TaskInstance(ElasticTaskManager* etm,  std::string mbName,
-  std::function<void(TaskDescription*)> outputFunction, int maxReqInInst, double bootTime)
+  std::function<void(TaskDescription*)> outputFunction, int maxReqInInst, double bootTime, double diskReadBW, double diskWBW)
   : etm_(etm), mbName_(mbName), outputFunction_(outputFunction), keepGoing_(true), maxReqInInst_(maxReqInInst), bootTime_(bootTime)
 {
   n_empty_ = s4u::Semaphore::create(maxReqInInst);
   n_full_ = s4u::Semaphore::create(0);
   n_bl_ = s4u::Semaphore::create(maxReqInInst_);
   for(int i=0;i<maxReqInInst_;i++){n_bl_->acquire();}
+
+  // if no disks are available on the host, add one in case the user wants to perform some I/O operations
+
+  if(simgrid::s4u::Host::current()->get_disks().size()){
+    disk_ = simgrid::s4u::Host::current()->get_disks().front();
+    XBT_INFO("There is already a disk ('%s') on host '%s' with bandidths R: %lf B/s, W: %lf B/s, using it for I/O executions.",
+      disk_->get_cname() , simgrid::s4u::Host::current()->get_cname(), disk_->get_read_bandwidth(), disk_->get_write_bandwidth());
+  }else {
+    std::string diskName = "microservAutoDisk";
+    XBT_INFO("No disk found on host '%s', creating one with name %s, bandwidths R: %lf B/s, W: %lf B/s, using it for I/O executions",
+     simgrid::s4u::Host::current()->get_cname(), diskName, diskReadBW, diskWBW);
+      disk_ = simgrid::s4u::Host::current()->create_disk(diskName, /*read bandwidth*/ 9.6e7, /*write bandwidth*/6.4e7);
+  }
 }
+
+TaskInstance::TaskInstance(ElasticTaskManager* etm,  std::string mbName,
+  std::function<void(TaskDescription*)> outputFunction, int maxReqInInst, double bootTime)
+  : TaskInstance(etm, mbName, outputFunction, maxReqInInst_, bootTime, 9.6e7, 6.4e7)
+  {}
 
 TaskInstance::TaskInstance(ElasticTaskManager* etm, std::string mbName,
       std::function<void(TaskDescription*)> outputFunction, int par)

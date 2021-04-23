@@ -19,9 +19,9 @@
 #include <xbt/string.hpp>
 #include <xbt/signal.hpp>
 #include <xbt/Extendable.hpp>
-#include "simgrid/msg.h"
 #include <simgrid/simix.h>
 #include <simgrid/s4u/Actor.hpp>
+#include <simgrid/s4u/Io.hpp>
 
 #include "ElasticConfig.hpp"
 #include "RequestType.hpp"
@@ -234,13 +234,25 @@ class TaskInstance {
     simgrid::s4u::Host* host_;
     std::vector<simgrid::s4u::CommPtr> commV;
 
+    // structures used to perform CPU executions
     std::vector<simgrid::s4u::ExecPtr> pending_execs;
     std::map<simgrid::s4u::ExecPtr, TaskDescription*> execMap_;
+
+    // disk to use for I/Os and structures for pending I/O
+    simgrid::s4u::Disk* disk_;
+    std::vector<simgrid::s4u::IoPtr> io_vector;
+    std::map<simgrid::s4u::IoPtr, TaskDescription*> ioMap_;
+
+    // used to verify that both disk and execution finished
+    std::map<TaskDescription*, std::pair<bool,bool>> finishedOperations;
 
     void pollTasks();
     void pollEndOfTasks();
 
   public:
+      TaskInstance(ElasticTaskManager* etm, std::string mbName,
+      std::function<void(TaskDescription*)> outputFunction,
+      int maxReqInst, double bootTime, double diskReadBW, double diskWBW);
     TaskInstance(ElasticTaskManager* etm, std::string mbName,
       std::function<void(TaskDescription*)> outputFunction,
       int maxReqInst, double bootTime);
