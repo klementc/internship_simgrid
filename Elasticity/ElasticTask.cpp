@@ -36,9 +36,9 @@ std::shared_ptr<opentracing::v3::Tracer> setUpTracer(const char* configFilePath,
 // ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
 ElasticTaskManager::ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes, std::string jaegConfigFile)
   : serviceName_(name), incMailboxes_(incMailboxes), nextHost_(0),
-    keepGoing(true), processRatio_(1e7), waitingReqAmount_(0),
+    keepGoing(true), defaultProcessRatio_(1e7), waitingReqAmount_(0),
     bootDuration_(0), executingReqAmount_(0), dataSizeRatio_(1),
-    counterExecSlot_(0), parallelTasksPerInst_(100)
+    counterExecSlot_(0), parallelTasksPerInst_(100), defaultIOCost_(0)
 {
   XBT_DEBUG("Creating TaskManager %s", serviceName_.c_str());
   sg_host_load_plugin_init();
@@ -59,8 +59,16 @@ ElasticTaskManager::ElasticTaskManager(std::string name)
 
 void ElasticTaskManager::setProcessRatio(int64_t pr)
 {
-  XBT_DEBUG("new process ration: %d -> %d", processRatio_, pr);
-  processRatio_ = pr;
+  xbt_assert(pr>=0, "Cannot have a negative processRatio. you asked for: %d", pr);
+  XBT_DEBUG("nchanged default process cost per request: %d -> %d", defaultProcessRatio_, pr);
+  defaultProcessRatio_ = pr;
+}
+
+void ElasticTaskManager::setIOCost(double cost)
+{
+  xbt_assert(cost>=0, "Cannot have a negative amount of IO, you asked for: %lf", cost);
+  XBT_DEBUG("changed default I/O cost per request: %lf -> %lf", defaultIOCost_, cost);
+  defaultIOCost_ = cost;
 }
 
 void ElasticTaskManager::setParallelTasksPerInst(int s) {
@@ -69,22 +77,36 @@ void ElasticTaskManager::setParallelTasksPerInst(int s) {
   parallelTasksPerInst_ = s;
 }
 
+void ElasticTaskManager::setProcessRatioFunc(std::function<double(TaskDescription*)> costReqType)
+{
+  XBT_DEBUG("Set a new process cost function.");
+  costReqType_ = costReqType;
+}
+
+void ElasticTaskManager::setIOCostFunction(std::function<double(TaskDescription*)> costIOType)
+{
+  XBT_DEBUG("Set a new IO cost function.");
+  costIOType_ = costIOType;
+}
+
+
 void ElasticTaskManager::addHost(Host *host) {
   availableHostsList_.push_back(host);
-  XBT_DEBUG("created instance: %d", availableHostsList_.size());
   TaskInstance* ti = new TaskInstance(this,serviceName_+"_data", outputFunction, parallelTasksPerInst_);
   tiList.push_back(ti);
+
+  XBT_DEBUG("Created a new service instance on host %s. Total # instances is now %d", host->get_cname(), availableHostsList_.size());
   Actor::create("TI"+boost::uuids::to_string(boost::uuids::random_generator()()), host, [&]{ti->run();});
 }
 
 
 void ElasticTaskManager::setBootDuration(double bd){
-  xbt_assert(bd>=0, "Boot time has to be non negative");
+  xbt_assert(bd>=0, "Boot time has to be non negative, you asked for %lf", bd);
   bootDuration_ = bd;
 }
 
 void ElasticTaskManager::trigger(TaskDescription* td) {
-  xbt_assert(td!=nullptr, "Triggered a nullptr");
+  xbt_assert(td!=nullptr, "Triggered a nullptr, problem");
   // when we trigger an event, it means it reached the service correctly, thus we made a hop
   td->nbHops++;
   td->date = Engine::get_instance()->get_clock();
@@ -95,7 +117,7 @@ void ElasticTaskManager::trigger(TaskDescription* td) {
 }
 
 Host* ElasticTaskManager::removeHost(int i){
-  xbt_assert(availableHostsList_.size()>1, "Cannot have 0 instances");
+  xbt_assert(availableHostsList_.size()>1, "You asked for removing the last instance of the service. Cannot have 0 instances.");
   Host* h;
   if(i<availableHostsList_.size()){
     h =  availableHostsList_.at(i);
@@ -157,11 +179,12 @@ std::shared_ptr<opentracing::v3::Tracer> ElasticTaskManager::getTracer()
 #endif
 
 double ElasticTaskManager::reqPerSec() {
+  xbt_assert(!costReqType_, "TODO: cannot compute the reqpersec value with this function if cost function is set");
   double tot =0;
   for (auto i : tiList) {
     simgrid::s4u::Host* a = i->getRunningHost();
     if(a)
-      tot+=(a->get_pstate_speed(a->get_pstate())*a->get_core_count())/processRatio_;
+      tot+=(a->get_pstate_speed(a->get_pstate())*a->get_core_count())/defaultProcessRatio_;
   }
   return tot;
 }
@@ -173,16 +196,20 @@ void ElasticTaskManager::setReqNames(std::function<std::string(RequestType)> rnT
   reqTypeToStr_ = rnToStr;
 }
 
-void ElasticTaskManager::setProcessRatioFunc(std::function<double(TaskDescription*)> costReqType){
-  costReqType_ = costReqType;
-}
-
 double ElasticTaskManager::getProcessRatio(TaskDescription* e){
   // if the function is defined, use it, otherwise use the single value
   if(costReqType_){
     return costReqType_(e);
   }else{
-    return processRatio_;
+    return defaultProcessRatio_;
+  }
+}
+
+double ElasticTaskManager::getIOAmount(TaskDescription* e){
+  if(costIOType_){
+    return costIOType_(e);
+  } else {
+    return defaultIOCost_;
   }
 }
 

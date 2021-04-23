@@ -95,6 +95,7 @@ class ElasticTaskManager {
     std::function<void(TaskDescription*)> outputFunction = [](TaskDescription*) {};
     /* match request type to request cost */
     std::function<double(TaskDescription*)> costReqType_ ;
+    std::function<double(TaskDescription*)> costIOType_ ;
     std::function<std::string(RequestType)> reqTypeToStr_;
 
     /* Hosts that contain an instance */
@@ -107,7 +108,8 @@ class ElasticTaskManager {
     bool keepGoing;
     int nextHost_;
     double bootDuration_;
-    int64_t processRatio_;
+    int64_t defaultProcessRatio_;
+    double defaultIOCost_;
     double dataSizeRatio_;
     int parallelTasksPerInst_;
 
@@ -155,8 +157,19 @@ class ElasticTaskManager {
      * */
     void setProcessRatio(int64_t pr);
     void setProcessRatioFunc(std::function<double(TaskDescription*)> costReqType);
+
+    /**
+     * Set the default amount of IO for a request
+     * if func not set, then the defaultIOCost will be used for all requests
+     * if func is set, the function will always be used to determine the amount of IO to be performed
+     */
+    void setIOCost(double ior);
+    void setIOCostFunction(std::function<double(TaskDescription*)> costIOType);
+
     /* obtain the processing cost for a given request type */
     double getProcessRatio(TaskDescription*);
+    /* obtain the data I/O cost for a given request type */
+    double getIOAmount(TaskDescription*);
 
     /* duration between instance creation and operational state*/
     void setBootDuration(double bd);
