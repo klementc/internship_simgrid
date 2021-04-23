@@ -24,7 +24,6 @@ TaskInstance::TaskInstance(ElasticTaskManager* etm,  std::string mbName,
   for(int i=0;i<maxReqInInst_;i++){n_bl_->acquire();}
 
   // if no disks are available on the host, add one in case the user wants to perform some I/O operations
-
   if(simgrid::s4u::Host::current()->get_disks().size()){
     disk_ = simgrid::s4u::Host::current()->get_disks().front();
     XBT_INFO("There is already a disk ('%s') on host '%s' with bandidths R: %lf B/s, W: %lf B/s, using it for I/O executions.",
@@ -39,7 +38,7 @@ TaskInstance::TaskInstance(ElasticTaskManager* etm,  std::string mbName,
 
 TaskInstance::TaskInstance(ElasticTaskManager* etm,  std::string mbName,
   std::function<void(TaskDescription*)> outputFunction, int maxReqInInst, double bootTime)
-  : TaskInstance(etm, mbName, outputFunction, maxReqInInst_, bootTime, 9.6e7, 6.4e7)
+  : TaskInstance(etm, mbName, outputFunction, maxReqInInst, bootTime, 9.6e7, 6.4e7)
   {}
 
 TaskInstance::TaskInstance(ElasticTaskManager* etm, std::string mbName,
@@ -53,12 +52,11 @@ void TaskInstance::pollTasks()
 
   // create and init parallel reception of tasks
   int parComSize =  maxReqInInst_;
-  XBT_DEBUG("start poll with %d parallel get_async", maxReqInInst_);
-  void* tasksV[parComSize];
-  void* taskV;
+  XBT_INFO("start poll with %d parallel get_async", maxReqInInst_);
+  TaskDescription* tasksV[parComSize];
 
   for(int i=0;i<parComSize;i++){
-    commV.push_back(mbp->get_async(&(tasksV[i])));
+    commV.push_back(mbp->get_async<TaskDescription>(&(tasksV[i])));
   }
 
   while(keepGoing_) {
@@ -66,8 +64,7 @@ void TaskInstance::pollTasks()
     TaskDescription* taskRequest = static_cast<TaskDescription*>(tasksV[newMsgPos]);
     taskRequest->instArrival = simgrid::s4u::Engine::get_clock();
     commV.erase(commV.begin()+newMsgPos);
-    commV.insert(commV.begin() + newMsgPos, mbp->get_async(&(tasksV[newMsgPos])));
-    //commV.push_back(mbp->get_async(&taskV));
+    commV.insert(commV.begin() + newMsgPos, mbp->get_async<TaskDescription>(&(tasksV[newMsgPos])));
     // we wait until there is a slot to execute a task before putting the request in the slot
     //n_empty_->acquire();
     int n = n_empty_->acquire_timeout(1000);

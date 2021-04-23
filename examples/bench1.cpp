@@ -56,7 +56,7 @@ XBT_DEBUG("CLOSE SPANS");
 }
 
 void run(int servFlops, std::string tsFile, int parDeg) {
-  std::cout << "Service with " << servFlops << " flops" << std::endl;
+  std::cout << "Service with " << servFlops << " flops " << parDeg << " parDeg" << std::endl;
   /* ETM1 */
   std::vector<std::string> vservice1 = std::vector<std::string>();
   vservice1.push_back("service1");

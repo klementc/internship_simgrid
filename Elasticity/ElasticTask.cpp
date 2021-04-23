@@ -238,11 +238,10 @@ void ElasticTaskManager::pollnet(std::string mboxName){
 
   int parComSize = parallelTasksPerInst_;
   XBT_DEBUG("start poll with %d parallel get_async", parallelTasksPerInst_);
-  void* tasksV[parComSize];
+  TaskDescription* tasksV[parComSize];
   std::vector<simgrid::s4u::CommPtr> commV;
-  void* taskV;
   for(int i=0;i<parComSize;i++){
-    commV.push_back(recvMB->get_async(&(tasksV[i])));
+    commV.push_back(recvMB->get_async<TaskDescription>(&(tasksV[i])));
   }
 
 
@@ -254,7 +253,7 @@ void ElasticTaskManager::pollnet(std::string mboxName){
     taskRequest->queueArrival = simgrid::s4u::Engine::get_clock();
 
     commV.erase(commV.begin() + newMsgPos);
-    commV.insert(commV.begin() + newMsgPos, recvMB->get_async(&(tasksV[newMsgPos])));
+    commV.insert(commV.begin() + newMsgPos, recvMB->get_async<TaskDescription>(&(tasksV[newMsgPos])));
 
     XBT_DEBUG("Received %p index: %d", taskRequest, newMsgPos);
 

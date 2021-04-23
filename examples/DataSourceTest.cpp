@@ -14,7 +14,7 @@ void receiver(){
   s4u_Mailbox* mb = s4u_Mailbox::by_name("testOut");
   while(simgrid::s4u::Engine::get_clock() < 150){
     XBT_INFO("receiving");
-    mb->get();
+    mb->get<TaskDescription*>();
     XBT_INFO("received");
   }
   simgrid::s4u::Actor::kill_all();
