@@ -248,7 +248,7 @@ void ElasticTaskManager::pollnet(std::string mboxName){
   while(keepGoing){
 
     int newMsgPos = simgrid::s4u::Comm::wait_any(&commV);
-    TaskDescription* taskRequest = static_cast<TaskDescription*>(tasksV[newMsgPos]);
+    TaskDescription* taskRequest = tasksV[newMsgPos];
     //set amount of computation for the instance
     taskRequest->queueArrival = simgrid::s4u::Engine::get_clock();
 

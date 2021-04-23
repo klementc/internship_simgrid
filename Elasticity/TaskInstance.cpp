@@ -61,7 +61,7 @@ void TaskInstance::pollTasks()
 
   while(keepGoing_) {
     int newMsgPos = simgrid::s4u::Comm::wait_any(&commV);
-    TaskDescription* taskRequest = static_cast<TaskDescription*>(tasksV[newMsgPos]);
+    TaskDescription* taskRequest = tasksV[newMsgPos];
     taskRequest->instArrival = simgrid::s4u::Engine::get_clock();
     commV.erase(commV.begin()+newMsgPos);
     commV.insert(commV.begin() + newMsgPos, mbp->get_async<TaskDescription>(&(tasksV[newMsgPos])));
