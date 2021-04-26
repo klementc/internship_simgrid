@@ -80,14 +80,6 @@ void TaskInstance::pollTasks()
 
 }
 
-void TaskInstance::clearTask(TaskDescription* td)
-{
-    XBT_DEBUG("Task finished, call output for %p", td);
-    simgrid::s4u::ActorPtr out = simgrid::s4u::Actor::create(mbName_+"outputf"+boost::uuids::to_string(uuidGen_()),s4u::Host::current(),[&]{outputFunction_(td);});
-
-    n_empty_->release();
-}
-
 void TaskInstance::pollEndOfTaskExec()
 {
   while(keepGoing_){
@@ -95,8 +87,8 @@ void TaskInstance::pollEndOfTaskExec()
 
     int index = simgrid::s4u::Exec::wait_any(&pending_execs);
     // finished one exec, call output function and allow for a new execution
-    TaskDescription* a = execMap_.find(pending_execs.at(index))->second;
-    a->endExec = simgrid::s4u::Engine::get_clock();
+    TaskDescription* td = execMap_.find(pending_execs.at(index))->second;
+    td->endExec = simgrid::s4u::Engine::get_clock();
     etm_->modifExecutingReqAmount(-1);
     etm_->setCounterExecSlot(etm_->getCounterExecSlot()+1);
 
@@ -104,12 +96,18 @@ void TaskInstance::pollEndOfTaskExec()
 #ifdef USE_JAEGERTRACING
         auto t2 = std::chrono::seconds(946684800)+std::chrono::microseconds(int(Engine::get_instance()->get_clock()*1000000));
         // TODO Check if no problem on spans
-        if(a->parentSpans.size()>0)
-          a->parentSpans.at(a->parentSpans.size()-1)->get()->Log({{"endExec", Engine::get_instance()->get_clock()}});
+        if(td->parentSpans.size()>0)
+          td->parentSpans.at(td->parentSpans.size()-1)->get()->Log({{"endExec", Engine::get_instance()->get_clock()}});
 #endif
+
     // remove execPtr from the vector since it finished
     simgrid::s4u::ExecPtr ep = pending_execs.at(index);
-    pending_execs.erase(pending_execs.begin()+index);  }
+    pending_execs.erase(pending_execs.begin()+index);
+
+    XBT_DEBUG("End of execution for %p, call output function", td);
+    simgrid::s4u::ActorPtr out = simgrid::s4u::Actor::create(mbName_+"outputf"+boost::uuids::to_string(uuidGen_()),s4u::Host::current(),[&]{outputFunction_(td);});
+    if(keepGoing_)n_empty_->release();
+    }
 }
 
 void TaskInstance::run()
@@ -152,7 +150,28 @@ void TaskInstance::run()
         etm_->modifWaitingReqAmount(-1);
         etm_->modifExecutingReqAmount(1);
 
-        simgrid::s4u::ExecPtr execP = this_actor::exec_async(etm_->getCPUExecAmount(td));
+        /**
+         * Here we start the execution of or request. 2 important properties:
+         * - execution amount: gives the duration of the execution given the flop capacity of the machine.
+         * E.G A 1GF node will have a 10^9 flop execution amount for a 1 second long request
+         * - Execution ratio: used to adapt the execution amount to the amount of time spent actively using the CPU.
+         * E.G A 1s long request with an exec ratio of .5 will spend .5sec cpu time and .5sec idle (in practice
+         * not really, we just set a bound to the execution, but it has the same effect)
+         */
+        double execRatio = etm_->getExecRatio(td);
+        double execAmount = etm_->getCPUExecAmount(td);
+        double realToBeExecuted = execRatio * execAmount;
+        /* TODO: verify if it works with multiple cores or if I need to multiply here */
+        double boundValue = execRatio * this_actor::get_host()->get_speed();
+        XBT_DEBUG("Start execution of request. Flops: %lf, Ratio: %lf, CPUBound: %lf/%lf",
+          realToBeExecuted, execRatio, boundValue, this_actor::get_host()->get_speed());
+
+        /* don't launch it directly since we want to set a bound*/
+        simgrid::s4u::ExecPtr execP = simgrid::s4u::this_actor::exec_init(realToBeExecuted); // this_actor::exec_async(realToBeExecuted);
+        execP->set_bound(boundValue);
+        execP->start();
+
+        // append the execPTr to the exec vector of executing requests, it will be handled in the endExec polling actor once finished
         pending_execs.push_back(execP);
         execMap_.insert(std::pair<simgrid::s4u::ExecPtr, TaskDescription*>(execP, td));
 

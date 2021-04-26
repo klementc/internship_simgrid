@@ -81,7 +81,6 @@ void run(int serv1Flops, int serv2Flops, std::string tsFile, int parDeg) {
   etmservice1->addHost(simgrid::s4u::Host::by_name("cb1-2"));
   etmservice1->setExecAmount(serv1Flops);
   etmservice1->setBootDuration(0);
-  etmservice1->setDataSizeRatio(1);
 
   /* ETM2 */
   std::vector<std::string> vservice2 = std::vector<std::string>();
@@ -95,7 +94,6 @@ void run(int serv1Flops, int serv2Flops, std::string tsFile, int parDeg) {
   etmservice2->addHost(simgrid::s4u::Host::by_name("cb1-101"));
   etmservice2->setExecAmount(serv2Flops);
   etmservice2->setBootDuration(0);
-  etmservice2->setDataSizeRatio(1);
 
 
   /* ETM3 (sink) */
@@ -110,7 +108,6 @@ void run(int serv1Flops, int serv2Flops, std::string tsFile, int parDeg) {
   etmservice3->addHost(simgrid::s4u::Host::by_name("cb1-4"));
   etmservice3->setExecAmount(0);
   etmservice3->setBootDuration(0);
-  etmservice3->setDataSizeRatio(1);
 
   /*
     * Create data source

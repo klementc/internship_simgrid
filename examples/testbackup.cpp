@@ -24,7 +24,6 @@ etmservice1->addHost(simgrid::s4u::Host::by_name("cb1-1"));
 etmservice1->setExecAmount(1e8);
 etmservice1->setOutputFunction(returnservice1);
 etmservice1->setBootDuration(2);
-etmservice1->setDataSizeRatio(1);
 
 	simgrid::s4u::ElasticPolicyCPUThreshold* polcpuPol1 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.2,0.95);
 polcpuPol1->addHost(simgrid::s4u::Host::by_name("cb1-1"));

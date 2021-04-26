@@ -29,12 +29,11 @@ std::shared_ptr<opentracing::v3::Tracer> setUpTracer(const char* configFilePath,
 }
 #endif
 
-// ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
 ElasticTaskManager::ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes, std::string jaegConfigFile)
   : serviceName_(name), incMailboxes_(incMailboxes), nextHost_(0),
     keepGoing(true), defCPUCost_(1e7), waitingReqAmount_(0),
-    bootDuration_(0), executingReqAmount_(0), dataSizeRatio_(1),
-    counterExecSlot_(0), parallelTasksPerInst_(100), defCPURatio_(1)
+    bootDuration_(0), executingReqAmount_(0), counterExecSlot_(0),
+    parallelTasksPerInst_(100), defCPURatio_(1)
 {
   XBT_DEBUG("Creating TaskManager %s", serviceName_.c_str());
   sg_host_load_plugin_init();
@@ -185,9 +184,6 @@ double ElasticTaskManager::reqPerSec() {
   return tot;
 }
 
-void ElasticTaskManager::setDataSizeRatio(double r) {
-  dataSizeRatio_ = r;
-}
 void ElasticTaskManager::setReqNames(std::function<std::string(RequestType)> rnToStr){
   reqTypeToStr_ = rnToStr;
 }
@@ -202,20 +198,20 @@ double ElasticTaskManager::getCPUExecAmount(TaskDescription* e){
 }
 
 double ElasticTaskManager::getExecRatio(TaskDescription* e){
+  double ratio = -1;
   if(fCPURatio_){
-    return fCPURatio_(e);
+    ratio = fCPURatio_(e);
   } else {
-    return defCPURatio_;
+    ratio = defCPURatio_;
   }
+  xbt_assert(ratio >= 0, "Cannot use an execution ratio below 0, you provided %lf", ratio);
+  XBT_DEBUG("Execution ratio for request %p = %lf", e, ratio);
+  return ratio;
 }
 
 std::string ElasticTaskManager::getStrFromReqType(RequestType r){
   if(reqTypeToStr_){return reqTypeToStr_(r);}
   else{XBT_DEBUG("No reqTypeToStr_ provided, return service name"); return serviceName_;}
-}
-
-double ElasticTaskManager::getDataSizeRatio() {
-  return dataSizeRatio_;
 }
 
 /**

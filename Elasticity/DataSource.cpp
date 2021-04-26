@@ -9,7 +9,7 @@
 #include "DataSource.hpp"
 #include "RequestType.hpp"
 
-XBT_LOG_NEW_DEFAULT_CATEGORY(a, "logs for the Graph experiment");
+XBT_LOG_NEW_DEFAULT_CATEGORY(dataSource, "logs for the Graph experiment");
 
 void DataSource::run()
 {

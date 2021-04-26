@@ -327,7 +327,7 @@ def genETMInitCode(graphs, parDeg=50):
     v_serv_%s.push_back("%s");
     std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_%s = std::make_shared<simgrid::s4u::ElasticTaskManager>("%s",v_serv_%s);
     serv_%s->setBootDuration(0);
-    serv_%s->setDataSizeRatio(1);
+    // serv_%s->setDataSizeRatio(1); NOT USED ANYMORE, KEEP AS COMMENT IN CASE
     serv_%s->setParallelTasksPerInst(%d);
     serv_%s->setOutputFunction(return_%s);
     serv_%s->setExecAmountFunc(pr_%s);

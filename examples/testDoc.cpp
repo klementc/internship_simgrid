@@ -73,7 +73,6 @@ void run() {
   etmservice1->addHost(simgrid::s4u::Host::by_name("cb1-4"));
   etmservice1->setExecAmount(1e7);
   etmservice1->setBootDuration(2);
-  etmservice1->setDataSizeRatio(1);
 
   /* ETM2 */
   std::vector<std::string> vservice2 = std::vector<std::string>();
@@ -86,7 +85,6 @@ void run() {
   etmservice2->addHost(simgrid::s4u::Host::by_name("cb1-102"));
   etmservice2->setExecAmount(5e6);
   etmservice2->setBootDuration(1);
-  etmservice2->setDataSizeRatio(1);
 
 
   /*

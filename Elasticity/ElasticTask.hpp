@@ -116,7 +116,6 @@ class ElasticTaskManager {
     bool keepGoing;
     int nextHost_;
     double bootDuration_;
-    double dataSizeRatio_;
     int parallelTasksPerInst_;
 
     /*
@@ -188,8 +187,6 @@ class ElasticTaskManager {
     int64_t getAmountOfExecutingRequests();
     void modifExecutingReqAmount(int n);
     void modifWaitingReqAmount(int n);
-    void setDataSizeRatio(double r);
-    double getDataSizeRatio();
     void setParallelTasksPerInst(int s);
 
     /* trigger a taskdescription*/
@@ -270,8 +267,6 @@ class TaskInstance {
      * actor charged of managing CPU executions
     */
     void pollEndOfTaskExec();
-
-    void clearTask(TaskDescription*);
 
   public:
     TaskInstance(ElasticTaskManager* etm, std::string mbName,
