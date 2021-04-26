@@ -109,10 +109,10 @@ void run()
   etm2b->addHost(simgrid::s4u::Host::by_name("cb1-200"));
   etm3->addHost(simgrid::s4u::Host::by_name("cb1-300"));
 
-  etm1->setProcessRatio(/*1e8*/1e6);
-  etm2a->setProcessRatio(/*1e9*/1e7);
-  etm2b->setProcessRatio(/*1e9*/1e7);
-  etm3->setProcessRatio(/*5e7*/5e5);
+  etm1->setExecAmount(/*1e8*/1e6);
+  etm2a->setExecAmount(/*1e9*/1e7);
+  etm2b->setExecAmount(/*1e9*/1e7);
+  etm3->setExecAmount(/*5e7*/5e5);
 
   // interval between adding a new instance and using it
   etm1->setBootDuration(1);

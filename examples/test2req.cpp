@@ -170,7 +170,7 @@ return -1;
     serv_nginx_web_server->setBootDuration(0);
     serv_nginx_web_server->setDataSizeRatio(1);
     serv_nginx_web_server->setOutputFunction(return_nginx_web_server);
-    serv_nginx_web_server->setProcessRatioFunc(pr_nginx_web_server);
+    serv_nginx_web_server->setExecAmountFunc(pr_nginx_web_server);
     serv_nginx_web_server->addHost(simgrid::s4u::Host::by_name("cb1-1"));
     simgrid::s4u::Actor::create("etm_nginx_web_server", simgrid::s4u::Host::by_name("cb1-1"), [serv_nginx_web_server] { serv_nginx_web_server->run(); });
 
@@ -182,7 +182,7 @@ return -1;
     serv_home_timeline_service->setBootDuration(0);
     serv_home_timeline_service->setDataSizeRatio(1);
     serv_home_timeline_service->setOutputFunction(return_home_timeline_service);
-    serv_home_timeline_service->setProcessRatioFunc(pr_home_timeline_service);
+    serv_home_timeline_service->setExecAmountFunc(pr_home_timeline_service);
     serv_home_timeline_service->addHost(simgrid::s4u::Host::by_name("cb1-2"));
     simgrid::s4u::Actor::create("etm_home_timeline_service", simgrid::s4u::Host::by_name("cb1-2"), [serv_home_timeline_service] { serv_home_timeline_service->run(); });
 
@@ -194,7 +194,7 @@ return -1;
     serv_post_storage_service->setBootDuration(0);
     serv_post_storage_service->setDataSizeRatio(1);
     serv_post_storage_service->setOutputFunction(return_post_storage_service);
-    serv_post_storage_service->setProcessRatioFunc(pr_post_storage_service);
+    serv_post_storage_service->setExecAmountFunc(pr_post_storage_service);
     serv_post_storage_service->addHost(simgrid::s4u::Host::by_name("cb1-3"));
     simgrid::s4u::Actor::create("etm_post_storage_service", simgrid::s4u::Host::by_name("cb1-3"), [serv_post_storage_service] { serv_post_storage_service->run(); });
 
@@ -206,7 +206,7 @@ return -1;
     serv_user_timeline_service->setBootDuration(0);
     serv_user_timeline_service->setDataSizeRatio(1);
     serv_user_timeline_service->setOutputFunction(return_user_timeline_service);
-    serv_user_timeline_service->setProcessRatioFunc(pr_user_timeline_service);
+    serv_user_timeline_service->setExecAmountFunc(pr_user_timeline_service);
     serv_user_timeline_service->addHost(simgrid::s4u::Host::by_name("cb1-4"));
     simgrid::s4u::Actor::create("etm_user_timeline_service", simgrid::s4u::Host::by_name("cb1-4"), [serv_user_timeline_service] { serv_user_timeline_service->run(); });
 

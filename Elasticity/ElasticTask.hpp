@@ -152,24 +152,27 @@ class ElasticTaskManager {
     Host* removeHost(int i);
 
     /* modify flops amount per req
-     * if func not set, then the setprocessration value will be taken for every request
-     * if func is set, the setprocessratio func will always be used
+     * if func not set, then the setExecAmountn value will be taken for every request
+     * if func is set, the setExecAmount func will always be used
      * */
-    void setProcessRatio(int64_t pr);
-    void setProcessRatioFunc(std::function<double(TaskDescription*)> costReqType);
+    void setExecAmount(int64_t pr);
+    void setExecAmountFunc(std::function<double(TaskDescription*)> costReqType);
 
     /**
      * Set the default amount of IO for a request
      * if func not set, then the defaultIOCost will be used for all requests
      * if func is set, the function will always be used to determine the amount of IO to be performed
      */
-    void setIOCost(double ior);
-    void setIOCostFunction(std::function<double(TaskDescription*)> costIOType);
+    void setExecRatio(double ior);
+    void setExecRatioFunction(std::function<double(TaskDescription*)> costIOType);
 
     /* obtain the processing cost for a given request type */
-    double getProcessRatio(TaskDescription*);
-    /* obtain the data I/O cost for a given request type */
-    double getIOAmount(TaskDescription*);
+    double getCPUExecAmount(TaskDescription*);
+
+    /* obtain the execution ratio used to set a cpu bound on executions that don't
+     * only consist in CPU executions (could be replaced in the future by real I/Os)
+     */
+    double getExecRatio(TaskDescription*);
 
     /* duration between instance creation and operational state*/
     void setBootDuration(double bd);
@@ -224,7 +227,10 @@ class TaskInstance {
 
     simgrid::s4u::SemaphorePtr n_empty_;
     simgrid::s4u::SemaphorePtr n_full_;
-    simgrid::s4u::SemaphorePtr n_bl_;
+    // semaphore used to know if some executions take place
+    simgrid::s4u::SemaphorePtr sem_pollExec_;
+
+
     double bootTime_;
     boost::uuids::random_generator uuidGen_;
     simgrid::s4u::ActorPtr poll, pollEnd;
@@ -238,21 +244,30 @@ class TaskInstance {
     std::vector<simgrid::s4u::ExecPtr> pending_execs;
     std::map<simgrid::s4u::ExecPtr, TaskDescription*> execMap_;
 
-    // disk to use for I/Os and structures for pending I/O
-    simgrid::s4u::Disk* disk_;
-    std::vector<simgrid::s4u::IoPtr> io_vector;
-    std::map<simgrid::s4u::IoPtr, TaskDescription*> ioMap_;
+    /** disk to use for I/Os and structures for pending I/O
+     * IMPORTANT: REPLACED BY A CPU BOUND FOR NOW TO AVOID TOO COMPLEX  CALIBRATION ISSUES
+     * simgrid::s4u::Disk* disk_;
+     * std::vector<simgrid::s4u::IoPtr> io_vector;
+     * std::map<simgrid::s4u::IoPtr, TaskDescription*> ioMap_;
+     * // semaphore used to know if some IO operations take place
+     * simgrid::s4u::SemaphorePtr sem_pollIO_;
+     * // actor charged of managing I/O executions
+     * void pollEndOfTaskIO();
+     */
 
-    // used to verify that both disk and execution finished
-    std::map<TaskDescription*, std::pair<bool,bool>> finishedOperations;
-
+    /**
+     * Received and intiatesthe IO/CPU executions
+    */
     void pollTasks();
-    void pollEndOfTasks();
+
+    /**
+     * actor charged of managing CPU executions
+    */
+    void pollEndOfTaskExec();
+
+    void clearTask(TaskDescription*);
 
   public:
-      TaskInstance(ElasticTaskManager* etm, std::string mbName,
-      std::function<void(TaskDescription*)> outputFunction,
-      int maxReqInst, double bootTime, double diskReadBW, double diskWBW);
     TaskInstance(ElasticTaskManager* etm, std::string mbName,
       std::function<void(TaskDescription*)> outputFunction,
       int maxReqInst, double bootTime);

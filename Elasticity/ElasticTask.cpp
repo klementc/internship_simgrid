@@ -53,14 +53,14 @@ ElasticTaskManager::ElasticTaskManager(std::string name)
   : ElasticTaskManager(name, std::vector<std::string>(1, name), "config.yml")
 {}
 
-void ElasticTaskManager::setProcessRatio(int64_t pr)
+void ElasticTaskManager::setExecAmount(int64_t pr)
 {
   xbt_assert(pr>=0, "Cannot have a negative processRatio. you asked for: %d", pr);
   XBT_DEBUG("nchanged default process cost per request: %d -> %d", defaultProcessRatio_, pr);
   defaultProcessRatio_ = pr;
 }
 
-void ElasticTaskManager::setIOCost(double cost)
+void ElasticTaskManager::setExecRatio(double cost)
 {
   xbt_assert(cost>=0, "Cannot have a negative amount of IO, you asked for: %lf", cost);
   XBT_DEBUG("changed default I/O cost per request: %lf -> %lf", defaultIOCost_, cost);
@@ -73,13 +73,13 @@ void ElasticTaskManager::setParallelTasksPerInst(int s) {
   parallelTasksPerInst_ = s;
 }
 
-void ElasticTaskManager::setProcessRatioFunc(std::function<double(TaskDescription*)> costReqType)
+void ElasticTaskManager::setExecAmountFunc(std::function<double(TaskDescription*)> costReqType)
 {
   XBT_DEBUG("Set a new process cost function.");
   costReqType_ = costReqType;
 }
 
-void ElasticTaskManager::setIOCostFunction(std::function<double(TaskDescription*)> costIOType)
+void ElasticTaskManager::setExecRatioFunction(std::function<double(TaskDescription*)> costIOType)
 {
   XBT_DEBUG("Set a new IO cost function.");
   costIOType_ = costIOType;
@@ -192,7 +192,7 @@ void ElasticTaskManager::setReqNames(std::function<std::string(RequestType)> rnT
   reqTypeToStr_ = rnToStr;
 }
 
-double ElasticTaskManager::getProcessRatio(TaskDescription* e){
+double ElasticTaskManager::getCPUExecAmount(TaskDescription* e){
   // if the function is defined, use it, otherwise use the single value
   if(costReqType_){
     return costReqType_(e);
@@ -201,7 +201,7 @@ double ElasticTaskManager::getProcessRatio(TaskDescription* e){
   }
 }
 
-double ElasticTaskManager::getIOAmount(TaskDescription* e){
+double ElasticTaskManager::getExecRatio(TaskDescription* e){
   if(costIOType_){
     return costIOType_(e);
   } else {
@@ -315,7 +315,7 @@ void ElasticTaskManager::run() {
 
       /* Async version TODO: clean pending vector */
       XBT_DEBUG("Send %p to task", t);
-      t->flopsPerServ.push_back(getProcessRatio(t));
+      t->flopsPerServ.push_back(getCPUExecAmount(t));
       if(! t->dSize || t->dSize == -1){t->dSize = 1; XBT_DEBUG("NO SIZE SET, PUT TO 1");}
       simgrid::s4u::CommPtr comm = mbp->put_async(t, (t->dSize == -1) ? 1 : t->dSize);
       pending_comms.push_back(comm);

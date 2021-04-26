@@ -426,7 +426,7 @@ return -1;
     serv_nginx_web_server->setBootDuration(0);
     serv_nginx_web_server->setDataSizeRatio(1);
     serv_nginx_web_server->setOutputFunction(return_nginx_web_server);
-    serv_nginx_web_server->setProcessRatioFunc(pr_nginx_web_server);
+    serv_nginx_web_server->setExecAmountFunc(pr_nginx_web_server);
     serv_nginx_web_server->addHost(simgrid::s4u::Host::by_name("cb1-1"));
     simgrid::s4u::Actor::create("etm_nginx_web_server", simgrid::s4u::Host::by_name("cb1-1"), [serv_nginx_web_server] { serv_nginx_web_server->run(); });
 
@@ -438,7 +438,7 @@ return -1;
     serv_media_service->setBootDuration(0);
     serv_media_service->setDataSizeRatio(1);
     serv_media_service->setOutputFunction(return_media_service);
-    serv_media_service->setProcessRatioFunc(pr_media_service);
+    serv_media_service->setExecAmountFunc(pr_media_service);
     serv_media_service->addHost(simgrid::s4u::Host::by_name("cb1-2"));
     simgrid::s4u::Actor::create("etm_media_service", simgrid::s4u::Host::by_name("cb1-2"), [serv_media_service] { serv_media_service->run(); });
 
@@ -450,7 +450,7 @@ return -1;
     serv_compose_post_service->setBootDuration(0);
     serv_compose_post_service->setDataSizeRatio(1);
     serv_compose_post_service->setOutputFunction(return_compose_post_service);
-    serv_compose_post_service->setProcessRatioFunc(pr_compose_post_service);
+    serv_compose_post_service->setExecAmountFunc(pr_compose_post_service);
     serv_compose_post_service->addHost(simgrid::s4u::Host::by_name("cb1-3"));
     simgrid::s4u::Actor::create("etm_compose_post_service", simgrid::s4u::Host::by_name("cb1-3"), [serv_compose_post_service] { serv_compose_post_service->run(); });
 
@@ -462,7 +462,7 @@ return -1;
     serv_user_service->setBootDuration(0);
     serv_user_service->setDataSizeRatio(1);
     serv_user_service->setOutputFunction(return_user_service);
-    serv_user_service->setProcessRatioFunc(pr_user_service);
+    serv_user_service->setExecAmountFunc(pr_user_service);
     serv_user_service->addHost(simgrid::s4u::Host::by_name("cb1-4"));
     simgrid::s4u::Actor::create("etm_user_service", simgrid::s4u::Host::by_name("cb1-4"), [serv_user_service] { serv_user_service->run(); });
 
@@ -474,7 +474,7 @@ return -1;
     serv_text_service->setBootDuration(0);
     serv_text_service->setDataSizeRatio(1);
     serv_text_service->setOutputFunction(return_text_service);
-    serv_text_service->setProcessRatioFunc(pr_text_service);
+    serv_text_service->setExecAmountFunc(pr_text_service);
     serv_text_service->addHost(simgrid::s4u::Host::by_name("cb1-5"));
     simgrid::s4u::Actor::create("etm_text_service", simgrid::s4u::Host::by_name("cb1-5"), [serv_text_service] { serv_text_service->run(); });
 
@@ -486,7 +486,7 @@ return -1;
     serv_user_mention_service->setBootDuration(0);
     serv_user_mention_service->setDataSizeRatio(1);
     serv_user_mention_service->setOutputFunction(return_user_mention_service);
-    serv_user_mention_service->setProcessRatioFunc(pr_user_mention_service);
+    serv_user_mention_service->setExecAmountFunc(pr_user_mention_service);
     serv_user_mention_service->addHost(simgrid::s4u::Host::by_name("cb1-6"));
     simgrid::s4u::Actor::create("etm_user_mention_service", simgrid::s4u::Host::by_name("cb1-6"), [serv_user_mention_service] { serv_user_mention_service->run(); });
 
@@ -498,7 +498,7 @@ return -1;
     serv_url_shorten_service->setBootDuration(0);
     serv_url_shorten_service->setDataSizeRatio(1);
     serv_url_shorten_service->setOutputFunction(return_url_shorten_service);
-    serv_url_shorten_service->setProcessRatioFunc(pr_url_shorten_service);
+    serv_url_shorten_service->setExecAmountFunc(pr_url_shorten_service);
     serv_url_shorten_service->addHost(simgrid::s4u::Host::by_name("cb1-7"));
     simgrid::s4u::Actor::create("etm_url_shorten_service", simgrid::s4u::Host::by_name("cb1-7"), [serv_url_shorten_service] { serv_url_shorten_service->run(); });
 
@@ -510,7 +510,7 @@ return -1;
     serv_post_storage_service->setBootDuration(0);
     serv_post_storage_service->setDataSizeRatio(1);
     serv_post_storage_service->setOutputFunction(return_post_storage_service);
-    serv_post_storage_service->setProcessRatioFunc(pr_post_storage_service);
+    serv_post_storage_service->setExecAmountFunc(pr_post_storage_service);
     serv_post_storage_service->addHost(simgrid::s4u::Host::by_name("cb1-8"));
     simgrid::s4u::Actor::create("etm_post_storage_service", simgrid::s4u::Host::by_name("cb1-8"), [serv_post_storage_service] { serv_post_storage_service->run(); });
 
@@ -522,7 +522,7 @@ return -1;
     serv_user_timeline_service->setBootDuration(0);
     serv_user_timeline_service->setDataSizeRatio(1);
     serv_user_timeline_service->setOutputFunction(return_user_timeline_service);
-    serv_user_timeline_service->setProcessRatioFunc(pr_user_timeline_service);
+    serv_user_timeline_service->setExecAmountFunc(pr_user_timeline_service);
     serv_user_timeline_service->addHost(simgrid::s4u::Host::by_name("cb1-9"));
     simgrid::s4u::Actor::create("etm_user_timeline_service", simgrid::s4u::Host::by_name("cb1-9"), [serv_user_timeline_service] { serv_user_timeline_service->run(); });
 
@@ -534,7 +534,7 @@ return -1;
     serv_write_home_timeline_service->setBootDuration(0);
     serv_write_home_timeline_service->setDataSizeRatio(1);
     serv_write_home_timeline_service->setOutputFunction(return_write_home_timeline_service);
-    serv_write_home_timeline_service->setProcessRatioFunc(pr_write_home_timeline_service);
+    serv_write_home_timeline_service->setExecAmountFunc(pr_write_home_timeline_service);
     serv_write_home_timeline_service->addHost(simgrid::s4u::Host::by_name("cb1-10"));
     simgrid::s4u::Actor::create("etm_write_home_timeline_service", simgrid::s4u::Host::by_name("cb1-10"), [serv_write_home_timeline_service] { serv_write_home_timeline_service->run(); });
 
@@ -546,7 +546,7 @@ return -1;
     serv_social_graph_service->setBootDuration(0);
     serv_social_graph_service->setDataSizeRatio(1);
     serv_social_graph_service->setOutputFunction(return_social_graph_service);
-    serv_social_graph_service->setProcessRatioFunc(pr_social_graph_service);
+    serv_social_graph_service->setExecAmountFunc(pr_social_graph_service);
     serv_social_graph_service->addHost(simgrid::s4u::Host::by_name("cb1-11"));
     simgrid::s4u::Actor::create("etm_social_graph_service", simgrid::s4u::Host::by_name("cb1-11"), [serv_social_graph_service] { serv_social_graph_service->run(); });
 
@@ -558,7 +558,7 @@ return -1;
     serv_unique_id_service->setBootDuration(0);
     serv_unique_id_service->setDataSizeRatio(1);
     serv_unique_id_service->setOutputFunction(return_unique_id_service);
-    serv_unique_id_service->setProcessRatioFunc(pr_unique_id_service);
+    serv_unique_id_service->setExecAmountFunc(pr_unique_id_service);
     serv_unique_id_service->addHost(simgrid::s4u::Host::by_name("cb1-12"));
     simgrid::s4u::Actor::create("etm_unique_id_service", simgrid::s4u::Host::by_name("cb1-12"), [serv_unique_id_service] { serv_unique_id_service->run(); });
 

@@ -8,7 +8,7 @@
    Lot of studies aim at studying fog applications (ex: bruno donassolo's phd) in
    real testbeds. In these cases, despite the efforts of the authors,
    deploying and observing such applications still remains a non-trivial task (in
-   addition to the resource requirements). 
+   addition to the resource requirements).
 
    Other study fog applications through simulation: ifogsim (based on cloudsim),
    fognetsim++, PAFI, YAFS, fogtorchII.
@@ -18,7 +18,7 @@
    validation of the underlying network models for most of them (either
    because communications are not taking into account many existing things
    such as tcp adapative mechanisms, or because they are based on network
-   simulators that proved to have limited realism). 
+   simulators that proved to have limited realism).
 
    Our goal is to propose a tool for evaluating and prototyping fog
    applications, modeled as microservices. We want a tool that can scale to
@@ -74,7 +74,7 @@ Simplified class diagram:
   - pollnet: receive requests on input mailbox
   - addhost: create a new task instance on provided host
   - remove host: remove ""
-  - setProcessRatio: amount of flops to execute for each request
+  - setExecAmount: amount of flops to execute for each request
   - bootduration: time between addHost, and ability to execute for a taskInstance
   - trigger: add a new request to the request queue
   - setoutputfunction: (used to pass to instances), the function to be called
@@ -124,7 +124,7 @@ deploy your microservice application:
     already existing data sources so that any host can send task requests to the
     application.
 
-Once all of those are created, create actors launching them (run() method). 
+Once all of those are created, create actors launching them (run() method).
 
 
 

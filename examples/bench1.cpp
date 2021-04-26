@@ -67,7 +67,7 @@ void run(int servFlops, std::string tsFile, int parDeg) {
   simgrid::s4u::Actor::create("etmservice1_a", simgrid::s4u::Host::by_name("cb1-1"), [etmservice1] { etmservice1->run(); });
   /* 3 instances (not using an elastic policy here, see other examples) */
   etmservice1->addHost(simgrid::s4u::Host::by_name("cb1-2"));
-  etmservice1->setProcessRatio(servFlops);
+  etmservice1->setExecAmount(servFlops);
   etmservice1->setBootDuration(0);
   etmservice1->setDataSizeRatio(1);
 
@@ -81,7 +81,7 @@ void run(int servFlops, std::string tsFile, int parDeg) {
   simgrid::s4u::Actor::create("etmservice2_a", simgrid::s4u::Host::by_name("cb1-100"), [etmservice2] { etmservice2->run(); });
   /* 2 instances */
   etmservice2->addHost(simgrid::s4u::Host::by_name("cb1-101"));
-  etmservice2->setProcessRatio(1);
+  etmservice2->setExecAmount(1);
   etmservice2->setBootDuration(0);
   etmservice2->setDataSizeRatio(1);
 

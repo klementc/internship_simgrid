@@ -681,7 +681,7 @@ std::string reqTypeToStr(RequestType t){
     serv_nginx_web_server->setDataSizeRatio(1);
     serv_nginx_web_server->setParallelTasksPerInst(50);
     serv_nginx_web_server->setOutputFunction(return_nginx_web_server);
-    serv_nginx_web_server->setProcessRatioFunc(pr_nginx_web_server);
+    serv_nginx_web_server->setExecAmountFunc(pr_nginx_web_server);
     serv_nginx_web_server->setReqNames(reqTypeToStr);
     if (m.find("nginx_web_server") != m.end()) {
         posS = m.find("nginx_web_server")->second;
@@ -701,7 +701,7 @@ std::string reqTypeToStr(RequestType t){
     serv_media_service->setDataSizeRatio(1);
     serv_media_service->setParallelTasksPerInst(50);
     serv_media_service->setOutputFunction(return_media_service);
-    serv_media_service->setProcessRatioFunc(pr_media_service);
+    serv_media_service->setExecAmountFunc(pr_media_service);
     serv_media_service->setReqNames(reqTypeToStr);
     if (m.find("media_service") != m.end()) {
         posS = m.find("media_service")->second;
@@ -721,7 +721,7 @@ std::string reqTypeToStr(RequestType t){
     serv_compose_post_service->setDataSizeRatio(1);
     serv_compose_post_service->setParallelTasksPerInst(50);
     serv_compose_post_service->setOutputFunction(return_compose_post_service);
-    serv_compose_post_service->setProcessRatioFunc(pr_compose_post_service);
+    serv_compose_post_service->setExecAmountFunc(pr_compose_post_service);
     serv_compose_post_service->setReqNames(reqTypeToStr);
         if (m.find("compose_post_service") != m.end()) {
         posS = m.find("compose_post_service")->second;
@@ -741,7 +741,7 @@ std::string reqTypeToStr(RequestType t){
     serv_user_service->setDataSizeRatio(1);
     serv_user_service->setParallelTasksPerInst(50);
     serv_user_service->setOutputFunction(return_user_service);
-    serv_user_service->setProcessRatioFunc(pr_user_service);
+    serv_user_service->setExecAmountFunc(pr_user_service);
     serv_user_service->setReqNames(reqTypeToStr);
     if (m.find("user_service") != m.end()) {
         posS = m.find("user_service")->second;
@@ -761,7 +761,7 @@ std::string reqTypeToStr(RequestType t){
     serv_text_service->setDataSizeRatio(1);
     serv_text_service->setParallelTasksPerInst(50);
     serv_text_service->setOutputFunction(return_text_service);
-    serv_text_service->setProcessRatioFunc(pr_text_service);
+    serv_text_service->setExecAmountFunc(pr_text_service);
     serv_text_service->setReqNames(reqTypeToStr);
     if (m.find("text_service") != m.end()) {
         posS = m.find("text_service")->second;
@@ -781,7 +781,7 @@ std::string reqTypeToStr(RequestType t){
     serv_url_shorten_service->setDataSizeRatio(1);
     serv_url_shorten_service->setParallelTasksPerInst(50);
     serv_url_shorten_service->setOutputFunction(return_url_shorten_service);
-    serv_url_shorten_service->setProcessRatioFunc(pr_url_shorten_service);
+    serv_url_shorten_service->setExecAmountFunc(pr_url_shorten_service);
     serv_url_shorten_service->setReqNames(reqTypeToStr);
         if (m.find("url_shorten_service") != m.end()) {
         posS = m.find("url_shorten_service")->second;
@@ -801,7 +801,7 @@ std::string reqTypeToStr(RequestType t){
     serv_user_mention_service->setDataSizeRatio(1);
     serv_user_mention_service->setParallelTasksPerInst(50);
     serv_user_mention_service->setOutputFunction(return_user_mention_service);
-    serv_user_mention_service->setProcessRatioFunc(pr_user_mention_service);
+    serv_user_mention_service->setExecAmountFunc(pr_user_mention_service);
     serv_user_mention_service->setReqNames(reqTypeToStr);
     if (m.find("user_mention_service") != m.end()) {
         posS = m.find("user_mention_service")->second;
@@ -821,7 +821,7 @@ std::string reqTypeToStr(RequestType t){
     serv_post_storage_service->setDataSizeRatio(1);
     serv_post_storage_service->setParallelTasksPerInst(50);
     serv_post_storage_service->setOutputFunction(return_post_storage_service);
-    serv_post_storage_service->setProcessRatioFunc(pr_post_storage_service);
+    serv_post_storage_service->setExecAmountFunc(pr_post_storage_service);
     serv_post_storage_service->setReqNames(reqTypeToStr);
     if (m.find("post_storage_service") != m.end()) {
         posS = m.find("post_storage_service")->second;
@@ -841,7 +841,7 @@ std::string reqTypeToStr(RequestType t){
     serv_user_timeline_service->setDataSizeRatio(1);
     serv_user_timeline_service->setParallelTasksPerInst(50);
     serv_user_timeline_service->setOutputFunction(return_user_timeline_service);
-    serv_user_timeline_service->setProcessRatioFunc(pr_user_timeline_service);
+    serv_user_timeline_service->setExecAmountFunc(pr_user_timeline_service);
     serv_user_timeline_service->setReqNames(reqTypeToStr);
     if (m.find("user_timeline_service") != m.end()) {
         posS = m.find("user_timeline_service")->second;
@@ -861,7 +861,7 @@ std::string reqTypeToStr(RequestType t){
     serv_write_home_timeline_service->setDataSizeRatio(1);
     serv_write_home_timeline_service->setParallelTasksPerInst(50);
     serv_write_home_timeline_service->setOutputFunction(return_write_home_timeline_service);
-    serv_write_home_timeline_service->setProcessRatioFunc(pr_write_home_timeline_service);
+    serv_write_home_timeline_service->setExecAmountFunc(pr_write_home_timeline_service);
     serv_write_home_timeline_service->setReqNames(reqTypeToStr);
     if (m.find("write_home_timeline_service") != m.end()) {
         posS = m.find("write_home_timeline_service")->second;
@@ -881,7 +881,7 @@ std::string reqTypeToStr(RequestType t){
     serv_social_graph_service->setDataSizeRatio(1);
     serv_social_graph_service->setParallelTasksPerInst(50);
     serv_social_graph_service->setOutputFunction(return_social_graph_service);
-    serv_social_graph_service->setProcessRatioFunc(pr_social_graph_service);
+    serv_social_graph_service->setExecAmountFunc(pr_social_graph_service);
     serv_social_graph_service->setReqNames(reqTypeToStr);
     if (m.find("social_graph_service") != m.end()) {
         posS = m.find("social_graph_service")->second;
@@ -901,7 +901,7 @@ std::string reqTypeToStr(RequestType t){
     serv_unique_id_service->setDataSizeRatio(1);
     serv_unique_id_service->setParallelTasksPerInst(50);
     serv_unique_id_service->setOutputFunction(return_unique_id_service);
-    serv_unique_id_service->setProcessRatioFunc(pr_unique_id_service);
+    serv_unique_id_service->setExecAmountFunc(pr_unique_id_service);
     serv_unique_id_service->setReqNames(reqTypeToStr);
     if (m.find("unique_id_service") != m.end()) {
         posS = m.find("unique_id_service")->second;

@@ -71,7 +71,7 @@ void run() {
   etmservice1->addHost(simgrid::s4u::Host::by_name("cb1-2"));
   etmservice1->addHost(simgrid::s4u::Host::by_name("cb1-3"));
   etmservice1->addHost(simgrid::s4u::Host::by_name("cb1-4"));
-  etmservice1->setProcessRatio(1e7);
+  etmservice1->setExecAmount(1e7);
   etmservice1->setBootDuration(2);
   etmservice1->setDataSizeRatio(1);
 
@@ -84,7 +84,7 @@ void run() {
   /* 2 instances */
   etmservice2->addHost(simgrid::s4u::Host::by_name("cb1-101"));
   etmservice2->addHost(simgrid::s4u::Host::by_name("cb1-102"));
-  etmservice2->setProcessRatio(5e6);
+  etmservice2->setExecAmount(5e6);
   etmservice2->setBootDuration(1);
   etmservice2->setDataSizeRatio(1);
 

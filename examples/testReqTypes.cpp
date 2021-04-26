@@ -92,7 +92,7 @@ void run() {
   serv_nginx_web_server->setBootDuration(0);
   serv_nginx_web_server->setDataSizeRatio(1);
   serv_nginx_web_server->setOutputFunction(return_nginx_web_server);
-  serv_nginx_web_server->setProcessRatioFunc(pr_nginx_web_server);
+  serv_nginx_web_server->setExecAmountFunc(pr_nginx_web_server);
   serv_nginx_web_server->addHost(simgrid::s4u::Host::by_name("cb1-1"));
 
   std::vector<std::string> v_serv_user_timeline = std::vector<std::string>();
@@ -101,7 +101,7 @@ void run() {
   serv_user_timeline->setBootDuration(0);
   serv_user_timeline->setDataSizeRatio(1);
   serv_user_timeline->setOutputFunction(return_user_timeline);
-  serv_user_timeline->setProcessRatioFunc(pr_user_timeline);
+  serv_user_timeline->setExecAmountFunc(pr_user_timeline);
   serv_user_timeline->addHost(simgrid::s4u::Host::by_name("cb1-2"));
 
 
@@ -112,7 +112,7 @@ void run() {
   serv_post_storage->setBootDuration(0);
   serv_post_storage->setDataSizeRatio(1);
   serv_post_storage->setOutputFunction(return_post_storage);
-  serv_post_storage->setProcessRatioFunc(pr_post_storage);
+  serv_post_storage->setExecAmountFunc(pr_post_storage);
   serv_post_storage->addHost(simgrid::s4u::Host::by_name("cb1-3"));
 
 

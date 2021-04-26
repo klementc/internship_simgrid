@@ -330,7 +330,7 @@ def genETMInitCode(graphs, parDeg=50):
     serv_%s->setDataSizeRatio(1);
     serv_%s->setParallelTasksPerInst(%d);
     serv_%s->setOutputFunction(return_%s);
-    serv_%s->setProcessRatioFunc(pr_%s);
+    serv_%s->setExecAmountFunc(pr_%s);
     serv_%s->setReqNames(reqTypeToStr);
     serv_%s->addHost(simgrid::s4u::Host::by_name("cb1-%s"));
     simgrid::s4u::Actor::create("etm_%s", simgrid::s4u::Host::by_name("cb1-%s"), [serv_%s] { serv_%s->run(); });
