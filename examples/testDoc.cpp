@@ -66,25 +66,26 @@ void run() {
   std::shared_ptr<simgrid::s4u::ElasticTaskManager> etmservice1 = std::make_shared<simgrid::s4u::ElasticTaskManager>("etmservice1",vservice1);
 
   etmservice1->setOutputFunction(returnservice1);
-  simgrid::s4u::Actor::create("etmservice1_a", simgrid::s4u::Host::by_name("cb1-1"), [etmservice1] { etmservice1->run(); });
   /* 3 instances (not using an elastic policy here, see other examples) */
   etmservice1->addHost(simgrid::s4u::Host::by_name("cb1-2"));
   etmservice1->addHost(simgrid::s4u::Host::by_name("cb1-3"));
   etmservice1->addHost(simgrid::s4u::Host::by_name("cb1-4"));
   etmservice1->setExecAmount(1e7);
   etmservice1->setBootDuration(2);
+  simgrid::s4u::Actor::create("etmservice1_a", simgrid::s4u::Host::by_name("cb1-1"), [etmservice1] { etmservice1->run(); });
+
 
   /* ETM2 */
   std::vector<std::string> vservice2 = std::vector<std::string>();
   vservice2.push_back("service2");
   std::shared_ptr<simgrid::s4u::ElasticTaskManager> etmservice2 = std::make_shared<simgrid::s4u::ElasticTaskManager>("etmservice2",vservice2);
   etmservice2->setOutputFunction(returnservice2);
-  simgrid::s4u::Actor::create("etmservice2_a", simgrid::s4u::Host::by_name("cb1-100"), [etmservice2] { etmservice2->run(); });
   /* 2 instances */
   etmservice2->addHost(simgrid::s4u::Host::by_name("cb1-101"));
   etmservice2->addHost(simgrid::s4u::Host::by_name("cb1-102"));
   etmservice2->setExecAmount(5e6);
   etmservice2->setBootDuration(1);
+  simgrid::s4u::Actor::create("etmservice2_a", simgrid::s4u::Host::by_name("cb1-100"), [etmservice2] { etmservice2->run(); });
 
 
   /*
@@ -96,7 +97,7 @@ void run() {
     * (and not necessarily with a fixed period)
     *
   */
-  DataSourceFixedInterval* ds = new DataSourceFixedInterval("service1", .5, 10000);
+  DataSourceFixedInterval* ds = new DataSourceFixedInterval("service1", 1, 10000);
 	simgrid::s4u::ActorPtr dataS = simgrid::s4u::Actor::create("snd", simgrid::s4u::Host::by_name("cb1-1"), [&]{ds->run();});
 
   // kill policies and ETMs

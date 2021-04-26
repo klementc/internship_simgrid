@@ -44,7 +44,7 @@ class DataSourceFixedInterval : public DataSource {
     DataSourceFixedInterval(std::string mbName, RequestType rt, double interval, double reqS)
       :DataSource(mbName, rt), interval_(interval), previousTrigger_(0), reqSize_(reqS) {};
     DataSourceFixedInterval(std::string mbName, double interval, double reqS)
-      :DataSourceFixedInterval(mbName, RequestType::DEFAULT, interval_, reqS) {};
+      :DataSourceFixedInterval(mbName, RequestType::DEFAULT, interval, reqS) {};
     virtual double getNextReqSize();
     virtual double getNextReqTS();
 };

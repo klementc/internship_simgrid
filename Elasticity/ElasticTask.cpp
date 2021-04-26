@@ -55,7 +55,7 @@ ElasticTaskManager::ElasticTaskManager(std::string name)
 void ElasticTaskManager::setExecAmount(int64_t pr)
 {
   xbt_assert(pr>=0, "Cannot have a negative processRatio. you asked for: %d", pr);
-  XBT_DEBUG("nchanged default process cost per request: %d -> %d", defCPUCost_, pr);
+  XBT_DEBUG("changed default process cost per request: %d -> %d", defCPUCost_, pr);
   defCPUCost_ = pr;
 }
 

@@ -22,16 +22,18 @@ XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
 void returnservice1(TaskDescription* td) {
   XBT_INFO("Execution: cost=%lf, Started=%lf, ended=%lf ratio=%lf",
     EXEC_COST, td->startExec, td->endExec, EXEC_RATIO);
-#ifdef USE_JAEGERTRACING
-XBT_DEBUG("CLOSE SPANS");
-	for (auto it = td->parentSpans.rbegin(); it != td->parentSpans.rend(); ++it)
+        for (auto it = td->parentSpans.rbegin(); it != td->parentSpans.rend(); ++it)
   {
-    auto t2 = std::chrono::seconds(946684800)+std::chrono::milliseconds(int(simgrid::s4u::Engine::get_instance()->get_clock()*1000));
+    if((*it)->get() != NULL){
+    auto t2 = std::chrono::seconds(946684800)+std::chrono::microseconds(int(simgrid::s4u::Engine::get_instance()->get_clock()*1000000));
     (*it)->get()->Log({{"end",t2.count()}});
     (*it)->get()->Finish({opentracing::v3::FinishTimestamp(t2)});
-
+    (*it)->reset();
+    (*it) == NULL;
+    }
   }
-#endif /*USE_JAEGERTRACING*/
+        delete td;
+        // TODO DELETE JAEGER
 	// here you can put the msg to a sink if desired
 }
 
