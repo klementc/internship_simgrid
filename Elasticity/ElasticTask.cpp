@@ -32,9 +32,9 @@ std::shared_ptr<opentracing::v3::Tracer> setUpTracer(const char* configFilePath,
 // ELASTICTASKMANAGER --------------------------------------------------------------------------------------------------
 ElasticTaskManager::ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes, std::string jaegConfigFile)
   : serviceName_(name), incMailboxes_(incMailboxes), nextHost_(0),
-    keepGoing(true), defaultProcessRatio_(1e7), waitingReqAmount_(0),
+    keepGoing(true), defCPUCost_(1e7), waitingReqAmount_(0),
     bootDuration_(0), executingReqAmount_(0), dataSizeRatio_(1),
-    counterExecSlot_(0), parallelTasksPerInst_(100), defaultIOCost_(0)
+    counterExecSlot_(0), parallelTasksPerInst_(100), defCPURatio_(1)
 {
   XBT_DEBUG("Creating TaskManager %s", serviceName_.c_str());
   sg_host_load_plugin_init();
@@ -56,15 +56,15 @@ ElasticTaskManager::ElasticTaskManager(std::string name)
 void ElasticTaskManager::setExecAmount(int64_t pr)
 {
   xbt_assert(pr>=0, "Cannot have a negative processRatio. you asked for: %d", pr);
-  XBT_DEBUG("nchanged default process cost per request: %d -> %d", defaultProcessRatio_, pr);
-  defaultProcessRatio_ = pr;
+  XBT_DEBUG("nchanged default process cost per request: %d -> %d", defCPUCost_, pr);
+  defCPUCost_ = pr;
 }
 
 void ElasticTaskManager::setExecRatio(double cost)
 {
   xbt_assert(cost>=0, "Cannot have a negative amount of IO, you asked for: %lf", cost);
-  XBT_DEBUG("changed default I/O cost per request: %lf -> %lf", defaultIOCost_, cost);
-  defaultIOCost_ = cost;
+  XBT_DEBUG("changed default I/O cost per request: %lf -> %lf", defCPURatio_, cost);
+  defCPURatio_ = cost;
 }
 
 void ElasticTaskManager::setParallelTasksPerInst(int s) {
@@ -180,7 +180,7 @@ double ElasticTaskManager::reqPerSec() {
   for (auto i : tiList) {
     simgrid::s4u::Host* a = i->getRunningHost();
     if(a)
-      tot+=(a->get_pstate_speed(a->get_pstate())*a->get_core_count())/defaultProcessRatio_;
+      tot+=(a->get_pstate_speed(a->get_pstate())*a->get_core_count())/defCPUCost_;
   }
   return tot;
 }
@@ -197,7 +197,7 @@ double ElasticTaskManager::getCPUExecAmount(TaskDescription* e){
   if(fCPUCost){
     return fCPUCost(e);
   }else{
-    return defaultProcessRatio_;
+    return defCPUCost_;
   }
 }
 
@@ -205,7 +205,7 @@ double ElasticTaskManager::getExecRatio(TaskDescription* e){
   if(fCPURatio_){
     return fCPURatio_(e);
   } else {
-    return defaultIOCost_;
+    return defCPURatio_;
   }
 }
 

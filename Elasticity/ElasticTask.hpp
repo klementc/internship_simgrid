@@ -93,14 +93,22 @@ class ElasticTaskManager {
   private:
     /* The function to call at the end of an instance's execution */
     std::function<void(TaskDescription*)> outputFunction = [](TaskDescription*) {};
+
+    /* default cpu cost in case fCPUCost_ is not defined (all request will execute this default cost) */
+    int64_t defCPUCost_;
     /* match request type to request cost */
     std::function<double(TaskDescription*)> fCPUCost ;
+
+    /* default cpu ratio in case fCPURatio_ is not defined (all requests will use this default ratio) */
+    double defCPURatio_;
     std::function<double(TaskDescription*)> fCPURatio_ ;
-    std::function<std::string(RequestType)> reqTypeToStr_;
 
     /* Hosts that contain an instance */
     std::vector<simgrid::s4u::Host*> availableHostsList_;
     std::vector<TaskInstance*> tiList;
+
+    /* transforms request type into string for debugging purposes*/
+    std::function<std::string(RequestType)> reqTypeToStr_;
 
     /* ETM properties */
     std::string serviceName_;
@@ -108,8 +116,6 @@ class ElasticTaskManager {
     bool keepGoing;
     int nextHost_;
     double bootDuration_;
-    int64_t defaultProcessRatio_;
-    double defaultIOCost_;
     double dataSizeRatio_;
     int parallelTasksPerInst_;
 
@@ -164,7 +170,7 @@ class ElasticTaskManager {
      * if func is set, the function will always be used to determine the amount of IO to be performed
      */
     void setExecRatio(double ior);
-    void setExecRatioFunction(std::function<double(TaskDescription*)> costIOType);
+    void setExecRatioFunction(std::function<double(TaskDescription*)> td);
 
     /* obtain the processing cost for a given request type */
     double getCPUExecAmount(TaskDescription*);
