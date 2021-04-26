@@ -76,13 +76,13 @@ void ElasticTaskManager::setParallelTasksPerInst(int s) {
 void ElasticTaskManager::setExecAmountFunc(std::function<double(TaskDescription*)> costReqType)
 {
   XBT_DEBUG("Set a new process cost function.");
-  costReqType_ = costReqType;
+  fCPUCost = costReqType;
 }
 
 void ElasticTaskManager::setExecRatioFunction(std::function<double(TaskDescription*)> costIOType)
 {
   XBT_DEBUG("Set a new IO cost function.");
-  costIOType_ = costIOType;
+  fCPURatio_ = costIOType;
 }
 
 
@@ -175,7 +175,7 @@ std::shared_ptr<opentracing::v3::Tracer> ElasticTaskManager::getTracer()
 #endif
 
 double ElasticTaskManager::reqPerSec() {
-  xbt_assert(!costReqType_, "TODO: cannot compute the reqpersec value with this function if cost function is set");
+  xbt_assert(!fCPUCost, "TODO: cannot compute the reqpersec value with this function if cost function is set");
   double tot =0;
   for (auto i : tiList) {
     simgrid::s4u::Host* a = i->getRunningHost();
@@ -194,16 +194,16 @@ void ElasticTaskManager::setReqNames(std::function<std::string(RequestType)> rnT
 
 double ElasticTaskManager::getCPUExecAmount(TaskDescription* e){
   // if the function is defined, use it, otherwise use the single value
-  if(costReqType_){
-    return costReqType_(e);
+  if(fCPUCost){
+    return fCPUCost(e);
   }else{
     return defaultProcessRatio_;
   }
 }
 
 double ElasticTaskManager::getExecRatio(TaskDescription* e){
-  if(costIOType_){
-    return costIOType_(e);
+  if(fCPURatio_){
+    return fCPURatio_(e);
   } else {
     return defaultIOCost_;
   }

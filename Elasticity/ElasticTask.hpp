@@ -94,8 +94,8 @@ class ElasticTaskManager {
     /* The function to call at the end of an instance's execution */
     std::function<void(TaskDescription*)> outputFunction = [](TaskDescription*) {};
     /* match request type to request cost */
-    std::function<double(TaskDescription*)> costReqType_ ;
-    std::function<double(TaskDescription*)> costIOType_ ;
+    std::function<double(TaskDescription*)> fCPUCost ;
+    std::function<double(TaskDescription*)> fCPURatio_ ;
     std::function<std::string(RequestType)> reqTypeToStr_;
 
     /* Hosts that contain an instance */
