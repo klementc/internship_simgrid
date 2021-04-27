@@ -321,6 +321,8 @@ def genETMInitCode(graphs, parDeg=10):
   for service in servList:
     n+=1
     configDef[service] = {"location":"cb1-%d"%(n), "execRatio":"1", "parDeg":parDeg}
+  # add default service in case
+  configDef["default"] = {"location":"cb1-1", "execRatio":"1", "parDeg":parDeg}
   generateConfigFile(configDef, configFname)
 
   # add the code for each service
@@ -495,7 +497,7 @@ int main(int argc, char* argv[]) {
 	simgrid::s4u::Engine* e = new simgrid::s4u::Engine(&argc, argv);
 
 	e->load_platform(argv[1]);
-	simgrid::s4u::Actor::create("main", simgrid::s4u::Host::by_name("cb1-200"), [&]{run(servConfig);});
+	simgrid::s4u::Actor::create("main", simgrid::s4u::Host::by_name(servConfig.find(\"default\")->second.at(0)), [&]{run(servConfig);});
 	e->run();
 	return 0;
 }

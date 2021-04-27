@@ -3,7 +3,6 @@
 #include <simgrid/s4u/Mailbox.hpp>
 #include <simgrid/s4u/Engine.hpp>
 #include <simgrid/s4u/Comm.hpp>
-#include "ElasticPolicy.hpp"
 #include "ElasticTask.hpp"
 #include "DataSource.hpp"
 #include <memory>
@@ -12,8 +11,6 @@
 #define EXEC_COST 1e9
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
-
-
 
 /**
  * Function called as the output of the service
