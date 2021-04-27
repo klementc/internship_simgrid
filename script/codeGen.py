@@ -193,7 +193,6 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
     }
   }
         delete td;
-        // TODO DELETE JAEGER SPANS
       }
       """% (hop, requestType)
         if(not graph.nodes[edge[1]]["serv"] in mapCode):
@@ -296,7 +295,7 @@ def genETMSwitchFunction(graph, requestType, hop = 1):
 
   return mapCode
 
-def genETMInitCode(graphs, parDeg=50):
+def genETMInitCode(graphs, parDeg=10):
   '''
   ETM constructor for a given list of graphs
   (only 1 ETM if a service is in multiple graphs (i.e. different requests))
@@ -315,6 +314,15 @@ def genETMInitCode(graphs, parDeg=50):
       if(not s2Name in servList):
         servList.append(s2Name)
 
+  # build config file
+  configFname = input("Give a name for the service config file:")
+  configDef = {}
+  n=0
+  for service in servList:
+    n+=1
+    configDef[service] = {"location":"cb1-%d"%(n), "execRatio":"1", "parDeg":parDeg}
+  generateConfigFile(configDef, configFname)
+
   # add the code for each service
   print("%d different services"%(len(servList)))
   code = ""
@@ -328,14 +336,18 @@ def genETMInitCode(graphs, parDeg=50):
     std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_%s = std::make_shared<simgrid::s4u::ElasticTaskManager>("%s",v_serv_%s);
     serv_%s->setBootDuration(0);
     // serv_%s->setDataSizeRatio(1); NOT USED ANYMORE, KEEP AS COMMENT IN CASE
-    serv_%s->setParallelTasksPerInst(%d);
+    // modify this value in the configuration file (parDeg)
+    serv_%s->setParallelTasksPerInst(std::stoi(configServices.find(\"%s\")->second.at(2)));
+    // modify this value in the  configuration file (execRatio)
+    serv_%s->setExecRatio(std::stod(configServices.find(\"%s\")->second.at(1)));
     serv_%s->setOutputFunction(return_%s);
     serv_%s->setExecAmountFunc(pr_%s);
     serv_%s->setReqNames(reqTypeToStr);
-    serv_%s->addHost(simgrid::s4u::Host::by_name("cb1-%s"));
-    simgrid::s4u::Actor::create("etm_%s", simgrid::s4u::Host::by_name("cb1-%s"), [serv_%s] { serv_%s->run(); });
+    // set the host location in the config file (location)
+    serv_%s->addHost(simgrid::s4u::Host::by_name(configServices.find(\"%s\")->second.at(0)));
+    simgrid::s4u::Actor::create("etm_%s", simgrid::s4u::Host::by_name(configServices.find(\"%s\")->second.at(0)), [serv_%s] { serv_%s->run(); });
 
-    """%(service,service,service,service,service,service,service,service,service,service,parDeg,service,service,service,service,service,service,hostIndex,service,hostIndex,service,service)
+    """%(service,service,service,service,service,service,service,service,service,service,service,service,service,service,service,service,service,service,service,service,service,service,service,service)
     hostIndex+=1
   return code
 
@@ -431,7 +443,7 @@ int outSizes(RequestType, std::string);
 
   # add constructors
   code+="""
-  void run() {
+  void run(std::map<std::string, std::vector<std::string>> configServices) {
     XBT_INFO("Starting run()");
   """
   l = [mapReqNameToGraph[k] for k in mapReqNameToGraph ]
@@ -464,10 +476,26 @@ int outSizes(RequestType, std::string);
   code+="""
 }
 int main(int argc, char* argv[]) {
+  if(argc <= 2){
+    std::cout << "Wrong execution line" << std::endl;
+		std::cout << argv[0] << "<simgrid-platform-file.xml> <services-config-file.csv>" << std::endl;
+		exit(1);
+	}
+
+  // read the config from the file provided by the user
+  std::ifstream input(argv[2]);
+  std::map<std::string, std::vector<std::string>> servConfig;
+  std::string v;
+  // pass header
+  input>>v>>v>>v>>v;
+  for (std::string servName, servLocation, servExecRatio, servParDeg; input >> servName >> servLocation >> servExecRatio >> servParDeg;) {
+        servConfig[servName] = {servLocation, servExecRatio, servParDeg};
+  }
+
 	simgrid::s4u::Engine* e = new simgrid::s4u::Engine(&argc, argv);
 
 	e->load_platform(argv[1]);
-	simgrid::s4u::Actor::create("main", simgrid::s4u::Host::by_name("cb1-200"), [&]{run();});
+	simgrid::s4u::Actor::create("main", simgrid::s4u::Host::by_name("cb1-200"), [&]{run(servConfig);});
 	e->run();
 	return 0;
 }
@@ -487,6 +515,21 @@ def mergeCodeMaps(mapsToMerge):
         finalMap[k] += "\n"+m[k]
 
   return finalMap
+
+
+def generateConfigFile(mapServProps, fname="configSim.csv"):
+  '''
+    Used to obtain a more flexible executable
+    using this file, you specify the location and execution ratio in a config file instead of values directly in the code
+  '''
+  with open(fname, 'w') as target:
+    target.write("serviceName serviceLocation executionRatio parDeg\n")
+    for serv in mapServProps:
+      location = mapServProps[serv]["location"]
+      execRatio = mapServProps[serv]["execRatio"]
+      parDeg = mapServProps[serv]["parDeg"]
+
+      target.write("%s %s %s %s\n"%(serv, location, str(execRatio), str(parDeg)))
 
 # taken from https://stackoverflow.com/questions/32935510/networkx-digraph-create-subgraph-digraph-by-node
 # warning: don't forget to specify the root node, otherwise it is chosen randomly, which gave me a headache :)
