@@ -1,12 +1,17 @@
-#ifndef DATASOURCE_HPP
-#define DATASOURCE_HPP
+#ifndef ELASTICITY_DATASOURCE_HPP_
+#define ELASTICITY_DATASOURCE_HPP_
+
+#include <vector>
+#include <string>
 
 #include "ElasticConfig.hpp"
 #include "ElasticTask.hpp"
 #include "RequestType.hpp"
 
+namespace sg_microserv {
+
 class DataSource {
-  private:
+ private:
     /**
      * The name of the mailbox to which requests will be sent
      */
@@ -18,14 +23,16 @@ class DataSource {
      * implement this method with your own data production scheme
      */
     virtual double getNextReqTS() = 0;
-    //virtual double getNextFlopAmount() = 0;
-    virtual double getNextReqSize() = 0;
-  public:
-    DataSource(std::string mbName, RequestType rt)
-      : mbName_(mbName), keepGoing_(true), rt_(rt) {};
 
-    DataSource(std::string mbName)
-      : DataSource(mbName_, RequestType::DEFAULT){};
+    // virtual double getNextFlopAmount() = 0;
+    virtual double getNextReqSize() = 0;
+
+ public:
+    DataSource(std::string mbName, RequestType rt)
+      : mbName_(mbName), keepGoing_(true), rt_(rt) {}
+
+    explicit DataSource(std::string mbName)
+      : DataSource(mbName_, RequestType::DEFAULT) {}
     void run();
     void suspend();
 };
@@ -36,15 +43,15 @@ class DataSource {
  *  -> Requests size is fixed
  */
 class DataSourceFixedInterval : public DataSource {
-  private:
+ private:
     double interval_;
     double reqSize_;
     double previousTrigger_;
-  public:
+ public:
     DataSourceFixedInterval(std::string mbName, RequestType rt, double interval, double reqS)
-      :DataSource(mbName, rt), interval_(interval), previousTrigger_(0), reqSize_(reqS) {};
+      :DataSource(mbName, rt), interval_(interval), previousTrigger_(0), reqSize_(reqS) {}
     DataSourceFixedInterval(std::string mbName, double interval, double reqS)
-      :DataSourceFixedInterval(mbName, RequestType::DEFAULT, interval, reqS) {};
+      :DataSourceFixedInterval(mbName, RequestType::DEFAULT, interval, reqS) {}
     virtual double getNextReqSize();
     virtual double getNextReqTS();
 };
@@ -56,15 +63,18 @@ class DataSourceFixedInterval : public DataSource {
  * The file should containe one timestamp per line (first line ignored to allow for csv headers)
  */
 class DataSourceTSFile : public DataSource {
-  private:
+ private:
     std::ifstream file_;
     double reqSize_;
-  public:
+ public:
     DataSourceTSFile(std::string mbName, RequestType rt, std::string fName, double reqSize)
-      :DataSource(mbName, rt), reqSize_(reqSize){file_.open(fName);std::string a;file_>>a;};
+      :DataSource(mbName, rt), reqSize_(reqSize) {file_.open(fName); std::string a; file_ >> a;}
     DataSourceTSFile(std::string mbName, std::string fName, double reqSize)
-      :DataSourceTSFile(mbName, RequestType::DEFAULT, fName, reqSize){}
+      :DataSourceTSFile(mbName, RequestType::DEFAULT, fName, reqSize) {}
     virtual double getNextReqSize();
     virtual double getNextReqTS();
 };
-#endif
+
+}  // namespace sg_microserv
+
+#endif  // ELASTICITY_DATASOURCE_HPP_

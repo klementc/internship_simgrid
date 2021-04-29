@@ -11,6 +11,8 @@
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(Graph_log, "logs for the Graph experiment");
 
+using namespace sg_microserv;
+
 void return2a(TaskDescription* a){
   s4u_Mailbox* m = s4u_Mailbox::by_name("s3a");
 
@@ -62,13 +64,13 @@ void returnf(TaskDescription* a){
 void run()
 {
   XBT_INFO("start graph experiment");
-  std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm1 = std::make_shared<simgrid::s4u::ElasticTaskManager>("s1");
-  std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm2a = std::make_shared<simgrid::s4u::ElasticTaskManager>("s2A");
-  std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm2b = std::make_shared<simgrid::s4u::ElasticTaskManager>("s2B");
+  std::shared_ptr<sg_microserv::ElasticTaskManager> etm1 = std::make_shared<sg_microserv::ElasticTaskManager>("s1");
+  std::shared_ptr<sg_microserv::ElasticTaskManager> etm2a = std::make_shared<sg_microserv::ElasticTaskManager>("s2A");
+  std::shared_ptr<sg_microserv::ElasticTaskManager> etm2b = std::make_shared<sg_microserv::ElasticTaskManager>("s2B");
   std::vector<std::string> v = std::vector<std::string>();
   v.push_back("s3a");
   v.push_back("s3b");
-  std::shared_ptr<simgrid::s4u::ElasticTaskManager> etm3 = std::make_shared<simgrid::s4u::ElasticTaskManager>("s3", v);
+  std::shared_ptr<sg_microserv::ElasticTaskManager> etm3 = std::make_shared<sg_microserv::ElasticTaskManager>("s3", v);
   etm1->setOutputFunction(return1);
   etm2a->setOutputFunction(return2a);
   etm2b->setOutputFunction(return2b);
@@ -83,10 +85,10 @@ void run()
   simgrid::s4u::Actor::create("ET2B", simgrid::s4u::Host::by_name("cb1-3"), [etm2b] { etm2b->run(); });
   simgrid::s4u::Actor::create("ET3", simgrid::s4u::Host::by_name("cb1-4"), [etm3] { etm3->run(); });
 
-  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol1 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
-  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol2a = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
-  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol2b = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
-  simgrid::s4u::ElasticPolicyCPUThreshold* cpuPol3 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.7,0.1);
+  sg_microserv::ElasticPolicyCPUThreshold* cpuPol1 = new sg_microserv::ElasticPolicyCPUThreshold(10,0.7,0.1);
+  sg_microserv::ElasticPolicyCPUThreshold* cpuPol2a = new sg_microserv::ElasticPolicyCPUThreshold(10,0.7,0.1);
+  sg_microserv::ElasticPolicyCPUThreshold* cpuPol2b = new sg_microserv::ElasticPolicyCPUThreshold(10,0.7,0.1);
+  sg_microserv::ElasticPolicyCPUThreshold* cpuPol3 = new sg_microserv::ElasticPolicyCPUThreshold(10,0.7,0.1);
 
   for(int i = 2; i < 100; i++) {
     cpuPol1->addHost(simgrid::s4u::Host::by_name("cb1-" + std::to_string(i)));

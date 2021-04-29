@@ -7,8 +7,9 @@
 #include "ElasticPolicy.hpp"
 #include "ElasticTask.hpp"
 
-using namespace simgrid;
-using namespace s4u;
+// using namespace simgrid;
+// using namespace s4u;
+namespace sg_microserv {
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(elasticPolicyCPU, "Elastic tasks policy manager");
 
@@ -17,13 +18,11 @@ ElasticPolicyCPUThreshold::ElasticPolicyCPUThreshold(double interval, double uCP
 {}
 
 
-void ElasticPolicyCPUThreshold::run()
-{
-  // TODO something realistic
+void ElasticPolicyCPUThreshold::run() {
   int instanceToStartIndex = 0;
 
   XBT_INFO("ElasticPolicyCPUThreshold activated");
-  while(isActive()){
+  while (isActive()) {
     // wait until next scaling
     simgrid::s4u::this_actor::sleep_for(getUpdateInterval());
 
@@ -33,33 +32,32 @@ void ElasticPolicyCPUThreshold::run()
     ElasticTaskManager* etm = getTasks().at(0);
 
     std::vector<double> lv = etm->getCPULoads();
-    double avgLoad = std::accumulate( lv.begin(), lv.end(), 0.0) / lv.size();
+    double avgLoad = std::accumulate(lv.begin(), lv.end(), 0.0) / lv.size();
     std::string s = "";
-    for(auto v: lv) s+= std::to_string(v)+" ";
-    //XBT_INFO("%s", s.c_str());
+    for (auto v : lv) s += std::to_string(v)+" " ;
+
     int execInSlot = etm->getCounterExecSlot();
     XBT_INFO("%f %d %d %d %d %f stats", avgLoad, etm->getInstanceAmount(), etm->getAmountOfWaitingRequests(),
       etm->getAmountOfExecutingRequests(), execInSlot, etm->reqPerSec()*getUpdateInterval());
 
     etm->resetCounterExecSlot();
 
-    if(avgLoad > upperCPUThresh_){
+    if (avgLoad > upperCPUThresh_) {
       // if available hosts, add one
-      //XBT_DEBUG("add host %d", instanceToStartIndex);
-      //etm->addHost(hostPool_.at(instanceToStartIndex));
-      //instanceToStartIndex = (instanceToStartIndex+1) % hostPool_.size();
-      XBT_INFO("add host");
-      if(hostPool_.size()>0) {
+      // XBT_DEBUG("add host %d", instanceToStartIndex);
+      // etm->addHost(hostPool_.at(instanceToStartIndex));
+      // instanceToStartIndex = (instanceToStartIndex+1) % hostPool_.size();
+      if (hostPool_.size() > 0) {
         etm->addHost(hostPool_.at(0));
         hostPool_.erase(hostPool_.begin());
-      }else{
+      } else {
         XBT_INFO("no more hosts to add to service");
       }
-    }else if(avgLoad < lowCPUThresh_ && etm->getInstanceAmount()>1){
+    } else if (avgLoad < lowCPUThresh_ && etm->getInstanceAmount() > 1) {
       // if more than one instance, remove one
       XBT_INFO("remove host");
-      Host* h = etm->removeHost(0);
-      if(h)
+      simgrid::s4u::Host* h = etm->removeHost(0);
+      if (h)
         hostPool_.push_back(h);
     }
 
@@ -69,6 +67,7 @@ void ElasticPolicyCPUThreshold::run()
 
 //    XBT_INFO("%f %d %d %d %d %f stats", avgLoad, etm->getInstanceAmount(), etm->getAmountOfWaitingRequests(),
 //      etm->getAmountOfExecutingRequests(), execInSlot, etm->reqPerSec()*getUpdateInterval());
-
   }
 }
+
+}  // namespace sg_microserv

@@ -1,5 +1,5 @@
-#ifndef ELASTICTASK_HPP
-#define ELASTICTASK_HPP
+#ifndef ELASTICITY_ELASTICTASK_HPP_
+#define ELASTICITY_ELASTICTASK_HPP_
 
 #include <vector>
 #include <queue>
@@ -9,28 +9,29 @@
 #include <iostream>
 #include <map>
 #include <stack>
+#include <memory>
 
 
-#include <boost/uuid/uuid.hpp>            // uuid class
-#include <boost/uuid/uuid_generators.hpp> // generators
-#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
-#include <xbt/base.h>
 #include <xbt/string.hpp>
 #include <xbt/signal.hpp>
 #include <xbt/Extendable.hpp>
-#include <simgrid/simix.h>
 #include <simgrid/s4u/Actor.hpp>
 #include <simgrid/s4u/Io.hpp>
 
 #include "ElasticConfig.hpp"
 #include "RequestType.hpp"
 
+namespace sg_microserv {
+
 class EvntQ {
-  public:
+ public:
     double date;
 
-    EvntQ(double date_) : date(date_) {}
+    explicit EvntQ(double date_) : date(date_) {}
     virtual ~EvntQ() {}
 };
 
@@ -44,7 +45,7 @@ struct Comparator {
 };
 
 class TaskDescription : public EvntQ {
-  public:
+ public:
     boost::uuids::uuid id_;
     int nbHops;
     double firstArrivalDate;
@@ -58,13 +59,14 @@ class TaskDescription : public EvntQ {
     double endExec;
     bool finished;
     // to enable multi routes (the important part will be in the output function, responible
-    //for sending to output mailboxes depending ont the request type)
+    // for sending to output mailboxes depending ont the request type)
     RequestType requestType;
     // if ack needed (ex: waiting for data from a DB before sending a request to the next service)
     // then in the output function: push a mb name on the stack, send requests to the services you want an ack for
     // those services in their return function will pop the mb from the stack and send an ack
     // then the original service, after receiving the ACK, can send a req to the next services
-    // THUS, an important thing to note is that the routing part is dependent on the implenentation of the output services functions
+    // THUS, an important thing to note is that the routing part is
+    // dependent on the implenentation of the output services functions
     std::stack<std::string> ackStack;
     std::vector<double> flopsPerServ;
 
@@ -73,35 +75,37 @@ class TaskDescription : public EvntQ {
 #endif
 
     TaskDescription(boost::uuids::uuid id, double date_, double dSize_, RequestType requestType_)
-        : EvntQ(date_), id_(id), dSize(dSize_), requestType(requestType_), nbHops(0) {
-    }
+        : EvntQ(date_), id_(id), dSize(dSize_), requestType(requestType_),
+        nbHops(0), finished(-1), firstArrivalDate(-1), startExec(-1),
+        queueArrival(-1), instArrival(-1), endExec(-1) {}
 
     TaskDescription(boost::uuids::uuid id, double date_)
         : TaskDescription(id,  date_, -1, RequestType::DEFAULT) {
     }
-    TaskDescription(boost::uuids::uuid id)
+
+    explicit TaskDescription(boost::uuids::uuid id)
       : TaskDescription(id, 0.0) {}
 };
 
-namespace simgrid {
-namespace s4u {
+// namespace simgrid {
+// namespace s4u {
 
 class TaskInstance;
 
 /** @brief */
 class ElasticTaskManager {
-  private:
+ private:
     /* The function to call at the end of an instance's execution */
     std::function<void(TaskDescription*)> outputFunction = [](TaskDescription*) {};
 
     /* default cpu cost in case fCPUCost_ is not defined (all request will execute this default cost) */
     int64_t defCPUCost_;
     /* match request type to request cost */
-    std::function<double(TaskDescription*)> fCPUCost ;
+    std::function<double(TaskDescription*)> fCPUCost;
 
     /* default cpu ratio in case fCPURatio_ is not defined (all requests will use this default ratio) */
     double defCPURatio_;
-    std::function<double(TaskDescription*)> fCPURatio_ ;
+    std::function<double(TaskDescription*)> fCPURatio_;
 
     /* Hosts that contain an instance */
     std::vector<simgrid::s4u::Host*> availableHostsList_;
@@ -143,18 +147,18 @@ class ElasticTaskManager {
     // for async send to taskInstances
     std::vector<simgrid::s4u::CommPtr> pending_comms;
 
-  public:
+ public:
     /* request type to string (very stupid, should be modified) */
     ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes, std::string jaegConfigFile);
     ElasticTaskManager(std::string name, std::vector<std::string> incMailboxes);
-    ElasticTaskManager(std::string name);
+    explicit ElasticTaskManager(std::string name);
 
     /* fetch new task requests*/
     void pollnet(std::string mbName);
     /* create a new instance on the given host*/
-    void addHost(Host *host);
+    void addHost(simgrid::s4u::Host *host);
     /* remove an instance */
-    Host* removeHost(int i);
+    simgrid::s4u::Host* removeHost(int i);
 
     /* modify flops amount per req
      * if func not set, then the setExecAmountn value will be taken for every request
@@ -203,10 +207,10 @@ class ElasticTaskManager {
     // basic metrics
     std::vector<double> getCPULoads();
     unsigned int getInstanceAmount();
-    inline int getCounterExecSlot(){return counterExecSlot_;}
-    inline void setCounterExecSlot(int v){counterExecSlot_=v;}
-    inline void resetCounterExecSlot(){counterExecSlot_=0;}
-    inline std::string getServiceName(){return serviceName_;}
+    inline int getCounterExecSlot() {return counterExecSlot_;}
+    inline void setCounterExecSlot(int v) {counterExecSlot_ = v;}
+    inline void resetCounterExecSlot() {counterExecSlot_ = 0;}
+    inline std::string getServiceName() {return serviceName_;}
     double reqPerSec();
 
     ~ElasticTaskManager();
@@ -222,7 +226,7 @@ class ElasticTaskManager {
 
 
 class TaskInstance {
-  private:
+ private:
     bool keepGoing_;
     std::function<void(TaskDescription*)> outputFunction_ = [](TaskDescription*) {};
     ElasticTaskManager* etm_;
@@ -268,7 +272,7 @@ class TaskInstance {
     */
     void pollEndOfTaskExec();
 
-  public:
+ public:
     TaskInstance(ElasticTaskManager* etm, std::string mbName,
       std::function<void(TaskDescription*)> outputFunction,
       int maxReqInst, double bootTime);
@@ -279,9 +283,9 @@ class TaskInstance {
 
     void run();
     void kill();
-    inline simgrid::s4u::Host* getRunningHost(){return host_;};
+    inline simgrid::s4u::Host* getRunningHost() {return host_;}
 };
 
-}}
+}  // namespace sg_microserv
 
-#endif //ELASTICTASK_HPP
+#endif  // ELASTICITY_ELASTICTASK_HPP_

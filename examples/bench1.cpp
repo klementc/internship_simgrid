@@ -11,6 +11,8 @@
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
 
+using namespace sg_microserv;
+
 /**
  * example command:
  * ./testDoc ../../platforms/dejavu_platform.xml --log=run_log.thres:debug
@@ -60,7 +62,7 @@ void run(int servFlops, std::string tsFile, int parDeg) {
   /* ETM1 */
   std::vector<std::string> vservice1 = std::vector<std::string>();
   vservice1.push_back("service1");
-  std::shared_ptr<simgrid::s4u::ElasticTaskManager> etmservice1 = std::make_shared<simgrid::s4u::ElasticTaskManager>("etmservice1",vservice1);
+  std::shared_ptr<sg_microserv::ElasticTaskManager> etmservice1 = std::make_shared<sg_microserv::ElasticTaskManager>("etmservice1",vservice1);
 
   etmservice1->setOutputFunction(returnservice1);
   etmservice1->setParallelTasksPerInst(parDeg);
@@ -74,7 +76,7 @@ void run(int servFlops, std::string tsFile, int parDeg) {
   std::vector<std::string> vservice2 = std::vector<std::string>();
   vservice2.push_back("service2");
 
-  std::shared_ptr<simgrid::s4u::ElasticTaskManager> etmservice2 = std::make_shared<simgrid::s4u::ElasticTaskManager>("etmservice2",vservice2);
+  std::shared_ptr<sg_microserv::ElasticTaskManager> etmservice2 = std::make_shared<sg_microserv::ElasticTaskManager>("etmservice2",vservice2);
   etmservice2->setParallelTasksPerInst(parDeg);
   etmservice2->setOutputFunction(returnservice2);
   simgrid::s4u::Actor::create("etmservice2_a", simgrid::s4u::Host::by_name("cb1-100"), [etmservice2] { etmservice2->run(); });

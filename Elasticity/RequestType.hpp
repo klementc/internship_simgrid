@@ -1,8 +1,9 @@
-#ifndef REQUESTTYPE_HPP
-#define REQUESTTYPE_HPP
+#ifndef ELASTICITY_REQUESTTYPE_HPP_
+#define ELASTICITY_REQUESTTYPE_HPP_
 
-enum class RequestType
-{
+namespace sg_microserv {
+
+enum class RequestType {
   DEFAULT,
   COMPOSE,
   REGISTER,
@@ -49,4 +50,6 @@ enum class RequestType
   READHOME_2,
 };
 
-#endif /*REQUESTTYPE_HPP*/
+}  // namespace sg_microserv
+
+#endif  // ELASTICITY_REQUESTTYPE_HPP_

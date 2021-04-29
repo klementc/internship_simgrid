@@ -335,7 +335,7 @@ def genETMInitCode(graphs, parDeg=10):
     // create ETM for service %s
     std::vector<std::string> v_serv_%s = std::vector<std::string>();
     v_serv_%s.push_back("%s");
-    std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_%s = std::make_shared<simgrid::s4u::ElasticTaskManager>("%s",v_serv_%s);
+    std::shared_ptr<sg_microserv::ElasticTaskManager> serv_%s = std::make_shared<sg_microserv::ElasticTaskManager>("%s",v_serv_%s);
     serv_%s->setBootDuration(0);
     // serv_%s->setDataSizeRatio(1); NOT USED ANYMORE, KEEP AS COMMENT IN CASE
     // modify this value in the configuration file (parDeg)

@@ -10,6 +10,8 @@
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
 
+using namespace sg_microserv;
+
 /**
  * example command:
  * ./testDoc ../../platforms/dejavu_platform.xml --log=run_log.thres:debug
@@ -63,7 +65,7 @@ void run() {
   /* ETM1 */
   std::vector<std::string> vservice1 = std::vector<std::string>();
   vservice1.push_back("service1");
-  std::shared_ptr<simgrid::s4u::ElasticTaskManager> etmservice1 = std::make_shared<simgrid::s4u::ElasticTaskManager>("etmservice1",vservice1);
+  std::shared_ptr<sg_microserv::ElasticTaskManager> etmservice1 = std::make_shared<sg_microserv::ElasticTaskManager>("etmservice1",vservice1);
 
   etmservice1->setOutputFunction(returnservice1);
   /* 3 instances (not using an elastic policy here, see other examples) */
@@ -78,7 +80,7 @@ void run() {
   /* ETM2 */
   std::vector<std::string> vservice2 = std::vector<std::string>();
   vservice2.push_back("service2");
-  std::shared_ptr<simgrid::s4u::ElasticTaskManager> etmservice2 = std::make_shared<simgrid::s4u::ElasticTaskManager>("etmservice2",vservice2);
+  std::shared_ptr<sg_microserv::ElasticTaskManager> etmservice2 = std::make_shared<sg_microserv::ElasticTaskManager>("etmservice2",vservice2);
   etmservice2->setOutputFunction(returnservice2);
   /* 2 instances */
   etmservice2->addHost(simgrid::s4u::Host::by_name("cb1-101"));

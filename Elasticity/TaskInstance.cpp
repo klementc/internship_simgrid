@@ -3,27 +3,33 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <exception>
+
 #include <simgrid/s4u.hpp>
 #include <simgrid/s4u/Disk.hpp>
 #include <simgrid/s4u/Io.hpp>
 
 #include "ElasticTask.hpp"
 
-using namespace simgrid;
-using namespace s4u;
+// using namespace simgrid;
+// using namespace s4u;
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(elasticInstance, "elastic task instance");
 
+namespace sg_microserv {
+
+
 TaskInstance::TaskInstance(ElasticTaskManager* etm,  std::string mbName,
   std::function<void(TaskDescription*)> outputFunction, int maxReqInInst, double bootTime)
-  : etm_(etm), mbName_(mbName), outputFunction_(outputFunction), keepGoing_(true), maxReqInInst_(maxReqInInst), bootTime_(bootTime)
-{
-  n_empty_ = s4u::Semaphore::create(maxReqInInst);
-  n_full_ = s4u::Semaphore::create(0);
+  : etm_(etm), mbName_(mbName), outputFunction_(outputFunction),
+    keepGoing_(true), maxReqInInst_(maxReqInInst), bootTime_(bootTime),
+    host_(nullptr) {
+  n_empty_ = simgrid::s4u::Semaphore::create(maxReqInInst);
+  n_full_ = simgrid::s4u::Semaphore::create(0);
 
   // atm no execs and IO so block those
-  sem_pollExec_ = s4u::Semaphore::create(maxReqInInst_);
-  for(int i=0;i<maxReqInInst_;i++){sem_pollExec_->acquire();}
+  sem_pollExec_ = simgrid::s4u::Semaphore::create(maxReqInInst_);
+  for (int i=0 ; i < maxReqInInst_ ; i++) {sem_pollExec_->acquire();}
 
   /** if no disks are available on the host, add one in case the user wants to perform some I/O operations
    * IMPORTANT: replaced by an exec bound for now
@@ -45,11 +51,10 @@ TaskInstance::TaskInstance(ElasticTaskManager* etm,  std::string mbName,
 
 TaskInstance::TaskInstance(ElasticTaskManager* etm, std::string mbName,
       std::function<void(TaskDescription*)> outputFunction, int par)
-  :TaskInstance(etm,mbName,outputFunction,par, 0)
+  :TaskInstance(etm, mbName, outputFunction, par, 0)
   {}
 
-void TaskInstance::pollTasks()
-{
+void TaskInstance::pollTasks() {
   simgrid::s4u::Mailbox* mbp = simgrid::s4u::Mailbox::by_name(mbName_);
 
 
@@ -58,11 +63,11 @@ void TaskInstance::pollTasks()
   XBT_DEBUG("start poll with %d parallel get_async", maxReqInInst_);
   TaskDescription* tasksV[parComSize];
 
-  for(int i=0;i<parComSize;i++){
+  for (int i=0 ; i < parComSize ; i++) {
     commV.push_back(mbp->get_async<TaskDescription>(&(tasksV[i])));
   }
 
-  while(keepGoing_) {
+  while (keepGoing_) {
     int newMsgPos = simgrid::s4u::Comm::wait_any(&commV);
     TaskDescription* taskRequest = tasksV[newMsgPos];
     taskRequest->instArrival = simgrid::s4u::Engine::get_clock();
@@ -70,19 +75,17 @@ void TaskInstance::pollTasks()
     commV.insert(commV.begin() + newMsgPos, mbp->get_async<TaskDescription>(&(tasksV[newMsgPos])));
     // we wait until there is a slot to execute a task before putting the request in the slot
     int n = n_empty_->acquire_timeout(1000);
-    if(!(n==0))
+    if (!(n == 0))
       continue;
     reqs.push_back(taskRequest);
     XBT_DEBUG("instance received a request %p at index %d, queue size: %d", taskRequest, newMsgPos, reqs.size());
 
     n_full_->release();
   }
-
 }
 
-void TaskInstance::pollEndOfTaskExec()
-{
-  while(keepGoing_){
+void TaskInstance::pollEndOfTaskExec() {
+  while (keepGoing_) {
     sem_pollExec_->acquire();
 
     int index = simgrid::s4u::Exec::wait_any(&pending_execs);
@@ -92,12 +95,13 @@ void TaskInstance::pollEndOfTaskExec()
     etm_->modifExecutingReqAmount(-1);
     etm_->setCounterExecSlot(etm_->getCounterExecSlot()+1);
 
-
 #ifdef USE_JAEGERTRACING
-        auto t2 = std::chrono::seconds(946684800)+std::chrono::microseconds(int(Engine::get_instance()->get_clock()*1000000));
-        // TODO Check if no problem on spans
-        if(td->parentSpans.size()>0)
-          td->parentSpans.at(td->parentSpans.size()-1)->get()->Log({{"endExec", Engine::get_instance()->get_clock()}});
+        auto t2 = std::chrono::seconds(946684800)+std::chrono::microseconds(
+            static_cast<int>(simgrid::s4u::Engine::get_instance()->get_clock()*1000000));
+        // Check if no problem on spans
+        if (td->parentSpans.size() > 0)
+          td->parentSpans.at(td->parentSpans.size()-1)->get()->Log(
+            {{"endExec", simgrid::s4u::Engine::get_instance()->get_clock()}});
 #endif
 
     // remove execPtr from the vector since it finished
@@ -105,27 +109,29 @@ void TaskInstance::pollEndOfTaskExec()
     pending_execs.erase(pending_execs.begin()+index);
 
     XBT_DEBUG("End of execution for %p, call output function", td);
-    simgrid::s4u::ActorPtr out = simgrid::s4u::Actor::create(mbName_+"outputf"+boost::uuids::to_string(uuidGen_()),s4u::Host::current(),[&]{outputFunction_(td);});
-    if(keepGoing_)n_empty_->release();
+    simgrid::s4u::ActorPtr out = simgrid::s4u::Actor::create(
+      mbName_+"outputf"+boost::uuids::to_string(uuidGen_()), simgrid::s4u::Host::current(), [&]{outputFunction_(td);});
+    if (keepGoing_)n_empty_->release();
     }
 }
 
-void TaskInstance::run()
-{
-  host_ = this_actor::get_host();
+void TaskInstance::run() {
+  host_ = simgrid::s4u::this_actor::get_host();
 
-  poll = simgrid::s4u::Actor::create(mbName_+boost::uuids::to_string(uuidGen_()),s4u::Host::current(),[&]{pollTasks();});
-  pollEnd = simgrid::s4u::Actor::create(mbName_+"pollEnd",s4u::Host::current(),[&]{pollEndOfTaskExec();});
+  poll = simgrid::s4u::Actor::create(
+    mbName_+boost::uuids::to_string(uuidGen_()), simgrid::s4u::Host::current(), [&]{pollTasks();});
+  pollEnd = simgrid::s4u::Actor::create(mbName_+"pollEnd",
+    simgrid::s4u::Host::current(), [&]{pollEndOfTaskExec();});
   // boot duration (just sleep so that we don't process any request in the node until bootime elapsed)
-  this_actor::sleep_for(bootTime_);
+  simgrid::s4u::this_actor::sleep_for(bootTime_);
 
-  while(keepGoing_){
-    try{
+  while (keepGoing_) {
+    try {
       int n = n_full_->acquire_timeout(1000);
-      if(!(n==0))
+      if (!(n == 0))
         continue;
 
-      if(reqs.size()==0){
+      if (reqs.size() == 0) {
         continue;
       }
       // receive data from mailbox
@@ -135,13 +141,18 @@ void TaskInstance::run()
       XBT_DEBUG("instance received req %p", td);
 #ifdef USE_JAEGERTRACING
         std::string rName = etm_->getStrFromReqType(td->requestType);
-        auto t1 = std::chrono::seconds(946684800)+std::chrono::microseconds(int(Engine::get_instance()->get_clock()*1000000));
-        auto span = td->parentSpans.size()==0?
-          etm_->getTracer().get()->StartSpan( rName,
+        auto t1 = std::chrono::seconds(946684800)+std::chrono::microseconds(
+            static_cast<int>(simgrid::s4u::Engine::get_instance()->get_clock()*1000000));
+        auto span = td->parentSpans.size() == 0?
+          etm_->getTracer().get()->StartSpan(rName,
             {opentracing::v3::StartTimestamp(t1)}) :
-          etm_->getTracer().get()->StartSpan( rName,
-            {opentracing::v3::StartTimestamp(t1), opentracing::v3::ChildOf(&td->parentSpans.at(td->parentSpans.size()-1)->get()->context())});
-        span->Log({ {"nbInst:", etm_->getInstanceAmount()},{"waitingReqAtStart:", etm_->getAmountOfWaitingRequests()},{"alreadyExecutingAtStart:", etm_->getAmountOfExecutingRequests()},{"startExec", Engine::get_instance()->get_clock()}});
+          etm_->getTracer().get()->StartSpan(rName,
+            {opentracing::v3::StartTimestamp(t1), opentracing::v3::ChildOf(
+              &td->parentSpans.at(td->parentSpans.size()-1)->get()->context())});
+        span->Log({ {"nbInst:", etm_->getInstanceAmount()},
+          {"waitingReqAtStart:", etm_->getAmountOfWaitingRequests()},
+          {"alreadyExecutingAtStart:", etm_->getAmountOfExecutingRequests()},
+          {"startExec", simgrid::s4u::Engine::get_instance()->get_clock()}});
         std::unique_ptr<opentracing::v3::Span>* t = new std::unique_ptr<opentracing::v3::Span>();
         *t = std::move(span);
         td->parentSpans.push_back(t);
@@ -162,36 +173,34 @@ void TaskInstance::run()
         double execAmount = etm_->getCPUExecAmount(td);
         double realToBeExecuted = execRatio * execAmount;
         /* TODO: verify if it works with multiple cores or if I need to multiply here */
-        double boundValue = execRatio * this_actor::get_host()->get_speed();
+        double boundValue = execRatio * simgrid::s4u::this_actor::get_host()->get_speed();
         XBT_DEBUG("Start execution of request. Flops: %lf, Ratio: %lf, CPUBound: %lf/%lf",
-          realToBeExecuted, execRatio, boundValue, this_actor::get_host()->get_speed());
+          realToBeExecuted, execRatio, boundValue, simgrid::s4u::this_actor::get_host()->get_speed());
 
         /* don't launch it directly since we want to set a bound*/
-        simgrid::s4u::ExecPtr execP = simgrid::s4u::this_actor::exec_init(realToBeExecuted); // this_actor::exec_async(realToBeExecuted);
+        simgrid::s4u::ExecPtr execP = simgrid::s4u::this_actor::exec_init(realToBeExecuted);
+        // this_actor::exec_async(realToBeExecuted);
         execP->set_bound(boundValue);
         execP->start();
 
-        // append the execPTr to the exec vector of executing requests, it will be handled in the endExec polling actor once finished
+        // append the execPTr to the exec vector of executing requests,
+        // it will be handled in the endExec polling actor once finished
         pending_execs.push_back(execP);
         execMap_.insert(std::pair<simgrid::s4u::ExecPtr, TaskDescription*>(execP, td));
 
         // allow the pollEnds to execute
         sem_pollExec_->release();
-
-
-    }catch(Exception e){XBT_INFO("woops: %s", e.what());}
+    } catch (std::exception e) {XBT_INFO("woops: %s", e.what());}
   }
-
 }
 
-void TaskInstance::kill()
-{
+void TaskInstance::kill() {
   XBT_INFO("Kill taskinstance td size: %d %d", reqs.size(), execMap_.size());
 
   keepGoing_ = false;
   // don't receive requests anymore
-  //simgrid::s4u::Comm::wait_all(&commV);
-  for(auto c : commV){
+  // simgrid::s4u::Comm::wait_all(&commV);
+  for (auto c : commV) {
     c->cancel();
   }
 
@@ -199,7 +208,7 @@ void TaskInstance::kill()
   // IF WE KILL THE INSTANCE BUT SOME EXEC_ASYNC ARE STILL EXECUTING
   // WAIT FOR THE LAST ONE TO FINISH
   // IT SEEMS TO AVOID A SEGFAULT IN THE HOSTLOAD PLUGIN, BUT ITS A HORRIBLE WAY TO DO IT I GUESS
-  if(pending_execs.size()>0)
+  if (pending_execs.size() > 0)
     pending_execs.at(pending_execs.size()-1)->wait();
 
   poll->kill();
@@ -208,3 +217,4 @@ void TaskInstance::kill()
   n_full_->release();
   sem_pollExec_->release();
 }
+}  // namespace sg_microserv

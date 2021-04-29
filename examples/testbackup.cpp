@@ -8,6 +8,8 @@
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
 
+using namespace sg_microserv;
+
 void returnservice1(TaskDescription* td) {
 	XBT_DEBUG("Return function of service service1");
 	s4u_Mailbox* mservice2 = s4u_Mailbox::by_name("service2");
@@ -18,14 +20,14 @@ void run() {
 XBT_INFO("Starting run()");
 std::vector<std::string> vservice1 = std::vector<std::string>();
 vservice1.push_back("service1");
-std::shared_ptr<simgrid::s4u::ElasticTaskManager> etmservice1 = std::make_shared<simgrid::s4u::ElasticTaskManager>("etmservice1",vservice1);
+std::shared_ptr<sg_microserv::ElasticTaskManager> etmservice1 = std::make_shared<sg_microserv::ElasticTaskManager>("etmservice1",vservice1);
 simgrid::s4u::Actor::create("etmservice1_a", simgrid::s4u::Host::by_name("cb1-1"), [etmservice1] { etmservice1->run(); });
 etmservice1->addHost(simgrid::s4u::Host::by_name("cb1-1"));
 etmservice1->setExecAmount(1e8);
 etmservice1->setOutputFunction(returnservice1);
 etmservice1->setBootDuration(2);
 
-	simgrid::s4u::ElasticPolicyCPUThreshold* polcpuPol1 = new simgrid::s4u::ElasticPolicyCPUThreshold(10,0.2,0.95);
+	sg_microserv::ElasticPolicyCPUThreshold* polcpuPol1 = new sg_microserv::ElasticPolicyCPUThreshold(10,0.2,0.95);
 polcpuPol1->addHost(simgrid::s4u::Host::by_name("cb1-1"));
 polcpuPol1->addHost(simgrid::s4u::Host::by_name("cb1-2"));
 polcpuPol1->addHost(simgrid::s4u::Host::by_name("cb1-3"));

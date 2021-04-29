@@ -10,6 +10,8 @@
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
 
+using namespace sg_microserv;
+
 void return_nginx_web_server(TaskDescription* td) {
 	XBT_INFO("Return function of service nginx");
   switch (td->requestType)
@@ -88,7 +90,7 @@ void run() {
   // create ETMs
   std::vector<std::string> v_serv_nginx_web_server = std::vector<std::string>();
   v_serv_nginx_web_server.push_back("nginx_web_server");
-  std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_nginx_web_server = std::make_shared<simgrid::s4u::ElasticTaskManager>("nginx_web_server",v_serv_nginx_web_server);
+  std::shared_ptr<sg_microserv::ElasticTaskManager> serv_nginx_web_server = std::make_shared<sg_microserv::ElasticTaskManager>("nginx_web_server",v_serv_nginx_web_server);
   serv_nginx_web_server->setBootDuration(0);
   serv_nginx_web_server->setOutputFunction(return_nginx_web_server);
   serv_nginx_web_server->setExecAmountFunc(pr_nginx_web_server);
@@ -96,7 +98,7 @@ void run() {
 
   std::vector<std::string> v_serv_user_timeline = std::vector<std::string>();
   v_serv_user_timeline.push_back("user_timeline");
-  std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_user_timeline = std::make_shared<simgrid::s4u::ElasticTaskManager>("user_timeline",v_serv_user_timeline);
+  std::shared_ptr<sg_microserv::ElasticTaskManager> serv_user_timeline = std::make_shared<sg_microserv::ElasticTaskManager>("user_timeline",v_serv_user_timeline);
   serv_user_timeline->setBootDuration(0);
   serv_user_timeline->setOutputFunction(return_user_timeline);
   serv_user_timeline->setExecAmountFunc(pr_user_timeline);
@@ -106,7 +108,7 @@ void run() {
 
   std::vector<std::string> v_serv_post_storage = std::vector<std::string>();
   v_serv_post_storage.push_back("post_storage");
-  std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_post_storage = std::make_shared<simgrid::s4u::ElasticTaskManager>("post_storage",v_serv_post_storage);
+  std::shared_ptr<sg_microserv::ElasticTaskManager> serv_post_storage = std::make_shared<sg_microserv::ElasticTaskManager>("post_storage",v_serv_post_storage);
   serv_post_storage->setBootDuration(0);
   serv_post_storage->setOutputFunction(return_post_storage);
   serv_post_storage->setExecAmountFunc(pr_post_storage);

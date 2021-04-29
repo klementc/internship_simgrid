@@ -10,6 +10,8 @@
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the test");
 
+using namespace sg_microserv;
+
 void receiver(){
   s4u_Mailbox* mb = s4u_Mailbox::by_name("testOut");
   while(simgrid::s4u::Engine::get_clock() < 150){

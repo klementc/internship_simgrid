@@ -10,6 +10,9 @@
 #include <memory>
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(run_log, "logs of the experiment");
+
+using namespace sg_microserv;
+
 /* RETURN FUNCTIONS, AUTO GENERATED CODE, MODIFY IF YOU KNOW WHAT YOU WANT */
     void return_nginx_web_server(TaskDescription* td) {
       XBT_DEBUG("Return function of service nginx_web_server");
@@ -422,7 +425,7 @@ return -1;
     // create ETM for service nginx_web_server
     std::vector<std::string> v_serv_nginx_web_server = std::vector<std::string>();
     v_serv_nginx_web_server.push_back("nginx_web_server");
-    std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_nginx_web_server = std::make_shared<simgrid::s4u::ElasticTaskManager>("nginx_web_server",v_serv_nginx_web_server);
+    std::shared_ptr<sg_microserv::ElasticTaskManager> serv_nginx_web_server = std::make_shared<sg_microserv::ElasticTaskManager>("nginx_web_server",v_serv_nginx_web_server);
     serv_nginx_web_server->setBootDuration(0);
     serv_nginx_web_server->setOutputFunction(return_nginx_web_server);
     serv_nginx_web_server->setExecAmountFunc(pr_nginx_web_server);
@@ -433,7 +436,7 @@ return -1;
     // create ETM for service media_service
     std::vector<std::string> v_serv_media_service = std::vector<std::string>();
     v_serv_media_service.push_back("media_service");
-    std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_media_service = std::make_shared<simgrid::s4u::ElasticTaskManager>("media_service",v_serv_media_service);
+    std::shared_ptr<sg_microserv::ElasticTaskManager> serv_media_service = std::make_shared<sg_microserv::ElasticTaskManager>("media_service",v_serv_media_service);
     serv_media_service->setBootDuration(0);
     serv_media_service->setOutputFunction(return_media_service);
     serv_media_service->setExecAmountFunc(pr_media_service);
@@ -444,7 +447,7 @@ return -1;
     // create ETM for service compose_post_service
     std::vector<std::string> v_serv_compose_post_service = std::vector<std::string>();
     v_serv_compose_post_service.push_back("compose_post_service");
-    std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_compose_post_service = std::make_shared<simgrid::s4u::ElasticTaskManager>("compose_post_service",v_serv_compose_post_service);
+    std::shared_ptr<sg_microserv::ElasticTaskManager> serv_compose_post_service = std::make_shared<sg_microserv::ElasticTaskManager>("compose_post_service",v_serv_compose_post_service);
     serv_compose_post_service->setBootDuration(0);
     serv_compose_post_service->setOutputFunction(return_compose_post_service);
     serv_compose_post_service->setExecAmountFunc(pr_compose_post_service);
@@ -455,7 +458,7 @@ return -1;
     // create ETM for service user_service
     std::vector<std::string> v_serv_user_service = std::vector<std::string>();
     v_serv_user_service.push_back("user_service");
-    std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_user_service = std::make_shared<simgrid::s4u::ElasticTaskManager>("user_service",v_serv_user_service);
+    std::shared_ptr<sg_microserv::ElasticTaskManager> serv_user_service = std::make_shared<sg_microserv::ElasticTaskManager>("user_service",v_serv_user_service);
     serv_user_service->setBootDuration(0);
     serv_user_service->setOutputFunction(return_user_service);
     serv_user_service->setExecAmountFunc(pr_user_service);
@@ -466,7 +469,7 @@ return -1;
     // create ETM for service text_service
     std::vector<std::string> v_serv_text_service = std::vector<std::string>();
     v_serv_text_service.push_back("text_service");
-    std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_text_service = std::make_shared<simgrid::s4u::ElasticTaskManager>("text_service",v_serv_text_service);
+    std::shared_ptr<sg_microserv::ElasticTaskManager> serv_text_service = std::make_shared<sg_microserv::ElasticTaskManager>("text_service",v_serv_text_service);
     serv_text_service->setBootDuration(0);
     serv_text_service->setOutputFunction(return_text_service);
     serv_text_service->setExecAmountFunc(pr_text_service);
@@ -477,7 +480,7 @@ return -1;
     // create ETM for service user_mention_service
     std::vector<std::string> v_serv_user_mention_service = std::vector<std::string>();
     v_serv_user_mention_service.push_back("user_mention_service");
-    std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_user_mention_service = std::make_shared<simgrid::s4u::ElasticTaskManager>("user_mention_service",v_serv_user_mention_service);
+    std::shared_ptr<sg_microserv::ElasticTaskManager> serv_user_mention_service = std::make_shared<sg_microserv::ElasticTaskManager>("user_mention_service",v_serv_user_mention_service);
     serv_user_mention_service->setBootDuration(0);
     serv_user_mention_service->setOutputFunction(return_user_mention_service);
     serv_user_mention_service->setExecAmountFunc(pr_user_mention_service);
@@ -488,7 +491,7 @@ return -1;
     // create ETM for service url_shorten_service
     std::vector<std::string> v_serv_url_shorten_service = std::vector<std::string>();
     v_serv_url_shorten_service.push_back("url_shorten_service");
-    std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_url_shorten_service = std::make_shared<simgrid::s4u::ElasticTaskManager>("url_shorten_service",v_serv_url_shorten_service);
+    std::shared_ptr<sg_microserv::ElasticTaskManager> serv_url_shorten_service = std::make_shared<sg_microserv::ElasticTaskManager>("url_shorten_service",v_serv_url_shorten_service);
     serv_url_shorten_service->setBootDuration(0);
     serv_url_shorten_service->setOutputFunction(return_url_shorten_service);
     serv_url_shorten_service->setExecAmountFunc(pr_url_shorten_service);
@@ -499,7 +502,7 @@ return -1;
     // create ETM for service post_storage_service
     std::vector<std::string> v_serv_post_storage_service = std::vector<std::string>();
     v_serv_post_storage_service.push_back("post_storage_service");
-    std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_post_storage_service = std::make_shared<simgrid::s4u::ElasticTaskManager>("post_storage_service",v_serv_post_storage_service);
+    std::shared_ptr<sg_microserv::ElasticTaskManager> serv_post_storage_service = std::make_shared<sg_microserv::ElasticTaskManager>("post_storage_service",v_serv_post_storage_service);
     serv_post_storage_service->setBootDuration(0);
     serv_post_storage_service->setOutputFunction(return_post_storage_service);
     serv_post_storage_service->setExecAmountFunc(pr_post_storage_service);
@@ -510,7 +513,7 @@ return -1;
     // create ETM for service user_timeline_service
     std::vector<std::string> v_serv_user_timeline_service = std::vector<std::string>();
     v_serv_user_timeline_service.push_back("user_timeline_service");
-    std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_user_timeline_service = std::make_shared<simgrid::s4u::ElasticTaskManager>("user_timeline_service",v_serv_user_timeline_service);
+    std::shared_ptr<sg_microserv::ElasticTaskManager> serv_user_timeline_service = std::make_shared<sg_microserv::ElasticTaskManager>("user_timeline_service",v_serv_user_timeline_service);
     serv_user_timeline_service->setBootDuration(0);
     serv_user_timeline_service->setOutputFunction(return_user_timeline_service);
     serv_user_timeline_service->setExecAmountFunc(pr_user_timeline_service);
@@ -521,7 +524,7 @@ return -1;
     // create ETM for service write_home_timeline_service
     std::vector<std::string> v_serv_write_home_timeline_service = std::vector<std::string>();
     v_serv_write_home_timeline_service.push_back("write_home_timeline_service");
-    std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_write_home_timeline_service = std::make_shared<simgrid::s4u::ElasticTaskManager>("write_home_timeline_service",v_serv_write_home_timeline_service);
+    std::shared_ptr<sg_microserv::ElasticTaskManager> serv_write_home_timeline_service = std::make_shared<sg_microserv::ElasticTaskManager>("write_home_timeline_service",v_serv_write_home_timeline_service);
     serv_write_home_timeline_service->setBootDuration(0);
     serv_write_home_timeline_service->setOutputFunction(return_write_home_timeline_service);
     serv_write_home_timeline_service->setExecAmountFunc(pr_write_home_timeline_service);
@@ -532,7 +535,7 @@ return -1;
     // create ETM for service social_graph_service
     std::vector<std::string> v_serv_social_graph_service = std::vector<std::string>();
     v_serv_social_graph_service.push_back("social_graph_service");
-    std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_social_graph_service = std::make_shared<simgrid::s4u::ElasticTaskManager>("social_graph_service",v_serv_social_graph_service);
+    std::shared_ptr<sg_microserv::ElasticTaskManager> serv_social_graph_service = std::make_shared<sg_microserv::ElasticTaskManager>("social_graph_service",v_serv_social_graph_service);
     serv_social_graph_service->setBootDuration(0);
     serv_social_graph_service->setOutputFunction(return_social_graph_service);
     serv_social_graph_service->setExecAmountFunc(pr_social_graph_service);
@@ -543,7 +546,7 @@ return -1;
     // create ETM for service unique_id_service
     std::vector<std::string> v_serv_unique_id_service = std::vector<std::string>();
     v_serv_unique_id_service.push_back("unique_id_service");
-    std::shared_ptr<simgrid::s4u::ElasticTaskManager> serv_unique_id_service = std::make_shared<simgrid::s4u::ElasticTaskManager>("unique_id_service",v_serv_unique_id_service);
+    std::shared_ptr<sg_microserv::ElasticTaskManager> serv_unique_id_service = std::make_shared<sg_microserv::ElasticTaskManager>("unique_id_service",v_serv_unique_id_service);
     serv_unique_id_service->setBootDuration(0);
     serv_unique_id_service->setOutputFunction(return_unique_id_service);
     serv_unique_id_service->setExecAmountFunc(pr_unique_id_service);
