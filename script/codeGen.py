@@ -16,8 +16,8 @@ def addSizes(mapReqs):
   '''
   DEFAULTOUTSIZE = 100
   d = {}
-  code="""\nint outSizes(RequestType t, std::string nextServ){
-    switch (t)\n{"""
+  code="""\nint outSizes(RequestType t, std::string nextServ) {
+    switch (t) {\n"""
   for k in mapReqs:
     graph = mapReqs[k]
     fromFile = graphReader.query_yes_no("Do you want to add output sizes for request %s from a size file? (Otherwise use default value: %d bytes)"%(k, DEFAULTOUTSIZE), default="no")
@@ -25,7 +25,6 @@ def addSizes(mapReqs):
       pathSizes = input("Please give the path to your size file: ")
       # for allowing a name in dot I replaced - by _ in the graph, do the same here for the container names
       d = {row[0].replace("-", "_") : row[2] for _, row in pd.read_csv(pathSizes).iterrows()}
-      #d = {re.split(r'(_\d)', row[0], maxsplit = 1)[0] : row[2] for _, row in pd.read_csv(pathSizes).iterrows()}
     else:
       print("Using default size %d for all messages"%(DEFAULTOUTSIZE))
 
@@ -54,10 +53,10 @@ def addSizes(mapReqs):
             present = kd
         if(present):
           print("found in d: amount: %d, value=%d/%d"%(outServs[o],int(d[present]),outServs[o]))
-          code += "\tif(nextServ == \"%s\"){return %d;}\n"%(o,int(d[present]/outServs[o])) # we divide by the amount of instance of this service in the request
+          code += "\tif (nextServ == \"%s\") {return %d;}\n"%(o,int(d[present]/outServs[o])) # we divide by the amount of instance of this service in the request
         else:
           print("%s not in d, use default"%(o))
-          code += "\tif(nextServ == \"%s\"){return %d;}\n"%(o,DEFAULTOUTSIZE)
+          code += "\tif (nextServ == \"%s\") {return %d;}\n"%(o,DEFAULTOUTSIZE)
       code += "\tbreak;\n"
   code+="""}return -1; // WE SHOULD NEVER GET TO THAT POINT\n}\n"""
 
@@ -82,12 +81,12 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
     # TODO clean DELETIONS of spans
     code = """
     \ncase RequestType::%s:
-    if(td->nbHops == %d){
+    if (td->nbHops == %d) {
       XBT_DEBUG("Output Function %s (FINAL NODE, NO CHILD!)");
       // TODO DELETE
               for (auto it = td->parentSpans.rbegin(); it != td->parentSpans.rend(); ++it)
   {
-    if((*it)->get() != NULL){
+    if ((*it)->get() != NULL) {
     auto t2 = std::chrono::seconds(946684800)+std::chrono::microseconds(int(simgrid::s4u::Engine::get_instance()->get_clock()*1000000));
     (*it)->get()->Log({{"end",t2.count()}});
     (*it)->get()->Finish({opentracing::v3::FinishTimestamp(t2)});
@@ -111,7 +110,7 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
       srcServName = graph.nodes[edge[0]]["serv"]
       # generate the code for this node with one put per parallel child
       code = """
-      if(td->nbHops == %d){
+      if (td->nbHops == %d) {
         XBT_DEBUG("Output Function for %s (PARALLEL CHILDS)");
         std::vector<simgrid::s4u::CommPtr> comV;
         simgrid::s4u::CommPtr com;
@@ -158,7 +157,7 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
 
       # code to be used
       code = """
-      if(td->nbHops == %d){
+      if (td->nbHops == %d) {
         XBT_DEBUG("Output Function for %s, put to %s");
         s4u_Mailbox* m_%s = s4u_Mailbox::by_name("%s");
         m_%s->put(td, outSizes(td->requestType, \"%s\"));
@@ -180,11 +179,11 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
         #print("%s is the last node"%(edge[1]))
         # code to be used
         code ="""
-      if(td->nbHops == %d){
+      if (td->nbHops == %d) {
         XBT_DEBUG("Output Function for %s, Final service, DELETE");
         for (auto it = td->parentSpans.rbegin(); it != td->parentSpans.rend(); ++it)
   {
-    if((*it)->get() != NULL){
+    if ((*it)->get() != NULL) {
     auto t2 = std::chrono::seconds(946684800)+std::chrono::microseconds(int(simgrid::s4u::Engine::get_instance()->get_clock()*1000000));
     (*it)->get()->Log({{"end",t2.count()}});
     (*it)->get()->Finish({opentracing::v3::FinishTimestamp(t2)});
@@ -221,7 +220,7 @@ def genETMSwitchFunction(graph, requestType, hop = 1):
     dur=int(list(graph.nodes(data=True))[0][1]["dur"])
     code = """
     \ncase RequestType::%s:
-    if(td->nbHops == %d){XBT_DEBUG("Entered cost Function for %s"); return %d;}
+    if (td->nbHops == %d) {XBT_DEBUG("Entered cost Function for %s"); return %d;}
     """ % (requestType, hop, servName,int(dur)*1000)
     if(not servName in mapCode):
       mapCode[servName] = code
@@ -241,7 +240,7 @@ def genETMSwitchFunction(graph, requestType, hop = 1):
       dur = int(graph.nodes[edge[0]]["dur"])
 
       code ="""
-      if(td->nbHops == %d){XBT_DEBUG("Entered cost Function for %s"); return %d;\n}\nbreak;\n
+      if (td->nbHops == %d) {XBT_DEBUG("Entered cost Function for %s"); return %d;\n}\nbreak;\n
       """% (hop, outputServName, int(dur)*1000)
       if(not graph.nodes[edge[0]]["serv"] in mapCode):
         mapCode[graph.nodes[edge[0]]["serv"]] =  "\ncase RequestType::%s:"%(requestType)
@@ -265,7 +264,7 @@ def genETMSwitchFunction(graph, requestType, hop = 1):
 
       # code to be used
       code = """
-      if(td->nbHops == %d){XBT_DEBUG("Entered cost Function for %s"); return %s;}
+      if (td->nbHops == %d) {XBT_DEBUG("Entered cost Function for %s"); return %s;}
       """ % (hop, requestType, dur*1000)
 
       # add it to the map
@@ -281,7 +280,7 @@ def genETMSwitchFunction(graph, requestType, hop = 1):
         #print("%s is the last node"%(edge[1]))
         # code to be used
         code ="""
-      if(td->nbHops == %d){XBT_DEBUG("Entered cost Function for %s (FINAL NODE, NO CHILD!)"); return %s;}
+      if (td->nbHops == %d) {XBT_DEBUG("Entered cost Function for %s (FINAL NODE, NO CHILD!)"); return %s;}
       """% (hop, requestType, int(graph.nodes[edge[1]]["dur"])*1000)
         if(not graph.nodes[edge[1]]["serv"] in mapCode):
           mapCode[graph.nodes[edge[1]]["serv"]] =  "\ncase RequestType::%s:"%(requestType)
@@ -422,8 +421,7 @@ int outSizes(RequestType, std::string);
         prFunctionCodes[serv] = """
     double pr_%s(TaskDescription* td) {
       XBT_DEBUG("pr function of service %s");
-      switch (td->requestType)
-      {"""%(serv, serv)
+      switch (td->requestType) {"""%(serv, serv)
 
       # now add the case for this request
       prFunctionCodes[serv] += cases[serv]
@@ -436,8 +434,8 @@ int outSizes(RequestType, std::string);
   code += addSizes(mapReqNameToGraph)
 
   # add dummy reqtype to string:
-  code += """\nstd::string reqTypeToStr(RequestType t){
-    switch (t)\n{"""
+  code += """\nstd::string reqTypeToStr(RequestType t) {
+    switch (t) {\n"""
   for k in reqNames:
     code+= "\tcase RequestType::%s : return \"%s\";break;\n"%(k,k)
   code+="""}return "WTF";\n}\n"""
@@ -478,7 +476,7 @@ int outSizes(RequestType, std::string);
   code+="""
 }
 int main(int argc, char* argv[]) {
-  if(argc <= 2){
+  if (argc <= 2) {
     std::cout << "Wrong execution line" << std::endl;
 		std::cout << argv[0] << "<simgrid-platform-file.xml> <services-config-file.csv>" << std::endl;
 		exit(1);
@@ -497,7 +495,7 @@ int main(int argc, char* argv[]) {
 	simgrid::s4u::Engine* e = new simgrid::s4u::Engine(&argc, argv);
 
 	e->load_platform(argv[1]);
-	simgrid::s4u::Actor::create("main", simgrid::s4u::Host::by_name(servConfig.find(\"default\")->second.at(0)), [&]{run(servConfig);});
+	simgrid::s4u::Actor::create("main", simgrid::s4u::Host::by_name(servConfig.find(\"default\")->second.at(0)), [&] {run(servConfig);});
 	e->run();
 	return 0;
 }
