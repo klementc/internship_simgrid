@@ -286,7 +286,7 @@ break;
       {
 case RequestType::COMPOSE_0:
       if(td->nbHops == 19){
-            XBT_INFO("FINISHED REQUEST at ts %lf", simgrid::s4u::Engine::get_clock());
+            XBT_INFO("FINISHED REQUEST at ts %lf arr: %lf dur: %lf", simgrid::s4u::Engine::get_clock(), td->firstArrivalDate, simgrid::s4u::Engine::get_clock()-td->firstArrivalDate);
         XBT_DEBUG("Output Function for COMPOSE_0, Final service, DELETE");
         for (auto it = td->parentSpans.rbegin(); it != td->parentSpans.rend(); ++it)
   {
