@@ -172,8 +172,11 @@ void TaskInstance::run() {
         double execRatio = etm_->getExecRatio(td);
         double execAmount = etm_->getCPUExecAmount(td);
         double realToBeExecuted = execRatio * execAmount;
-        /* TODO: verify if it works with multiple cores or if I need to multiply here */
-        double boundValue = execRatio * simgrid::s4u::this_actor::get_host()->get_speed();
+        double boundValue;
+        if (execRatio < 1)
+          boundValue = execRatio * simgrid::s4u::this_actor::get_host()->get_speed();
+        else
+          boundValue = simgrid::s4u::this_actor::get_host()->get_speed();
         XBT_DEBUG("Start execution of request. Flops: %lf, Ratio: %lf, CPUBound: %lf/%lf",
           realToBeExecuted, execRatio, boundValue, simgrid::s4u::this_actor::get_host()->get_speed());
 
