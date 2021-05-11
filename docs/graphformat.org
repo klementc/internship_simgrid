@@ -34,6 +34,11 @@ strict digraph "" {
 }
 #+END_SRC
 
+#+RESULTS:
+[[file:test-dot.png]]
+
+[[./test-dot.png]]
+
 - One node = One span of execution
 - Edges: precedence constraints
   - One node with one child => sequential execution with depedency (parent
