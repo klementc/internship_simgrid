@@ -131,7 +131,7 @@ def genOutputFunctionSwitchCode(graph, requestType, hop = 1):
         code += """
           XBT_DEBUG("Put to %s");
           s4u_Mailbox* m_%s = s4u_Mailbox::by_name("%s");
-          TaskDescription* td_%d = new TaskDescription(*td);
+          sg_microserv::TaskDescription* td_%d = new sg_microserv::TaskDescription(*td);
           td_%d->requestType = RequestType::%s_%d;
           com = m_%s->put_async(td_%d, outSizes(td_%d->requestType, \"%s\"));
           comV.push_back(com);
@@ -397,7 +397,7 @@ int outSizes(RequestType, std::string);
       # create header of func if not already done
       if(not serv in outputFunctionCodes):
         outputFunctionCodes[serv] = """
-    void return_%s(TaskDescription* td) {
+    void return_%s(sg_microserv::TaskDescription* td) {
       XBT_DEBUG("Return function of service %s");
       switch (td->requestType)
       {"""%(serv,serv)
@@ -419,7 +419,7 @@ int outSizes(RequestType, std::string);
       # create header of func if not already done
       if(not serv in prFunctionCodes):
         prFunctionCodes[serv] = """
-    double pr_%s(TaskDescription* td) {
+    double pr_%s(sg_microserv::TaskDescription* td) {
       XBT_DEBUG("pr function of service %s");
       switch (td->requestType) {"""%(serv, serv)
 
