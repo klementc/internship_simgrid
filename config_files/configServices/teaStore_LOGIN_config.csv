@@ -1,0 +1,7 @@
+serviceName serviceLocation executionRatio parDeg
+REQ cb1-1 1 10
+servA cb1-2 1 10
+servB cb1-3 1 10
+servD cb1-4 1 10
+servC cb1-5 1 10
+default cb1-1 1 10
