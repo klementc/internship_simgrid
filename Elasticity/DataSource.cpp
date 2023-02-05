@@ -34,7 +34,7 @@ void DataSource::run() {
     double evtTS = getNextReqTS();
     double nextSize = getNextReqSize();
 
-    if (evtTS == -1) {simgrid::s4u::Comm::wait_all(&pending_comms); return;}
+    if (evtTS == -1) {simgrid::s4u::Comm::wait_all(pending_comms); return;}
 
     simgrid::s4u::this_actor::sleep_until(evtTS);
     double date = simgrid::s4u::Engine::get_instance()->get_clock();

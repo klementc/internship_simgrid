@@ -68,7 +68,7 @@ void TaskInstance::pollTasks() {
   }
 
   while (keepGoing_) {
-    int newMsgPos = simgrid::s4u::Comm::wait_any(&commV);
+    int newMsgPos = simgrid::s4u::Comm::wait_any(commV);
     TaskDescription* taskRequest = tasksV[newMsgPos];
     taskRequest->instArrival = simgrid::s4u::Engine::get_clock();
     commV.erase(commV.begin()+newMsgPos);
@@ -88,7 +88,7 @@ void TaskInstance::pollEndOfTaskExec() {
   while (keepGoing_) {
     sem_pollExec_->acquire();
 
-    int index = simgrid::s4u::Exec::wait_any(&pending_execs);
+    int index = simgrid::s4u::Exec::wait_any(pending_execs);
     // finished one exec, call output function and allow for a new execution
     TaskDescription* td = execMap_.find(pending_execs.at(index))->second;
     td->endExec = simgrid::s4u::Engine::get_clock();

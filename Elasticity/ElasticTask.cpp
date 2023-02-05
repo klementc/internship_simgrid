@@ -6,9 +6,11 @@
 #include <utility>
 #include <iostream>
 #include "simgrid/s4u.hpp"
+#include "simgrid/s4u/Activity.hpp"
+#include "simgrid/s4u/Mailbox.hpp"
+#include "simgrid/s4u/Actor.hpp"
 #include "simgrid/kernel/future.hpp"
 #include "simgrid/plugins/load.h"
-#include <simgrid/Exception.hpp>
 
 #include "ElasticTask.hpp"
 
@@ -243,7 +245,7 @@ void ElasticTaskManager::pollnet(std::string mboxName) {
   }
 
   while (keepGoing) {
-    int newMsgPos = simgrid::s4u::Comm::wait_any(&commV);
+    int newMsgPos = simgrid::s4u::Comm::wait_any(commV);
     TaskDescription* taskRequest = tasksV[newMsgPos];
 
     // set amount of computation for the instance

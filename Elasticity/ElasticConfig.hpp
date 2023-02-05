@@ -1,4 +1,4 @@
-#define USE_JAEGERTRACING
+/* #undef USE_JAEGERTRACING */
 
 #ifdef USE_JAEGERTRACING
 #  include <jaegertracing/Tracer.h>
